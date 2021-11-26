@@ -1,0 +1,293 @@
+// Project information
+#define PROJECT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define PROJECT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define PROJECT_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define PROJECT_NAME "@CMAKE_PROJECT_NAME@"
+#define EXECUTABLE_TITLE "@EXECUTABLE_TITLE@"
+
+// Color masking bit logic
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define RMASK 0xff000000
+#define GMASK 0x00ff0000
+#define BMASK 0x0000ff00
+#define AMASK 0x000000ff
+#else
+#define RMASK 0x000000ff
+#define GMASK 0x0000ff00
+#define BMASK 0x00ff0000
+#define AMASK 0xff000000
+#endif
+#define COLOR_MASKS RMASK, GMASK, BMASK, AMASK
+
+// Definitions
+#define MIN_ICON_SIZE 32
+#define MAX_ICON_SIZE 1024
+#define MIN_RX_SIZE 0
+#define MAX_RX_SIZE 100
+#define PERCENT_MAX_CHARS 10
+#define MAX_PATH_LENGTH 512
+#define POLLING_PERIOD 15
+#define GAMEPAD_DEADZONE 10000
+#define GAMEPAD_REPEAT_DELAY 500
+#define GAMEPAD_REPEAT_INTERVAL 25
+#define SCROLL_INDICATOR_MARGIN 0.06F // Distance between screen edge and scroll indicators
+
+// Dynamic SVG generation for highlight
+#define SVG_HIGHLIGHT "<svg viewBox=\"0 0 %i %i\"><rect x=\"0\" width=\"%i\" height=\"%i\" rx=\"%i\" fill=\"white\" /></svg>"
+
+// Modes
+typedef int mode;
+#define MODE_COLOR 1
+#define MODE_IMAGE 0
+#define MODE_TEXT_TRUNCATE 0
+#define MODE_TEXT_SHRINK 1
+#define MODE_TEXT_NONE 2
+#define MODE_ESC_NO_QUIT 0
+#define MODE_ESC_QUIT 1
+#define DIRECTION_LEFT 0
+#define DIRECTION_RIGHT 1
+#define MODE_PRESSED 1
+#define MODE_RELEASED 0
+
+// Types
+#define TYPE_BUTTON 0
+#define TYPE_AXIS_POS 1
+#define TYPE_AXIS_NEG 2
+
+// Special commands
+#define SCMD_SELECT ":select"
+#define SCMD_SUBMENU ":submenu"
+#define SCMD_LEFT ":left"
+#define SCMD_RIGHT ":right"
+#define SCMD_HOME ":home"
+#define SCMD_BACK ":back"
+#define SCMD_QUIT ":quit"
+#define SCMD_SHUTDOWN ":shutdown"
+#define SCMD_RESTART ":restart"
+#define SCMD_SLEEP ":sleep"
+
+// Default filenames and paths
+#define FILENAME_SCROLL_INDICATOR "scroll_indicator.svg"
+#define FILENAME_DEFAULT_CONFIG "config.ini"
+#define FILENAME_DEFAULT_FONT "OpenSans-Regular.ttf"
+#define PATH_ASSETS_EXE "assets/"
+#define PATH_ASSETS_RELATIVE "./assets/"
+#define PATH_FONTS_EXE "assets/fonts/"
+//#define PATH_FONTS_RELATIVE "@PATH_FONTS_RELATIVE@"
+#define PATH_CONFIG_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/"
+#define PATH_ASSETS_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/assets/"
+#define PATH_FONTS_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/assets/fonts"
+
+// Config file setting names
+#define SETTING_DEFAULT_MENU "@SETTING_DEFAULT_MENU@"
+#define SETTING_MAX_BUTTONS "@SETTING_MAX_BUTTONS@"
+#define SETTING_BACKGROUND_MODE "@SETTING_BACKGROUND_MODE@"
+#define SETTING_BACKGROUND_IMAGE "@SETTING_BACKGROUND_IMAGE@"
+#define SETTING_BACKGROUND_COLOR "@SETTING_BACKGROUND_COLOR@"
+#define SETTING_ICON_SIZE "@SETTING_ICON_SIZE@"
+#define SETTING_ICON_SPACING "@SETTING_ICON_SPACING@"
+#define SETTING_TITLE_FONT "@SETTING_TITLE_FONT@"
+#define SETTING_TITLE_FONT_SIZE "@SETTING_TITLE_FONT_SIZE@"
+#define SETTING_TITLE_COLOR "@SETTING_TITLE_COLOR@"
+#define SETTING_TITLE_OVERSIZE_MODE "@SETTING_TITLE_OVERSIZE_MODE@"
+#define SETTING_TITLE_OPACITY "@SETTING_TITLE_OPACITY@"
+#define SETTING_TITLE_PADDING "@SETTING_TITLE_PADDING@"
+#define SETTING_HIGHLIGHT_COLOR "@SETTING_HIGHLIGHT_COLOR@"
+#define SETTING_HIGHLIGHT_OPACITY "@SETTING_HIGHLIGHT_OPACITY@"
+#define SETTING_HIGHLIGHT_VPADDING "@SETTING_HIGHLIGHT_VPADDING@"
+#define SETTING_HIGHLIGHT_HPADDING "@SETTING_HIGHLIGHT_HPADDING@"
+#define SETTING_HIGHLIGHT_CORNER_RADIUS "@SETTING_HIGHLIGHT_CORNER_RADIUS@"
+#define SETTING_BUTTON_CENTERLINE "@SETTING_BUTTON_CENTERLINE@"
+#define SETTING_SCROLL_INDICATORS "@SETTING_SCROLL_INDICATORS@"
+#define SETTING_SCROLL_INDICATOR_COLOR "@SETTING_SCROLL_INDICATOR_COLOR@"
+#define SETTING_SCROLL_INDICATOR_OPACITY "@SETTING_SCROLL_INDICATOR_OPACITY@"
+#define SETTING_RESET_ON_BACK "@SETTING_RESET_ON_BACK@"
+#define SETTING_ESC_QUIT "@SETTING_ESC_QUIT@"
+#define SETTING_GAMEPAD_ENABLED "@SETTING_GAMEPAD_ENABLED@"
+#define SETTING_GAMEPAD_DEVICE "@SETTING_GAMEPAD_DEVICE@"
+#define SETTING_GAMEPAD_MAPPINGS_FILE "@SETTING_GAMEPAD_MAPPINGS_FILE@"
+#define SETTING_GAMEPAD_LSTICK_XM "@SETTING_GAMEPAD_LSTICK_XM@"
+#define SETTING_GAMEPAD_LSTICK_XP "@SETTING_GAMEPAD_LSTICK_XP@"
+#define SETTING_GAMEPAD_LSTICK_YM "@SETTING_GAMEPAD_LSTICK_YM@"
+#define SETTING_GAMEPAD_LSTICK_YP "@SETTING_GAMEPAD_LSTICK_YP@"
+#define SETTING_GAMEPAD_RSTICK_XM "@SETTING_GAMEPAD_RSTICK_XM@"
+#define SETTING_GAMEPAD_RSTICK_XP "@SETTING_GAMEPAD_RSTICK_XP@"
+#define SETTING_GAMEPAD_RSTICK_YM "@SETTING_GAMEPAD_RSTICK_YM@"
+#define SETTING_GAMEPAD_RSTICK_YP "@SETTING_GAMEPAD_RSTICK_YP@"
+#define SETTING_GAMEPAD_LTRIGGER "@SETTING_GAMEPAD_LTRIGGER@"
+#define SETTING_GAMEPAD_RTRIGGER "@SETTING_GAMEPAD_RTRIGGER@"
+#define SETTING_GAMEPAD_BUTTON_A "@SETTING_GAMEPAD_BUTTON_A@"
+#define SETTING_GAMEPAD_BUTTON_B "@SETTING_GAMEPAD_BUTTON_B@"
+#define SETTING_GAMEPAD_BUTTON_X "@SETTING_GAMEPAD_BUTTON_X@"
+#define SETTING_GAMEPAD_BUTTON_Y "@SETTING_GAMEPAD_BUTTON_Y@"
+#define SETTING_GAMEPAD_BUTTON_BACK "@SETTING_GAMEPAD_BUTTON_BACK@"
+#define SETTING_GAMEPAD_BUTTON_GUIDE "@SETTING_GAMEPAD_BUTTON_GUIDE@"
+#define SETTING_GAMEPAD_BUTTON_START "@SETTING_GAMEPAD_BUTTON_START@"
+#define SETTING_GAMEPAD_BUTTON_LEFT_STICK "@SETTING_GAMEPAD_BUTTON_LEFT_STICK@"
+#define SETTING_GAMEPAD_BUTTON_RIGHT_STICK "@SETTING_GAMEPAD_BUTTON_RIGHT_STICK@"
+#define SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER "@SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER@"
+#define SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER "@SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER@"
+#define SETTING_GAMEPAD_BUTTON_DPAD_UP "@SETTING_GAMEPAD_BUTTON_DPAD_UP@"
+#define SETTING_GAMEPAD_BUTTON_DPAD_DOWN "@SETTING_GAMEPAD_BUTTON_DPAD_DOWN@"
+#define SETTING_GAMEPAD_BUTTON_DPAD_LEFT "@SETTING_GAMEPAD_BUTTON_DPAD_LEFT@"
+#define SETTING_GAMEPAD_BUTTON_DPAD_RIGHT "@SETTING_GAMEPAD_BUTTON_DPAD_RIGHT@"
+
+// Config file default settings
+#define DEFAULT_MAX_BUTTONS @DEFAULT_MAX_BUTTONS@
+#define DEFAULT_BACKGROUND_COLOR_R 0x@DEFAULT_BACKGROUND_COLOR_R@
+#define DEFAULT_BACKGROUND_COLOR_G 0x@DEFAULT_BACKGROUND_COLOR_G@
+#define DEFAULT_BACKGROUND_COLOR_B 0x@DEFAULT_BACKGROUND_COLOR_B@
+#define DEFAULT_ICON_SIZE @DEFAULT_ICON_SIZE@
+#define DEFAULT_FONT_SIZE @DEFAULT_FONT_SIZE@
+#define DEFAULT_TITLE_COLOR_R 0x@DEFAULT_TITLE_COLOR_R@
+#define DEFAULT_TITLE_COLOR_G 0x@DEFAULT_TITLE_COLOR_G@
+#define DEFAULT_TITLE_COLOR_B 0x@DEFAULT_TITLE_COLOR_B@
+#define DEFAULT_TITLE_COLOR_A 0x@DEFAULT_TITLE_COLOR_A@
+#define DEFAULT_TITLE_PADDING @DEFAULT_TITLE_PADDING@
+#define DEFAULT_HIGHLIGHT_COLOR_R 0x@DEFAULT_HIGHLIGHT_COLOR_R@
+#define DEFAULT_HIGHLIGHT_COLOR_G 0x@DEFAULT_HIGHLIGHT_COLOR_G@
+#define DEFAULT_HIGHLIGHT_COLOR_B 0x@DEFAULT_HIGHLIGHT_COLOR_B@
+#define DEFAULT_HIGHLIGHT_COLOR_A 0x@DEFAULT_HIGHLIGHT_COLOR_A@
+#define DEFAULT_HIGHLIGHT_CORNER_RADIUS @DEFAULT_HIGHLIGHT_CORNER_RADIUS@
+#define DEFAULT_HIGHLIGHT_VPADDING @DEFAULT_HIGHLIGHT_VPADDING@
+#define DEFAULT_HIGHLIGHT_HPADDING @DEFAULT_HIGHLIGHT_HPADDING@
+#define DEFAULT_SCROLL_INDICATORS @DEFAULT_SCROLL_INDICATORS@
+#define DEFAULT_SCROLL_INDICATOR_COLOR_R 0x@DEFAULT_SCROLL_INDICATOR_COLOR_R@
+#define DEFAULT_SCROLL_INDICATOR_COLOR_G 0x@DEFAULT_SCROLL_INDICATOR_COLOR_G@
+#define DEFAULT_SCROLL_INDICATOR_COLOR_B 0x@DEFAULT_SCROLL_INDICATOR_COLOR_B@
+#define DEFAULT_SCROLL_INDICATOR_COLOR_A 0x@DEFAULT_SCROLL_INDICATOR_COLOR_A@
+#define DEFAULT_RESET_ON_BACK @DEFAULT_RESET_ON_BACK@
+#define DEFAULT_ESC_QUIT @DEFAULT_ESC_QUIT@
+#define DEFAULT_GAMEPAD_ENABLED @DEFAULT_GAMEPAD_ENABLED@
+#define DEFAULT_GAMEPAD_DEVICE @DEFAULT_GAMEPAD_DEVICE@
+
+// Linked list for menu entries
+typedef struct entry
+{
+  char *title;
+  char *icon_path;
+  char *cmd;
+  SDL_Texture *icon;
+  SDL_Rect icon_rect;
+  SDL_Texture *title_texture;
+  SDL_Rect text_rect;
+  int title_offset;
+  struct entry *next;
+  struct entry *previous;
+} entry_t;
+
+// Linked list for menus
+typedef struct menu
+{
+  char *name;
+  int num_entries;
+  bool rendered;
+  int page;
+  int highlight_position;
+  entry_t *first_entry;
+  entry_t *root_entry;
+  entry_t *last_selected_entry;
+  struct menu *next;
+  struct menu *back;
+} menu_t;
+
+
+// Struct for the geometry parameters of the onscreen buttons
+typedef struct {
+  int screen_width;
+  int screen_height;
+  int font_height;
+  int x_margin; // Distance between left edge of screen and x coordinate of root_entry icon
+  int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
+  int x_advance; // Distance between icon x coordinate of adjacent entries
+  int num_buttons; // Number of buttons shown on the screen
+} geometry_t;
+
+// Struct for highlight 
+typedef struct {
+  SDL_Texture *texture;
+  SDL_Rect rect;
+} highlight_t;
+
+//Struct for scroll indicators
+typedef struct {
+  SDL_Texture *texture;
+  SDL_Rect rect_right;
+  SDL_Rect rect_left;
+} scroll_t;
+
+// Linked list of gamepad controls
+typedef struct gamepad_control {
+  int type;
+  int index;
+  int repeat;
+  char *label;
+  char *cmd;
+  struct gamepad_control *next;
+} gamepad_control_t;
+
+// Configuration settings
+typedef struct
+{
+  char *default_menu;
+  unsigned int max_buttons;
+  mode background_mode; // Defines image or color background mode
+  SDL_Color background_color; // Background co
+  char *background_image; // Path to background image
+  Uint16 icon_size;
+  int icon_spacing;
+  char icon_spacing_str[PERCENT_MAX_CHARS];
+  char *title_font_path; // Path to title TTF font file
+  unsigned int font_size;
+  SDL_Color title_color; // Color struct for title text
+  char title_opacity[PERCENT_MAX_CHARS];
+  mode title_oversize_mode; 
+  unsigned int title_padding;  
+  SDL_Color highlight_color;
+  char highlight_opacity[PERCENT_MAX_CHARS];
+  Uint16 highlight_rx;
+  int highlight_vpadding;
+  int highlight_hpadding;
+  char button_centerline[PERCENT_MAX_CHARS];
+  bool scroll_indicators;
+  SDL_Color scroll_indicator_color;
+  char scroll_indicator_opacity[PERCENT_MAX_CHARS];
+  bool reset_on_back;
+  mode esc_quit;
+  bool gamepad_enabled;
+  int gamepad_device;
+  char *gamepad_mappings_file;
+  bool debug;
+  char *exe_path;
+  menu_t *first_menu;
+  gamepad_control_t *gamepad_controls;
+  int num_menus;
+} config_t;
+
+// Function prototypes
+int init_sdl();
+int init_ttf();
+int init_svg();
+int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
+int main(int argv, char *argc[]);
+unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
+void calculate_geometry(entry_t *entry, int buttons);
+void render_buttons(menu_t *menu);
+void draw_buttons(entry_t *entry);
+void move_left();
+void move_right();
+void load_submenu(char *submenu);
+void load_back_menu(menu_t *menu);
+void draw_screen();
+void validate_settings();
+void handle_keypress(SDL_Keysym *key);
+void execute_command(char *command);
+void poll_gamepad();
+void connect_gamepad(int joystick_index);
+void render_scroll_indicators();
+void cleanup();
+SDL_Texture *load_texture(char *path, SDL_Surface *surface);
+SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h);
+SDL_Texture *render_highlight(int width, int height, int rx);
+SDL_Texture *render_text(entry_t *entry);
+entry_t *advance_entries(entry_t *entry, int spaces, mode direction);

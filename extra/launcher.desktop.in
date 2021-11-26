@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=@CMAKE_PROJECT_NAME@
+GenericName=Application Launcher
+Comment=@CMAKE_PROJECT_DESCRIPTION@
+TryExec=@EXECUTABLE_TITLE@
+Exec=@EXECUTABLE_TITLE@
+Icon=@EXECUTABLE_TITLE@
+Categories=Video;AudioVideo;
