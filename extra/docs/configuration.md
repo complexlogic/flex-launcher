@@ -1,5 +1,5 @@
  # Configuration File Overview
-Flex Launcher uses an [INI file](https://en.wikipedia.org/wiki/INI_file) to configure settings and menus. The INI file consists of sections enclosed in brackets, and in each section there are entries which consist of a key and a value. Example:
+Flex Launcher uses an [INI file](https://en.wikipedia.org/wiki/INI_file) to configure settings and menus. The INI file consists of sections enclosed in square brackets, and in each section there are entries which consist of a key and a value. Example:
 ```
 [Section]
 Key1=value
@@ -125,3 +125,56 @@ Default: false
 Defines whether the user can exit Flex Launcher by pressing the Esc key. When set to false, it prevents a regular user from exiting to the desktop, so Flex Launcher will operate in a "Kiosk Mode" of sorts. This setting is a boolean "true" or "false".
 
 Default: true
+
+## Creating Menus
+At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such is Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
+
+Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons. The command is typically the path to the program executable that you want to launch, or a special command. Windows users may also use a path to a shortcut to the program (.lnk file). A simple example menu titled ```Media``` is shown below:
+```
+[Media]
+Entry1=Kodi;C:\Pictures\Icons\kodi.png;C:\Program Shortcuts\kodi.lnk"
+Entry2=Netflix;C:\Pictures\Icons\netflix.png;C:\Program Shortcuts\netflix.lnk"
+Entry3=Plex;C:\Pictures\Icons\plex.png;C:\Program Shortcuts\plex.lnk"
+```
+
+### Special Commands
+Special commands are commands that are internal to Flex Launcher and begin with a colon. Here is a list of special commands:
+
+#### :submenu
+Change to a different menu. Requires a menu title as an argument. For example, the command ```:submenu Games``` will change to the menu ```Games```. The argument be a valid menu title that is defined elsewhere in the config file.
+
+#### :back
+Go back to the previous menu.
+
+#### :home
+Change to the menu defined in the ```DefaultMenu``` setting.
+
+#### :quit
+Quit Flex Launcher.
+
+#### :left
+Move the highlight cursor left.
+
+#### :right
+Move the highlight cursor right.
+
+#### :select
+Press enter on the current selection. This special command is only available as a gamepad command, it is forbidden for menu entries.
+
+#### :shutdown
+Shut down the computer. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
+
+#### :restart
+Restart the computer. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
+
+#### :sleep
+Put the computer to sleep. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
+
+### Desktop Files (Linux Only)
+If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be a link to the .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
+
+#### Desktop Actions
+Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with the pipe character |. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch steam in Big Picture mode is shown below:
+```
+Entry1=Steam;/path/to/steamicon.png;/usr/share/applications/steam.desktop|BigPicture
+```
