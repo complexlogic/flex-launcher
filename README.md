@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
+  <a>
     <img src="extra/flex-launcher.svg" alt="Logo" width="150" height="150">
   </a>
 
