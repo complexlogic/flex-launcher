@@ -18,14 +18,14 @@
     <li>
       <a href="#installation">Installation</a>
       <ul>
-        <li><a href="windows">Windows</a></li>
+        <li><a href="#windows">Windows</a></li>
         <li><a href="#linux">Linux</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#credits">Credits</a></li>
     <li><a href="#documentation">Documentation</a></li>
+    <li><a href="#credits">Credits</a></li>
   </ol>
 </details>
 
@@ -78,10 +78,15 @@ If no config file is specified on the command line, the program will search for 
 
 If your config file is in one of the above locations, Flex Launcher can be started simply by double clicking the executable or adding it to an autostart queue without the need to pass arguments to it.
 
-Flex Launcher ships with a default config file which is intended strictly for demonstation purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the config file documentation for instuctions on how to change the menus and settings for Flex Launcher.
+Flex Launcher ships with a default config file which is intended strictly for demonstation purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [config file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings for Flex Launcher.
 
 ## Contributing
 Contributions are welcome for bugfixes and new features. Please keep code formatted to 2 space K&R style
+
+## Documentation
+Here is a list of available documentation:
+- Config file
+- Compilation Guide
 
 ## Credits
 Flex Launcher is made possible by the following projects:
@@ -93,11 +98,3 @@ Flex Launcher is made possible by the following projects:
 - Numix icons
 
 The creation of Flex Launcher was inspired by the excellent Linux application launcher xlunch.
-
-## Documentation
-Here is a list of available documentation:
-- Config file
-- Compilation Guide
-
-
-
