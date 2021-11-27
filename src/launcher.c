@@ -182,9 +182,7 @@ int init_ttf()
     prefixes[1] = PATH_ASSETS_RELATIVE;
     #endif
     char *default_font = find_file(FILENAME_DEFAULT_FONT,num_prefixes,prefixes);
-    #ifndef __unix__
     free(prefixes[0]);
-    #endif
     free(prefixes);
 
     // Replace user font with default in config
