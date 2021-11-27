@@ -76,25 +76,27 @@ If no config file is specified on the command line, the program will search for 
 3. Linux only: ~/.config/flex-launcher
 4. Linux only: /usr/share/flex-launcher
 
-If your config file is in one of the above locations, Flex Launcher can be started simply by double clicking the executable or adding it to an autostart queue without the need to pass arguments to it.
+If your config file is in one of the above locations, Flex Launcher can be started simply by double clicking the executable file or adding it to autostart without the need to pass arguments to it.
 
-Flex Launcher ships with a default config file which is intended strictly for demonstation purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [config file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings for Flex Launcher.
+Flex Launcher ships with a default config file which is intended strictly for demonstation purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings.
+
+The keyboard arrow keys move the cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher. Gamepad controls are built-in to the program and can be set in the configuration file.
 
 ## Contributing
 Contributions are welcome for bugfixes and new features. Please keep code formatted to 2 space K&R style
 
 ## Documentation
 Here is a list of available documentation:
-- Config file
+- [Configuration file](extra/docs/configuration.md)
 - Compilation Guide
 
 ## Credits
 Flex Launcher is made possible by the following projects:
-- SDL, including the subprojects
-  - SDL_image
-  - SDL_ttf
-- Nanosvg
-- inih
-- Numix icons
+- [SDL](https://github.com/libsdl-org/SDL), including the subprojects:
+  - [SDL_image](https://github.com/libsdl-org/SDL_image)
+  - [SDL_ttf](https://github.com/libsdl-org/SDL_ttf)
+- [Nanosvg](https://github.com/memononen/nanosvg)
+- [inih](https://github.com/benhoyt/inih)
+- [Numix icons](https://github.com/numixproject)
 
-The creation of Flex Launcher was inspired by the excellent Linux application launcher xlunch.
+The creation of Flex Launcher was inspired by the excellent desktop application launcher [xlunch](https://github.com/Tomas-M/xlunch).
