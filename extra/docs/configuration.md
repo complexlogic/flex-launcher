@@ -8,9 +8,11 @@ Key2=value
 ```
 A line can be commented out by using the # character at the beginning of the line, which will cause the line to be ignored by the program. Here are a few things to note about the configuration settings for Flex Launcher:
 - All keys and values are case sensitive.
+- Full UTF-8 text encoding is supported for titles.
+- Relative paths are evaluated with respect to the *current working directory*, which may not be the same as the directory that the config file is located in. It is recommended to use absolute paths whenever possible to eliminate any confusion.
+- Spaces in paths are acceptable. Do not enclose these paths in quotation marks unless otherwise specified, as this may interfere with the parsing.
 - Color is specified in HEX format, *without* the 0x prefix e.g. the color red in 24 bit RGB should be FF0000. HEX color pickers can be easily found online to assist color choices.
 - The color settings that support transparency have a separate opacity setting which allows the user to specify the opacity as a percentage. This is for convenience purposes because many users prefer to specify opacity as a percentage instead of 0-255. The opacity settings may be commented out if they are not desired, in which case the alpha bits will be used to determine the opacity.
-- Spaces in paths are acceptable. Do not enclose these paths in quotation marks unless otherwise specified, as this may interfere with the parsing.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
 ## Settings
 Every config file must have a section titled "Settings". Within this section, the following keys may be used to control the behavior of Flex Launcher
@@ -70,6 +72,8 @@ Defines the behavior when the width of a menu entry title exceeds the width of i
 - Shrink: Shrinks oversized titles to a smaller font size than ```TitleFontSize``` so that the entire title fits within the maximum width
 - None: No action is taken to limit the width of titles. Overlaps with other titles may occur, and it is the user's responsibility to manually handle any such case
 
+Default: Truncate
+
 #### TitlePadding
 Defines the space between the icon and its title, in pixels
 
@@ -127,14 +131,14 @@ Defines whether the user can exit Flex Launcher by pressing the Esc key. When se
 Default: true
 
 ## Creating Menus
-At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such is Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
+At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
 
 Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons. The command is typically the path to the program executable that you want to launch, or a special command. Windows users may also use a path to a shortcut to the program (.lnk file). A simple example menu titled ```Media``` is shown below:
 ```
 [Media]
-Entry1=Kodi;C:\Pictures\Icons\kodi.png;C:\Program Shortcuts\kodi.lnk"
-Entry2=Netflix;C:\Pictures\Icons\netflix.png;C:\Program Shortcuts\netflix.lnk"
-Entry3=Plex;C:\Pictures\Icons\plex.png;C:\Program Shortcuts\plex.lnk"
+Entry1=Kodi;C:\Pictures\Icons\kodi.png;C:\Program Shortcuts\kodi.lnk
+Entry2=Netflix;C:\Pictures\Icons\netflix.png;C:\Program Shortcuts\netflix.lnk
+Entry3=Plex;C:\Pictures\Icons\plex.png;C:\Program Shortcuts\plex.lnk
 ```
 
 ### Special Commands
@@ -174,7 +178,60 @@ Put the computer to sleep. For Linux: only works in systemd distros. Non-systemd
 If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be a link to the .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
 
 #### Desktop Actions
-Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with the pipe character |. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch steam in Big Picture mode is shown below:
+Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with the pipe character |. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch Steam in Big Picture mode is shown below:
 ```
 Entry1=Steam;/path/to/steamicon.png;/usr/share/applications/steam.desktop|BigPicture
 ```
+
+## Gamepad Controls
+Flex Launcher has built-in support for gamepad controls through SDL. All settings for gamepads will be in a section titled ```Gamepad```. Within the section, there are key=value pairs which define the gamepad settings and the commands to be run when a button or axis is pressed.
+
+### Settings
+The following settings are available in the ```Gamepad``` section to define the behavior of gamepads
+
+#### Enabled
+Defines whether or not gamepad controls are enabled. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### DeviceIndex
+Defines the device index of the gamepad in SDL. In most cases this is not needed and should be left commented out.
+
+Default: 0
+
+#### ControllerMappingsFile
+A path to a text file that contains 1 or more controller mappings to override the default. This is usually not necessary, but if you want to change the mapping for your controller, or there is no default mapping for your controller in SDL, it can be specified via this interface. A community database of mappings for many common controllers can be found [here](https://github.com/gabomdq/SDL_GameControllerDB). Alternatively, you may create a custom mapping using a GUI tool such as the [SDL2 Gamepad Tool](https://generalarcade.com/gamepadtool/).
+
+### Controls
+The controls are defined in key=value pairs, where the key is the name of the axis or button that is pressed, and the value is the command that is to be run, which is typically a special command. An axis is an analog stick or a trigger. For analog sticks, negative (-) represents left for the x axis and up for the y axis, and postive (+) represents right for the x axis and down for the y axis. 
+
+The [SDL GameController](https://wiki.libsdl.org/CategoryGameController) interface is an abstraction which conceptualizes a controller as having an Xbox-style layout. The mapping names in SDL are based on the *location* of the buttons on an Xbox controller, and may not correspond to the actual labelling of the buttons on your controller. For example, ```ButtonA``` is for the "bottom" button, ```ButtonB``` is for the "right" button of the 4 main control buttons. If you have a Playstation-style controller, those mapping names will correspond to the X button and the Circle button, respectively. 
+
+The default controls in Flex Launcher allow the user to move the highlight cursor left and right by using the left stick or the DPad, select an entry by pressing A, and go back to the previous menu by pressing B. These controls are simple and will suffice for the vast majority of use cases.
+
+The following axis and buttons are available for control in Flex Launcher:
+- LStickX-
+- LStickX+
+- LStickY-
+- LStickY+
+- RStickX-
+- RStickX+
+- RStickY-
+- RStickY+
+- LTrigger
+- RTrigger
+- ButtonA
+- ButtonB
+- ButtonX
+- ButtonY
+- ButtonBack
+- ButtonGuide
+- ButtonStart
+- ButtonLeftStick
+- ButtonRightStick
+- ButtonLeftShoulder
+- ButtonRightShoulder
+- ButtonDPadUp
+- ButtonDPadDown
+- ButtonDPadLeft
+- ButtonDPadRight
