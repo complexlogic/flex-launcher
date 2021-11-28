@@ -39,7 +39,7 @@ Flex Launcher is compatible with both Windows and Linux.
 ![Screenshot 1](extra/screenshots/screenshot2.png "Screenshot 2")
 
 ## Installation
-Compiled binaries are available for Windows 64 bit and Linux x86-64. Alternatively, you may also choose to compile the program yourself instead using the compilation guide.
+Compiled binaries are available for Windows 64 bit and Linux x86-64. Alternatively, you may also choose to compile the program yourself instead using the [compilation guide](extra/docs/compilation_guide.md).
 
 ### Windows
 A win64 zip file is provided on the release page. Simply download the file and extract the contents to a directory of your choosing.
