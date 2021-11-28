@@ -87,8 +87,8 @@ Contributions are welcome for bugfixes and new features. Please keep code format
 
 ## Documentation
 Here is a list of available documentation:
-- [Configuration file](extra/docs/configuration.md)
-- Compilation Guide
+- [Configuration File](extra/docs/configuration.md)
+- [Compilation Guide](extra/docs/compilation_guide.md)
 
 ## Credits
 Flex Launcher is made possible by the following projects:
