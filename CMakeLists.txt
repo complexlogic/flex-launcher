@@ -140,7 +140,6 @@ endif ()
 # Windows build instructions
 if (WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") # Workaround for Nanosvg and SDL_image header conflicts
-  set_property(TARGET ${EXECUTABLE_TITLE} PROPERTY WIN32_EXECUTABLE true)
   # Force static linking for C Runtime
   set(CompilerFlags
         CMAKE_C_FLAGS
