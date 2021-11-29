@@ -140,6 +140,7 @@ endif ()
 # Windows build instructions
 if (WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") # Workaround for Nanosvg and SDL_image header conflicts
+  set_property(TARGET ${EXECUTABLE_TITLE} PROPERTY WIN32_EXECUTABLE true)
   # Force static linking for C Runtime
   set(CompilerFlags
         CMAKE_C_FLAGS
@@ -191,6 +192,11 @@ if (UNIX)
   set(INSTALL_DIR_ICONS "${CMAKE_INSTALL_PREFIX}/share/icons")
   install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.png" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/48x48/apps")
   install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.svg" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/scalable/apps")
+endif ()
+
+if (WIN32)
+  install(FILES "${PROJECT_SOURCE_DIR}/UNLICENSE.txt" DESTINATION "${INSTALL_DIR_BIN}")
+  install(FILES "${PROJECT_SOURCE_DIR}/CHANGELOG.txt" DESTINATION "${INSTALL_DIR_BIN}")
 endif ()
 
 # Configure CPack for packages
