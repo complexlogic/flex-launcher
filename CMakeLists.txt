@@ -1,8 +1,18 @@
 # Project info
-cmake_minimum_required(VERSION 3.11)
-project("Flex Launcher" LANGUAGES C VERSION "1.0" DESCRIPTION "Customizable HTPC Application Launcher")
+cmake_minimum_required(VERSION 3.18)
+project("Flex Launcher" 
+        LANGUAGES C 
+        VERSION "1.0" 
+        DESCRIPTION "Customizable HTPC Application Launcher"
+        HOMEPAGE_URL "https://github.com/complexlogic/flex-launcher")
 set(EXECUTABLE_TITLE "flex-launcher")
 
+#Generate PKGBUILD for Arch packages
+if (PACKAGE STREQUAL "ARCH")
+  configure_file("${PROJECT_SOURCE_DIR}/extra/PKGBUILD.in" "${PROJECT_BINARY_DIR}/PKGBUILD")
+  return()
+endif ()
+        
 # Config setting keys
 set(SETTING_DEFAULT_MENU "DefaultMenu")
 set(SETTING_MAX_BUTTONS "MaxButtons")
@@ -191,11 +201,10 @@ if (PACKAGE STREQUAL "DEB")
   set(CPACK_DEBIAN_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0 (>= 2.0.14), libsdl2-image-2.0-0 (>= 2.0.5), libsdl2-ttf-2.0-0 (>= 2.0.15)")
-  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "J. Hennen")
-  set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CMAKE_PROJECT_DESCRIPTION})
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "complexlogic")
   set(CPACK_DEBIAN_PACKAGE_SECTION "video")
   set(CPACK_DEBIAN_ARCHIVE_TYPE "gnutar")
-  set(CPACK_DEBIAN_COMPRneoESSION_TYPE "gzip")
+  set(CPACK_DEBIAN_COMPRESSION_TYPE "gzip")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 endif ()
 

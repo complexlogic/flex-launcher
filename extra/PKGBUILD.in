@@ -1,0 +1,36 @@
+pkgname=@EXECUTABLE_TITLE@
+pkgver=@CMAKE_PROJECT_VERSION@
+pkgrel=1
+#epoch=
+pkgdesc="@CMAKE_PROJECT_DESCRIPTION@"
+arch=('x86_64')
+url="@CMAKE_PROJECT_HOMEPAGE_URL@"
+license=('Unlicense')
+#groups=()
+depends=('sdl2' 'sdl2_image' 'sdl2_ttf')
+makedepends=('cmake')
+#checkdepends=()
+#optdepends=()
+#provides=()
+#conflicts=()
+#replaces=()
+#backup=()
+#options=()
+#install=
+#changelog=
+source=('file://@EXECUTABLE_TITLE@.tar.gz')
+#noextract=()
+md5sums=('SKIP')
+#validpgpkeys=()
+
+build() {
+    builddir=$srcdir/@EXECUTABLE_TITLE@/build
+	mkdir $builddir && cd $builddir
+	cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+	make
+}
+
+package() {
+	cd $srcdir/@EXECUTABLE_TITLE@/build
+	make DESTDIR="$pkgdir/" install
+}
