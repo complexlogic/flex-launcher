@@ -39,30 +39,32 @@ Flex Launcher is compatible with both Windows and Linux.
 ![Screenshot 1](extra/screenshots/screenshot2.png "Screenshot 2")
 
 ## Installation
-Compiled binaries are available for Windows 64 bit and Linux x86-64. Alternatively, you may also choose to compile the program yourself instead using the [compilation guide](extra/docs/compilation_guide.md).
+Compiled binaries are available for Windows 64 bit and Linux x86-64. Alternatively, you may also choose to compile the program yourself using the [compilation guide](extra/docs/compilation_guide.md).
 
 ### Windows
-A win64 zip file is provided on the release page. Simply download the file and extract the contents to a directory of your choosing.
+A win64 zip file is provided on the [release page](https://github.com/complexlogic/flex-launcher/releases). Simply download the file and extract the contents to a directory of your choosing.
 
 ### Linux
-Binary packages are available on the release page for APT and pacman based distributions. You may use the commands below to install.
+Binary packages are available on the [release page](https://github.com/complexlogic/flex-launcher/releases) for APT and pacman based distributions. You may use the commands below to install.
 
 #### APT-based Distributions (Debian, Ubuntu, Mint, etc.)
 ```
-wget file
-sudo apt install ./file
+VERSION=1.0
+wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
+sudo apt install flex-launcher_${VERSION}_amd64.deb
 ```
 
 #### Pacman-based Distributions (Arch, Manjaro, etc.)
 ```
-wget file
-sudo pacman -U file
+VERSION=1.0
+wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
+sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
 #### Copying Assets to Home Directory
 The Linux packages install a default config file and assets to /usr/share/flex-launcher. It is strongly recommended to NOT edit this config file directly, as it will be overwritten if you upgrade to a later version. Instead, copy these files to your home directory and edit it there.
 ```
-cp files
-sed files
+cp -r /usr/share/flex-launcher ~/.config
+sed -i "s|/usr/share/flex-launcher|$HOME/.config/flex-launcher|g" ~/.config/flex-launcher/config.ini
 ```
 
 ## Usage
@@ -83,7 +85,7 @@ Flex Launcher ships with a default config file which is intended strictly for de
 The keyboard arrow keys move the cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher. Gamepad controls are built-in to the program and can be set in the configuration file.
 
 ## Contributing
-Contributions are welcome for bugfixes and new features. Please keep code formatted to 2 space K&R style
+Contributions are welcome for bugfixes and new features. Please keep code formatted to [2 space K&R style](https://gist.github.com/jesseschalken/0f47a2b5a738ced9c845).
 
 ## Documentation
 Here is a list of available documentation:
