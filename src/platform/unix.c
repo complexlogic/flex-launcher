@@ -9,7 +9,7 @@ typedef struct {
   char **exec;
 } desktop_t;
 
-// A function to handle .desketop lines
+// A function to handle .desktop lines
 static int desktop_handler(void* user, const char* section, const char* name, const char* value)
 {
   desktop_t* pdesktop = (desktop_t*) user;

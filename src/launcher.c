@@ -1133,6 +1133,12 @@ int main(int argc, char *argv[])
   draw_screen();
   updates = false;
 
+#ifdef _WIN32
+  if (!config.debug) {
+      hide_console();
+  }
+#endif
+
   // Main program loop
   while (!quit) {
     while (SDL_PollEvent(&event)) {
@@ -1166,6 +1172,12 @@ int main(int argc, char *argv[])
     }
     SDL_Delay(POLLING_PERIOD);
   }
- cleanup();
- return 0;
+  cleanup();
+
+  #ifdef _WIN32
+  if (!config.debug) {
+    restore_console();
+  }
+  #endif
+  return 0;
 }
