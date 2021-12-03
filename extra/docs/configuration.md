@@ -38,7 +38,86 @@ A line can be commented out by using the # character at the beginning of the lin
 - The color settings that support transparency have a separate opacity setting which allows the user to specify the opacity as a percentage. This is for convenience purposes because many users prefer to specify opacity as a percentage instead of 0-255. The opacity settings may be commented out if they are not desired, in which case the alpha bits will be used to determine the opacity.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
 ## Settings
-Every config file must have a section titled "Settings". Within this section, the following keys may be used to control the behavior of Flex Launcher
+Every config file must have a section titled "Settings". Within this section, the following keys may be used to control the behavior of Flex Launcher:
+
+
+<details open>
+  <summary>List of settings</summary>
+  <ul>
+    <li>
+      <a href="#defaultmenu">DefaultMenu</a>
+    </li>
+    <li>
+      <a href="#maxbuttons">MaxButtons</a>
+    </li>
+    <li>
+      <a href="#backgroundmode">BackgroundMode</a>
+    </li>
+    <li>
+      <a href="#backgroundcolor">BackgroundColor</a>
+    </li>
+    <li>
+      <a href="#backgroundimage">BackgroundImage</a>
+    </li>
+    <li>
+      <a href="#iconsize">IconSize</a>
+    </li>
+    <li>
+      <a href="#iconspacing">IconSpacing</a>
+    </li>
+    <li>
+      <a href="#titlefont">TitleFont</a>
+    </li>
+    <li>
+      <a href="#titlefontsize">TitleFontSize</a>
+    </li>
+    <li>
+      <a href="#titlecolor">TitleColor</a>
+    </li>
+    <li>
+      <a href="#titleopacity">TitleOpacity</a>
+    </li>
+    <li>
+      <a href="#titleoversizemode">TilteOversizeMode</a>
+    </li>
+    <li>
+      <a href="#titlepadding">TitlePadding</a>
+    </li>
+    <li>
+      <a href="#highlightcolor">HighlightColor</a>
+    </li>
+    <li>
+      <a href="#highlightopacity">HighlightOpacity</a>
+    </li>
+    <li>
+      <a href="#highlightcornerradius">HighlightCornerRadius</a>
+    </li>
+    <li>
+      <a href="#highlightvpadding">HighlightVPadding</a>
+    </li>
+    <li>
+      <a href="#highlighthpadding">HighlightHPadding</a>
+    </li>
+    <li>
+      <a href="#buttoncenterline">ButtonCenterline</a>
+    </li>
+    <li>
+      <a href="#scrollindicators">ScrollIndicators</a>
+    </li>
+    <li>
+      <a href="#scrollindicatorcolor">ScrollIndicatorColor</a>
+    </li>
+    <li>
+      <a href="#scrollindicatoropacity">ScrollIndicatorOpacity</a>
+    </li>
+    <li>
+      <a href="#resetonback">ResetOnBack</a>
+    </li>
+    <li>
+      <a href="#escquit">EscQuit</a>
+    </li>
+  </ul>
+</details>
 
 #### DefaultMenu
 This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the creating menus section for more information
@@ -120,7 +199,7 @@ Defines the amount of distance that the highlight cursor extends beyond the top 
 
 Default: 30
 
-#### HighlightHPaddding
+#### HighlightHPadding
 Defines the amount of distance that the highlight cursor extends beyond the left and right of the menu entry icon, in pixels.
 
 Default: 30
