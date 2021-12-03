@@ -1,4 +1,27 @@
- # Configuration File Overview
+# Configuring Flex Launcher
+
+<details open>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#overview">Overview</a>
+    </li>
+    <li>
+      <a href="#settings">Settings</a>
+    </li>
+    <li>
+      <a href="#creating-menus">Creating Menus</a>
+      <ul>
+        <li><a href="#special-commands">Special Commands</a></li>
+        <li><a href="#desktop-files-linux-only">Desktop Files (Linux Only)</a></li>
+      </ul>
+    </li>
+    <li><a href="#gamepad-controls">Gamepad Controls</a></li>
+  </ol>
+</details>
+ 
+ 
+## Overview
 Flex Launcher uses an [INI file](https://en.wikipedia.org/wiki/INI_file) to configure settings and menus. The INI file consists of sections enclosed in square brackets, and in each section there are entries which consist of a key and a value. Example:
 ```
 [Section]
