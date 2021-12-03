@@ -1,4 +1,19 @@
  # Compiling Flex Launcher
+ <details open>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#overview">Overview</a>
+    </li>
+    <li>
+      <a href="#linux">Linux</a>
+    </li>
+    <li>
+      <a href="#windows">Windows</a>
+  </ol>
+</details>
+
+## Overview
  Flex Launcher builds natively on Linux and Windows, and features a cross-platform CMake build system. The following external dependencies are required:
  - SDL
  - SDL_image
