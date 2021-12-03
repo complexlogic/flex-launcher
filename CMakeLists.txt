@@ -105,60 +105,44 @@ set(DEFAULT_ESC_QUIT "true")
 set(DEFAULT_GAMEPAD_ENABLED "false")
 set(DEFAULT_GAMEPAD_DEVICE 0)
 
-# Common build instructions
-add_executable(${EXECUTABLE_TITLE} "${PROJECT_SOURCE_DIR}/src/launcher.c")
-add_library(inih "${PROJECT_SOURCE_DIR}/src/external/ini.c")
-add_library(util "${PROJECT_SOURCE_DIR}/src/util.c")
-target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/external" "${PROJECT_BINARY_DIR}")
-target_include_directories(inih PUBLIC "${PROJECT_SOURCE_DIR}/src/external")
-target_include_directories(util PUBLIC "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/external" "${PROJECT_BINARY_DIR}")
-
-# Configure main header file  
-configure_file("${PROJECT_SOURCE_DIR}/src/launcher.h.in" "${PROJECT_BINARY_DIR}/launcher.h")
-
-# Linux build instructions
+# Linux configuration
 if (UNIX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
+  set(CMAKE_SHARED_LINKER_FLAGS "--as-needed")
+  
+  #Find SDL
   set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-  add_library(platform "${PROJECT_SOURCE_DIR}/src/platform/unix.c")
-  target_include_directories(platform PUBLIC "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/external")
   find_package(SDL2 MODULE REQUIRED)
   find_package(SDL2_image MODULE REQUIRED)
   find_package(SDL2_ttf MODULE REQUIRED)
-  target_include_directories(util PUBLIC "${SDL2_INCLUDE_DIRS}")
-  target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${SDL2_INCLUDE_DIRS}" "${SDL2_IMAGE_INCLUDE_DIRS}" "${SDL2_TTF_INCLUDE_DIRS}")
-  target_link_libraries(${EXECUTABLE_TITLE} platform inih util SDL2::Main SDL2::Image SDL2::TTF m)
-  set(CMAKE_SHARED_LINKER_FLAGS "--as-needed")
       
-  # Default application commands
+  #Set Default application commands
   set(DESKTOP_PATH "/usr/share/applications/")
   set(CMD_KODI "${DESKTOP_PATH}kodi.desktop")
   set(CMD_STEAM "${DESKTOP_PATH}steam.desktop|BigPicture")
   set(CMD_PLEX "${DESKTOP_PATH}plexmediaplayer.desktop|TVF")  
 endif ()
 
-# Windows build instructions
+# Windows configuration
 if (WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") # Workaround for Nanosvg and SDL_image header conflicts
-  # Force static linking for C Runtime
+  
+  #Force static linking for C Runtime
   set(CompilerFlags
         CMAKE_C_FLAGS
         CMAKE_C_FLAGS_DEBUG
         CMAKE_C_FLAGS_RELEASE
         CMAKE_C_FLAGS_MINSIZEREL
-        CMAKE_C_FLAGS_RELWITHDEBINFO
-        )
+        CMAKE_C_FLAGS_RELWITHDEBINFO)
   foreach(CompilerFlag ${CompilerFlags})
     string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
   endforeach()
-  add_library(platform "${PROJECT_SOURCE_DIR}/src/platform/windows.c")
+
+  #Find SDL
   find_package(SDL2 CONFIG REQUIRED)
   find_package(sdl2-image CONFIG REQUIRED)
   find_package(sdl2-ttf CONFIG REQUIRED)
-  target_include_directories(util PUBLIC "${PROJECT_SOURCE_DIR}/src/external")
-  target_link_libraries(util SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static)
-  target_link_libraries(${EXECUTABLE_TITLE} platform inih util SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static SDL2::SDL2_image SDL2::SDL2_ttf)
     
   # Application commands
   set(CMD_KODI "C:\\Program Files\\Kodi\\kodi.exe")
@@ -169,7 +153,10 @@ if (WIN32)
     set(PACKAGE "ZIP")
   endif ()
 endif () 
-  
+
+#Build src
+add_subdirectory("src")
+
 # Install
 if (UNIX)
   set(INSTALL_DIR_BIN "${CMAKE_INSTALL_PREFIX}/bin")
@@ -185,6 +172,8 @@ endif ()
 install(TARGETS ${EXECUTABLE_TITLE} DESTINATION "${INSTALL_DIR_BIN}")
 install(FILES "${PROJECT_BINARY_DIR}/install/config.ini" DESTINATION "${INSTALL_DIR_CONFIGFILE}")
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/assets" DESTINATION "${INSTALL_DIR_ASSETS}")
+
+#Configure icons and desktop file
 if (UNIX)
   configure_file("${PROJECT_SOURCE_DIR}/extra/launcher.desktop.in" "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop")
   install(FILES "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop" DESTINATION "${INSTALL_DIR_DESKTOP}")
@@ -218,7 +207,6 @@ if (PACKAGE)
   include(CPack)
 endif ()
   
-
 # Set paths for config files
 set(FONT_PREFIX "${PROJECT_BINARY_DIR}/assets/fonts/")
 set(ICONS_PREFIX "${PROJECT_BINARY_DIR}/assets/icons/")
@@ -231,7 +219,6 @@ file(COPY "${PROJECT_SOURCE_DIR}/assets" DESTINATION ${PROJECT_BINARY_DIR})
 
 # Generate build config file
 if (WIN32)
-  # Replace Windows paths
   string(REPLACE "/" "\\" FONT_PREFIX ${FONT_PREFIX})
   string(REPLACE "/" "\\" ICONS_PREFIX ${ICONS_PREFIX})
 endif ()
@@ -248,12 +235,7 @@ else ()
 endif ()
   
 if (WIN32)
-  #Replace Windows paths
   string(REPLACE "/" "\\" FONT_PREFIX ${FONT_PREFIX})
   string(REPLACE "/" "\\" ICONS_PREFIX ${ICONS_PREFIX})
 endif ()
 configure_file("${PROJECT_SOURCE_DIR}/extra/config.ini.in" "${PROJECT_BINARY_DIR}/install/config.ini")
-
-
-
-
