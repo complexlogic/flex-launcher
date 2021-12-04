@@ -1,8 +1,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
-#include <ini.h>
-#include <platform/unix.h>
+#include "../external/ini.h"
+#include "unix.h"
 
 typedef struct {
   char *section;

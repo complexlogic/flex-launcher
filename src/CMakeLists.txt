@@ -1,9 +1,9 @@
 #Build instructions
 add_executable(${EXECUTABLE_TITLE} "launcher.c")
 set (EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
-target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/external" "${PROJECT_BINARY_DIR}")
+target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${PROJECT_BINARY_DIR}")
 add_library(util "util.c")
-target_include_directories(util PUBLIC "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/external" "${PROJECT_BINARY_DIR}")
+target_include_directories(util PUBLIC "${PROJECT_BINARY_DIR}")
 
 # Configure main header file  
 configure_file("${PROJECT_SOURCE_DIR}/src/launcher.h.in" "${PROJECT_BINARY_DIR}/launcher.h")
@@ -15,7 +15,6 @@ if (UNIX)
   target_link_libraries(${EXECUTABLE_TITLE} platform inih util SDL2::Main SDL2::Image SDL2::TTF m)
 endif ()
 if (WIN32)
-  target_include_directories(util PUBLIC "${PROJECT_SOURCE_DIR}/src/external")
   target_link_libraries(util SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static)
   target_link_libraries(${EXECUTABLE_TITLE} platform inih util SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static SDL2::SDL2_image SDL2::SDL2_ttf)
 endif ()

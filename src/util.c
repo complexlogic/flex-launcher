@@ -3,15 +3,15 @@
 #include <string.h>
 #include <stdbool.h>
 #ifdef __unix__
-#include <platform/unix.h>
+#include "platform/unix.h"
 #endif
 #ifdef _WIN32
-#include <platform/windows.h>
+#include "platform/win32.h"
 #endif
-#include <ini.h>
+#include "external/ini.h"
 #include <SDL.h>
 #include <launcher.h>
-#include <util.h>
+#include "util.h"
 
 menu_t *menu = NULL;
 entry_t *entry = NULL;

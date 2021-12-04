@@ -6,7 +6,7 @@
 #include "platform/unix.h"
 #endif
 #ifdef _WIN32
-#include "platform/windows.h"
+#include "platform/win32.h"
 #endif
 #include <math.h>
 #include <SDL.h>
