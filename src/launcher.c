@@ -94,7 +94,9 @@ int init_sdl()
   
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
-  int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
+  int img_flags = IMG_INIT_PNG | 
+                  IMG_INIT_JPG | 
+                  IMG_INIT_WEBP;
   #ifdef __unix__
   SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
   #endif
