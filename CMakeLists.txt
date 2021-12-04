@@ -9,7 +9,7 @@ set(EXECUTABLE_TITLE "flex-launcher")
 
 #Generate PKGBUILD for Arch packages
 if (PACKAGE STREQUAL "ARCH")
-  configure_file("${PROJECT_SOURCE_DIR}/extra/PKGBUILD.in" "${PROJECT_BINARY_DIR}/PKGBUILD")
+  configure_file("${PROJECT_SOURCE_DIR}/config/PKGBUILD.in" "${PROJECT_BINARY_DIR}/PKGBUILD")
   return()
 endif ()
         
@@ -175,7 +175,7 @@ install(DIRECTORY "${PROJECT_SOURCE_DIR}/assets" DESTINATION "${INSTALL_DIR_ASSE
 
 #Configure icons and desktop file
 if (UNIX)
-  configure_file("${PROJECT_SOURCE_DIR}/extra/launcher.desktop.in" "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop")
+  configure_file("${PROJECT_SOURCE_DIR}/config/launcher.desktop.in" "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop")
   install(FILES "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop" DESTINATION "${INSTALL_DIR_DESKTOP}")
   set(INSTALL_DIR_ICONS "${CMAKE_INSTALL_PREFIX}/share/icons")
   install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.png" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/48x48/apps")
@@ -222,7 +222,7 @@ if (WIN32)
   string(REPLACE "/" "\\" FONT_PREFIX ${FONT_PREFIX})
   string(REPLACE "/" "\\" ICONS_PREFIX ${ICONS_PREFIX})
 endif ()
-configure_file("${PROJECT_SOURCE_DIR}/extra/config.ini.in" "${PROJECT_BINARY_DIR}/config.ini")
+configure_file("${PROJECT_SOURCE_DIR}/config/config.ini.in" "${PROJECT_BINARY_DIR}/config.ini")
 
 # Generate install config file
 if (WIN32)
@@ -238,4 +238,4 @@ if (WIN32)
   string(REPLACE "/" "\\" FONT_PREFIX ${FONT_PREFIX})
   string(REPLACE "/" "\\" ICONS_PREFIX ${ICONS_PREFIX})
 endif ()
-configure_file("${PROJECT_SOURCE_DIR}/extra/config.ini.in" "${PROJECT_BINARY_DIR}/install/config.ini")
+configure_file("${PROJECT_SOURCE_DIR}/config/config.ini.in" "${PROJECT_BINARY_DIR}/install/config.ini")

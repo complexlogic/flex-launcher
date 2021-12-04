@@ -1,6 +1,7 @@
 Unreleased
-- Added WebP image support
+- Added support for WebP images
 - Improved handling of paths enclosed in quotes
+- Windows: Added application icon to executable
 
 v1.0 (2021-11-28)
 - Initial release
