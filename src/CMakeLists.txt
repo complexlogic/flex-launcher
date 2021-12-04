@@ -1,5 +1,11 @@
 #Build instructions
-add_executable(${EXECUTABLE_TITLE} "launcher.c")
+if (UNIX)
+  add_executable(${EXECUTABLE_TITLE} "launcher.c")
+endif ()
+if (WIN32)
+  set(APP_ICON_RESOURCE_WINDOWS "${PROJECT_SOURCE_DIR}/extra/${EXECUTABLE_TITLE}.rc")
+  add_executable(${EXECUTABLE_TITLE} "launcher.c" ${APP_ICON_RESOURCE_WINDOWS})
+endif()
 set (EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
 target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${PROJECT_BINARY_DIR}")
 add_library(util "util.c")
