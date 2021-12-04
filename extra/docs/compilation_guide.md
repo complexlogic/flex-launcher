@@ -77,7 +77,7 @@ Build the dependencies with vcpkg:
 ```
 git clone https://github.com/microsoft/vcpkg
 .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
-.\vcpkg\vcpkg install sdl2 sdl2-image[libjpeg-turbo] sdl2-ttf --triplet=x64-windows-static
+.\vcpkg\vcpkg install sdl2 sdl2-image[libjpeg-turbo,libwebp] sdl2-ttf --triplet=x64-windows-static
 ```
 Generate the Visual Studio project files:
 ```
