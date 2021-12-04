@@ -26,9 +26,11 @@ int config_handler(void *user, const char *section, const char *name, const char
   if (!strcmp(section,"Settings")) {
     if (!strcmp(name,SETTING_BACKGROUND_IMAGE)) {
       copy_string(value, &pconfig->background_image);
+      clean_path(pconfig->background_image);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT)) {
       copy_string(value, &pconfig->title_font_path);
+      clean_path(pconfig->title_font_path);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT_SIZE)) {
       pconfig->font_size = (unsigned int) atoi(value);
@@ -297,6 +299,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
         else if (i == 1) {
           copy_string(token, &entry->icon_path);
+          clean_path(entry->icon_path);
         }
         else if (i == 2){
           copy_string(token, &entry->cmd);
@@ -327,6 +330,19 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
   }
   return 0;
+}
+
+// A function to remove quotation marks that enclose a path
+// because SDL cannot handle them
+void clean_path(char *path)
+{
+  int length = strlen(path);
+  if (length >= 3 && path[0] == '"' && path[length - 1] == '"') {
+    path[length - 1] = '\0';
+    for (int i = 1; i <= length; i++) {
+      *(path + i - 1) = *(path + i);
+    }
+  }  
 }
 
 // A function to convert a hex-formatted string into a color struct

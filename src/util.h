@@ -14,6 +14,7 @@ void print_version();
 void debug_settings(config_t *config);
 void debug_menu_entries(menu_t *first_menu, int num_menus);
 void debug_button_positions(entry_t *entry, menu_t *current_menu, geometry_t *geo);
+void clean_path(char *path);
 menu_t *get_menu(char *menu_name, menu_t *first_menu);
 menu_t *create_menu(char *menu_name, int *num_menus);
 
