@@ -49,14 +49,14 @@ Binary packages are available on the [release page](https://github.com/complexlo
 
 #### APT-based Distributions (Debian, Ubuntu, Mint, etc.)
 ```
-VERSION=1.0
+VERSION=1.0.1
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
 sudo apt install flex-launcher_${VERSION}_amd64.deb
 ```
 
 #### Pacman-based Distributions (Arch, Manjaro, etc.)
 ```
-VERSION=1.0
+VERSION=1.0.1
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
