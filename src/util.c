@@ -163,6 +163,7 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name, SETTING_GAMEPAD_MAPPINGS_FILE)) {
       copy_string(value, &pconfig->gamepad_mappings_file);
+      clean_path(pconfig->gamepad_mappings_file);
     }
     else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XM)) {
       add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX, name, value, pconfig);
