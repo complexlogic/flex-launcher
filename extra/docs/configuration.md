@@ -32,8 +32,8 @@ Key2=value
 A line can be commented out by using the # character at the beginning of the line, which will cause the line to be ignored by the program. Here are a few things to note about the configuration settings for Flex Launcher:
 - All keys and values are case sensitive.
 - Full UTF-8 text encoding is supported for titles.
+- The following image formats are supported: JPEG, PNG, and WebP
 - Relative paths are evaluated with respect to the *current working directory*, which may not be the same as the directory that the config file is located in. It is recommended to use absolute paths whenever possible to eliminate any confusion.
-- Spaces in paths are acceptable. Do not enclose these paths in quotation marks unless otherwise specified, as this may interfere with the parsing.
 - Color is specified in HEX format, *without* the 0x prefix e.g. the color red in 24 bit RGB should be FF0000. HEX color pickers can be easily found online to assist color choices.
 - The color settings that support transparency have a separate opacity setting which allows the user to specify the opacity as a percentage. This is for convenience purposes because many users prefer to specify opacity as a percentage instead of 0-255. The opacity settings may be commented out if they are not desired, in which case the alpha bits will be used to determine the opacity.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
@@ -138,7 +138,7 @@ When ```BackgroundMode``` is set to "Color", this setting defines the color of t
 Default: 000000 (Black)
 
 #### BackgroundImage
-When ```BackgroundMode``` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to a JPEG or PNG image. If the image is not the same resolution as your desktop, it will be stretched accordingly.
+When ```BackgroundMode``` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to an image file. If the image is not the same resolution as your desktop, it will be stretched accordingly.
 
 #### IconSize
 The width and height of icons on the screen in pixels. If an icon is not the same resolution, it will be stretched accordingly.
