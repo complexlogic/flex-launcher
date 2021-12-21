@@ -993,12 +993,21 @@ void execute_command(char *command)
 
   // Launch external application
   else {
-    SDL_HideWindow(window);
+    if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+      SDL_HideWindow(window);
+    }
     #ifdef _WIN32
     cmd = convert_cmd(cmd);
     #endif
+
+    // Launch application
     system(cmd);
-    SDL_ShowWindow(window);
+    
+    if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+      SDL_ShowWindow(window);
+    }
+    
+    // Redraw screen after launched application is finished
     SDL_Delay(50);
     draw_screen();
     updates = false;
