@@ -62,6 +62,7 @@ config_t config = {
   .gamepad_enabled = DEFAULT_GAMEPAD_ENABLED,
   .gamepad_device = DEFAULT_GAMEPAD_DEVICE,
   .gamepad_mappings_file = NULL,
+  .on_launch = MODE_ON_LAUNCH_HIDE,
   .debug = false,
   .exe_path = NULL,
   .first_menu = NULL,

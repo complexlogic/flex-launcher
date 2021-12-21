@@ -47,6 +47,8 @@ typedef int mode;
 #define DIRECTION_RIGHT 1
 #define MODE_PRESSED 1
 #define MODE_RELEASED 0
+#define MODE_ON_LAUNCH_HIDE 0
+#define MODE_ON_LAUNCH_NONE 1
 
 // Types
 #define TYPE_BUTTON 0
@@ -101,6 +103,7 @@ typedef int mode;
 #define SETTING_SCROLL_INDICATORS "@SETTING_SCROLL_INDICATORS@"
 #define SETTING_SCROLL_INDICATOR_COLOR "@SETTING_SCROLL_INDICATOR_COLOR@"
 #define SETTING_SCROLL_INDICATOR_OPACITY "@SETTING_SCROLL_INDICATOR_OPACITY@"
+#define SETTING_ON_LAUNCH "@SETTING_ON_LAUNCH@"
 #define SETTING_RESET_ON_BACK "@SETTING_RESET_ON_BACK@"
 #define SETTING_ESC_QUIT "@SETTING_ESC_QUIT@"
 #define SETTING_GAMEPAD_ENABLED "@SETTING_GAMEPAD_ENABLED@"
@@ -253,6 +256,7 @@ typedef struct
   SDL_Color scroll_indicator_color;
   char scroll_indicator_opacity[PERCENT_MAX_CHARS];
   bool reset_on_back;
+  mode on_launch;
   mode esc_quit;
   bool gamepad_enabled;
   int gamepad_device;
