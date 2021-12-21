@@ -25,7 +25,6 @@
 #define MIN_RX_SIZE 0
 #define MAX_RX_SIZE 100
 #define PERCENT_MAX_CHARS 10
-#define MAX_PATH_LENGTH 512
 #define POLLING_PERIOD 15
 #define GAMEPAD_DEADZONE 10000
 #define GAMEPAD_REPEAT_DELAY 500
@@ -70,10 +69,11 @@ typedef int mode;
 #define FILENAME_SCROLL_INDICATOR "scroll_indicator.svg"
 #define FILENAME_DEFAULT_CONFIG "config.ini"
 #define FILENAME_DEFAULT_FONT "OpenSans-Regular.ttf"
+#define FILENAME_LOG "@EXECUTABLE_TITLE@.log"
 #define PATH_ASSETS_EXE "assets/"
 #define PATH_ASSETS_RELATIVE "./assets/"
 #define PATH_FONTS_EXE "assets/fonts/"
-//#define PATH_FONTS_RELATIVE "@PATH_FONTS_RELATIVE@"
+#define PATH_FONTS_RELATIVE "./assets/fonts/"
 #define PATH_CONFIG_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/"
 #define PATH_ASSETS_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/assets/"
 #define PATH_FONTS_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/assets/fonts"
@@ -283,7 +283,7 @@ void validate_settings();
 void handle_keypress(SDL_Keysym *key);
 void execute_command(char *command);
 void poll_gamepad();
-void connect_gamepad(int joystick_index);
+void connect_gamepad(int device_index);
 void render_scroll_indicators();
 void cleanup();
 SDL_Texture *load_texture(char *path, SDL_Surface *surface);

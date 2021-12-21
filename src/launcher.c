@@ -72,6 +72,7 @@ config_t config = {
 // Global variables
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+SDL_RWops *log_file = NULL;
 TTF_Font *title_font = NULL; // Font of the button title text
 menu_t *default_menu = NULL;
 menu_t *current_menu = NULL; // Current selected menu
@@ -110,7 +111,9 @@ int init_sdl()
   // Initialize SDL
   if (SDL_Init(sdl_flags) < 0)
   {
-    printf("Fatal Error: Could not initialize SDL\n%s",SDL_GetError());
+    output_log(LOGLEVEL_FATAL, 
+               "Fatal Error: Could not initialize SDL\n%s\n", 
+               SDL_GetError());
     return 1;
   }
 
@@ -122,7 +125,9 @@ int init_sdl()
                                           SDL_WINDOW_FULLSCREEN_DESKTOP | 
                                           SDL_WINDOW_BORDERLESS);
   if (window == NULL) {
-    printf("Fatal Error: Could not create SDL Window\n%s",SDL_GetError());
+    output_log(LOGLEVEL_FATAL, 
+               "Fatal Error: Could not create SDL Window\n%s\n", 
+               SDL_GetError());
     return 1;
   }
   SDL_ShowCursor(SDL_DISABLE);
@@ -134,7 +139,9 @@ int init_sdl()
   geo.screen_height = display_mode.h;
   SDL_SetRenderDrawBlendMode(renderer,SDL_BLENDMODE_BLEND);
   if (renderer == NULL) {
-    printf("Fatal Error: Could not initialize renderer\n%s", SDL_GetError());
+    output_log(LOGLEVEL_FATAL, 
+               "Fatal Error: Could not initialize renderer\n%s\n", 
+               SDL_GetError());
     return 1;
   }
 
@@ -152,7 +159,9 @@ int init_sdl()
 
   // Initialize SDL_image
   if (!(IMG_Init(img_flags) & img_flags)) {
-    printf("Fatal Error: Could not initialize SDL_image\n%s",IMG_GetError());
+    output_log(LOGLEVEL_FATAL, 
+               "Fatal Error: Could not initialize SDL_image\n%s\n", 
+               IMG_GetError());
     return 1;
   }
   return 0;
@@ -163,7 +172,9 @@ int init_ttf()
 {
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
-    printf( "Fatal Error: Could not initialize SDL_ttf\n%s", TTF_GetError());
+    output_log(LOGLEVEL_FATAL, 
+               "Fatal Error: Could not initialize SDL_ttf\n%s\n", 
+               TTF_GetError());
     return 1;
    }
 
@@ -174,18 +185,16 @@ int init_ttf()
 
   // Try to find default font if user specified font is not found
   if (title_font == NULL){
-    printf("Error: Could not initialize font from config file\n");
-    int num_prefixes = 2;
-    char **prefixes = malloc(sizeof(char*)*num_prefixes);
-    prefixes[0] = join_path(2, config.exe_path, PATH_FONTS_EXE);
+    output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
+    char *prefixes[2];
+    char fonts_exe_buffer[MAX_PATH_BYTES];
+    prefixes[0] = join_paths(fonts_exe_buffer, 2, config.exe_path, PATH_FONTS_EXE);
     #ifdef __unix__
     prefixes[1] = PATH_FONTS_SYSTEM;
     #else
-    prefixes[1] = PATH_ASSETS_RELATIVE;
+    prefixes[1] = PATH_FONTS_RELATIVE;
     #endif
-    char *default_font = find_file(FILENAME_DEFAULT_FONT,num_prefixes,prefixes);
-    free(prefixes[0]);
-    free(prefixes);
+    char *default_font = find_file(FILENAME_DEFAULT_FONT, 2, prefixes);
 
     // Replace user font with default in config
     if (default_font != NULL) {
@@ -194,7 +203,7 @@ int init_ttf()
       copy_string(default_font, &config.title_font_path);
     }
     if(title_font == NULL) {
-      printf("Fatal Error: Could not load default font\n");
+      output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default font\n");
       return 1;
     }
   }
@@ -209,7 +218,7 @@ int init_svg()
 {
   rasterizer = nsvgCreateRasterizer();
   if (rasterizer == NULL) {
-    printf("Could not initialize SVG rasterizer.\n");
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not initialize SVG rasterizer.\n");
     return 1;
   }
   return 0;
@@ -235,6 +244,11 @@ void cleanup()
   SDL_Quit();
   IMG_Quit();
   TTF_Quit();
+
+  // Close log file if open
+  if (log_file != NULL) {
+    SDL_RWclose(log_file);
+  }
 
   // Free dynamically allocated memory
   free(config.default_menu);
@@ -289,12 +303,15 @@ void handle_keypress(SDL_Keysym *key)
     move_right();
   }
   else if (key->sym == SDLK_RETURN) {
-    if (config.debug) {
-      printf("Selected Entry:\n");
-      printf("Title: %s\n",current_entry->title);
-      printf("Icon Path: %s\n",current_entry->icon_path);
-      printf("Command: %s\n",current_entry->cmd);
-    }
+    output_log(LOGLEVEL_DEBUG, 
+               "Selected Entry:\n"
+               "Title: %s\n"
+               "Icon Path: %s\n"
+               "Command: %s\n", 
+               current_entry->title, 
+               current_entry->icon_path, 
+               current_entry->cmd);
+    
     execute_command(current_entry->cmd);
   }
   else if (key->sym == SDLK_BACKSPACE) {
@@ -321,13 +338,18 @@ SDL_Texture *load_texture(char *path, SDL_Surface *surface)
       loaded_surface = surface;
     }
     if (loaded_surface == NULL) {
-        printf("Error: Could not load image %s\n%s\n",path,IMG_GetError());
+        output_log(LOGLEVEL_ERROR, 
+                  "Error: Could not load image %s\n%s\n", 
+                  path, 
+                  IMG_GetError());
     }
     else {
         //Convert surface to screen format
         texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
         if (texture == NULL) {
-            printf("Error: Could not create texture from %s\n%s", path, SDL_GetError());
+            output_log(LOGLEVEL_ERROR, "Error: Could not create texture from %s\n%s", 
+                       path, 
+                       SDL_GetError());
         }
 
         //Get rid of old loaded surface
@@ -352,7 +374,7 @@ SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h)
     image = nsvgParseFromFile(filename, "px", 96.0f);
   }
   if (image == NULL) {
-    printf("Could not open SVG image.\n");
+    output_log(LOGLEVEL_ERROR, "Error: could not open SVG image.\n");
     return NULL;
   }
 
@@ -372,7 +394,7 @@ SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h)
   pitch = 4*width;
   pixel_buffer = malloc(4*width*height);
   if (pixel_buffer == NULL) {
-    printf("Could not alloc SVG pixel buffer.\n");
+    output_log(LOGLEVEL_ERROR, "Error: Could not alloc SVG pixel buffer.\n");
     return NULL;
   }
 
@@ -508,28 +530,25 @@ void render_scroll_indicators()
   scroll->rect_left.w = scroll_indicator_size;
   scroll->rect_left.h = scroll_indicator_size;
 
-  // Find the SVG file location
-  int num_prefixes = 3;
-  char **prefixes = malloc(sizeof(char*)*num_prefixes);
-  prefixes[0] = join_path(2, config.exe_path, PATH_ASSETS_EXE);
+  // Find scroll indicator file
+  char *prefixes[2];
+  char assets_exe_buffer[MAX_PATH_BYTES];
+  prefixes[0] = join_paths(assets_exe_buffer, 2, config.exe_path, PATH_ASSETS_EXE);
   #ifdef __unix__
-  prefixes[1] = join_path(4, getenv("HOME"),".config", EXECUTABLE_TITLE, "assets");
-  prefixes[2] = PATH_ASSETS_SYSTEM;
+  prefixes[1] = PATH_ASSETS_SYSTEM;
   #else
   prefixes[1] = PATH_ASSETS_RELATIVE;
-  prefixes[2] = NULL;
   #endif
-  char *scroll_indicator_path = find_file(FILENAME_SCROLL_INDICATOR,num_prefixes,prefixes);
-  free(prefixes[0]);
-  free(prefixes);
+  char *scroll_indicator_path = find_file(FILENAME_SCROLL_INDICATOR, 2, prefixes);
+
   if (scroll_indicator_path == NULL) {
-    printf("Error: Could not find scroll indicator SVG, disabling feature\n");
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Could not find scroll indicator SVG, disabling feature\n");
     config.scroll_indicators = false;
   }
   else {
-    if (config.debug) {
-      printf("Found scroll indicator SVG: %s\n", scroll_indicator_path);
-    }
+    output_log(LOGLEVEL_DEBUG, "Scroll indicator found: %s\n", 
+               scroll_indicator_path);
 
     // Render the SVG
     scroll->texture = rasterize_svg(scroll_indicator_path,
@@ -538,7 +557,7 @@ void render_scroll_indicators()
                                     scroll_indicator_size);
     free(scroll_indicator_path);
     if (scroll->texture == NULL) {
-      printf("Error: Could not render scroll indicator, disabling feature\n");
+      output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
       config.scroll_indicators = false;
     }
     else {
@@ -574,15 +593,23 @@ int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_posi
   else {
     current_menu = menu;
   }
+
+  // Return error if the menu doesn't exist in the config file
   if (current_menu == NULL) {
     current_menu = previous_menu;
     if (menu_name != NULL) {
-      printf("Error: Menu \"%s\" not found in config file\n",menu_name);
+      output_log(LOGLEVEL_ERROR, 
+                 "Error: Menu \"%s\" not found in config file\n", 
+                 menu_name);
     }
     return 1;
   }
+
+  // Return error if the menu doesn't contain entires
   if (current_menu->num_entries == 0) {
-    printf("Error: No valid entries found for Menu \"%s\"",current_menu->name);
+    output_log(LOGLEVEL_ERROR, 
+               "Error: No valid entries found for Menu \"%s\"", 
+               current_menu->name);
     return 1;
   }
 
@@ -783,7 +810,9 @@ void validate_settings()
   if (config.icon_size * config.max_buttons > geo.screen_width) {
     int i;
     for (i = config.max_buttons; i * config.icon_size > geo.screen_width && i > 0; i--);
-    printf("Error: Not enough screen space for %i buttons, reducing to %i\n",config.max_buttons,i);
+    output_log(LOGLEVEL_ERROR, "Error: Not enough screen space for %i buttons, reducing to %i\n", 
+                               config.max_buttons, 
+                               i);
     config.max_buttons = i; 
   }
 
@@ -845,21 +874,27 @@ void validate_settings()
     required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
   }
   if (config.highlight_hpadding != highlight_hpadding) {
-    printf("Error: Highlight padding value %i too large to fit screen, shrinking to %i\n",
-    config.highlight_hpadding, highlight_hpadding);
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Highlight padding value %i too large to fit screen, shrinking to %i\n",
+               config.highlight_hpadding, 
+               highlight_hpadding);
     config.highlight_hpadding = highlight_hpadding;
   }
   if (config.icon_spacing != icon_spacing) {
-    printf("Error: Icon spacing value %i too large to fit screen, shrinking to %i\n",
-    config.icon_spacing, icon_spacing);
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Icon spacing value %i too large to fit screen, shrinking to %i\n",
+               config.icon_spacing, 
+               icon_spacing);
     config.icon_spacing = icon_spacing;
   }
 
   // Make sure title padding is in valid range
   if (config.title_padding < 0 || config.title_padding > config.icon_size / 2) {
     int title_padding = config.icon_size / 10;
-    printf("Error: Text padding value %i invalid, changing to %i\n",
-    config.title_padding,title_padding);
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Text padding value %i invalid, changing to %i\n",
+               config.title_padding, 
+               title_padding);
     config.title_padding = title_padding;
   }
 
@@ -971,16 +1006,20 @@ void execute_command(char *command)
 }
 
 // A function to connect to a gamepad
-void connect_gamepad(int joystick_index)
+void connect_gamepad(int device_index)
 {
-  gamepad = SDL_GameControllerOpen(joystick_index);
+  gamepad = SDL_GameControllerOpen(device_index);
   if (gamepad == NULL) {
-    printf("Error: Could not open gamepad at device index %i\n", config.gamepad_device);
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Could not open gamepad at device index %i\n", 
+               config.gamepad_device);
     return;
   }
   if (config.debug) {
     char *mapping = SDL_GameControllerMapping(gamepad);
-    printf("Gamepad Mapping:\n%s\n", mapping);
+    output_log(LOGLEVEL_DEBUG, 
+               "Gamepad Mapping:\n%s\n", 
+               mapping);
     SDL_free(mapping);
   }
 }
@@ -1035,8 +1074,7 @@ int main(int argc, char *argv[])
   char *config_file_path = NULL;
   config.exe_path = SDL_GetBasePath();
 
-  // Handle command line arguments, find config file
-  error = handle_arguments(argc, argv, &config_file_path, &config);
+  error = handle_arguments(argc, argv, &config_file_path);
   if (error == NO_ERROR_QUIT) {
     cleanup();
     return 0;
@@ -1045,14 +1083,12 @@ int main(int argc, char *argv[])
     cleanup();
     return 1;
   }
-  if (config.debug) {
-    printf("Config file found: %s\n", config_file_path);
-  }
+  output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", config_file_path);
 
   // Parse config file for settings and menu entries
   error = ini_parse(config_file_path, config_handler, &config);
   if (error < 0) {
-    printf("Fatal Error: Config file %s not found\n",config_file_path);
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", config_file_path);
     cleanup();
     return 1;
   }
@@ -1066,17 +1102,15 @@ int main(int argc, char *argv[])
 
   // Check settings against requirements
   validate_settings();
-  if (config.debug) {
-    debug_settings(&config);  
-    debug_menu_entries(config.first_menu, config.num_menus);
-  }
 
   // Load gamepad overrides and connect gamepad
   if (config.gamepad_enabled) {
     if (config.gamepad_mappings_file != NULL) {
       error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
       if (error) {
-        printf("Error: Could not load gamepad mappings from %s\n", config.gamepad_mappings_file);
+        output_log(LOGLEVEL_ERROR, 
+                   "Error: Could not load gamepad mappings from %s\n", 
+                   config.gamepad_mappings_file);
       }
     }
     connect_gamepad(config.gamepad_device);
@@ -1089,7 +1123,7 @@ int main(int argc, char *argv[])
     // Switch to color mode if loading background image failed
     if (background_texture == NULL) {
       config.background_mode = MODE_COLOR;
-      printf("Error: Couldn't load background image, defaulting to color background\n");
+      output_log(LOGLEVEL_ERROR, "Error: Couldn't load background image, defaulting to color background\n");
       SDL_SetRenderDrawColor(renderer,
                              config.background_color.r,
                              config.background_color.g,
@@ -1112,16 +1146,24 @@ int main(int argc, char *argv[])
     render_scroll_indicators();
   }
 
+  // Debug info
+  if (config.debug) {
+    debug_settings(&config);  
+    debug_menu_entries(config.first_menu, config.num_menus);
+  }
+
   // Load the default menu and display it
   if (config.default_menu == NULL) {
-    printf("Fatal Error: No default menu defined in config file\n");
+    output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
     cleanup();
     exit(1);
   }
 
   default_menu = get_menu(config.default_menu, config.first_menu);
   if (default_menu == NULL) {
-    printf("Fatal Error: Default Menu \"%s\" not found in config file\n",config.default_menu);
+    output_log(LOGLEVEL_FATAL, 
+               "Fatal Error: Default Menu \"%s\" not found in config file\n", 
+               config.default_menu);
     cleanup();
     exit(1);
   }
@@ -1154,12 +1196,14 @@ int main(int argc, char *argv[])
           break;
 
         case SDL_CONTROLLERDEVICEADDED:
+          output_log(LOGLEVEL_DEBUG, "Gamepad connected with device index %i\n", event.cdevice.which);
           if (event.cdevice.which == config.gamepad_device) {
             connect_gamepad(event.cdevice.which);
           }
           break;
 
         case SDL_CONTROLLERDEVICEREMOVED:
+          output_log(LOGLEVEL_DEBUG, "Gamepad removed with device index %i\n", event.cdevice.which);
           if (event.cdevice.which == config.gamepad_device) {
             SDL_GameControllerClose(gamepad);
             gamepad = NULL;

@@ -1,3 +1,7 @@
+Unreleased
+- Added logging interface
+- Refactored automatic file searching logic
+
 v1.0.1 (2021-12-4)
 - Added support for WebP images
 - Improved handling of paths enclosed in quotes

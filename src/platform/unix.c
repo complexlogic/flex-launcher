@@ -1,13 +1,13 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <SDL.h>
 #include "../external/ini.h"
 #include "unix.h"
+#include <launcher.h>
+#include "../util.h"
 
-typedef struct {
-  char *section;
-  char **exec;
-} desktop_t;
 
 // A function to handle .desktop lines
 static int desktop_handler(void* user, const char* section, const char* name, const char* value)
@@ -90,4 +90,24 @@ int parse_desktop_file(char *command, char **exec)
   }
   free(cmd);
   return DESKTOP_NOT_FOUND;
+}
+
+void make_directory(const char *directory) 
+{
+  char buffer[MAX_PATH_LENGTH];
+  char *i = NULL;
+  int length;
+  snprintf(buffer, sizeof(buffer), "%s", directory);
+  length = strlen(buffer);
+  if (buffer[length - 1] == '/') {
+    buffer[length - 1] = '\0';
+  }   
+  for (i = buffer + 1; *i != '\0'; i++) {
+    if (*i == '/') {
+      *i = '\0';
+      mkdir(buffer, S_IRWXU);
+      *i = '/';
+    }
+  }
+  mkdir(buffer, S_IRWXU);
 }

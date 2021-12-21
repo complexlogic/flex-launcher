@@ -13,5 +13,13 @@
 #define DESKTOP_SECTION_HEADER_ACTION_LENGTH 15
 #define EXEC "Exec"
 
+typedef struct {
+  char *section;
+  char **exec;
+} desktop_t;
+
+
 bool file_exists(char *path);
 int parse_desktop_file(char *command, char **exec);
+void make_directory(const char *directory);
+void strip_field_codes(char *cmd);
