@@ -39,7 +39,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       pconfig->font_size = (unsigned int) atoi(value);
     }
     else if (!strcmp(name,SETTING_TITLE_COLOR)) {
-      hex_to_color(value,&pconfig->title_color,32);
+      hex_to_color(value, &pconfig->title_color);
     }
     else if (!strcmp(name,SETTING_BACKGROUND_MODE)) {
       if (!strcmp(value,"Image")) {
@@ -50,7 +50,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name,SETTING_BACKGROUND_COLOR)) {
-        hex_to_color(value,&pconfig->background_color,24);
+        hex_to_color(value, &pconfig->background_color);
     }
     else if (!strcmp(name,SETTING_ICON_SIZE)) {
       Uint16 icon_size = (Uint16) atoi(value);
@@ -62,7 +62,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       copy_string(value, &pconfig->default_menu);
     }
     else if (!strcmp(name,SETTING_HIGHLIGHT_COLOR)) {
-      hex_to_color(value,&pconfig->highlight_color,32);
+      hex_to_color(value, &pconfig->highlight_color);
     }
     else if (!strcmp(name,SETTING_HIGHLIGHT_CORNER_RADIUS)) {
       Uint16 rx = (Uint16) atoi(value);
@@ -128,7 +128,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       pconfig->scroll_indicators = convert_bool(value, DEFAULT_SCROLL_INDICATORS);
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATOR_COLOR)) {
-      hex_to_color(value,&pconfig->scroll_indicator_color,32);
+      hex_to_color(value, &pconfig->scroll_indicator_color);
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OPACITY)) {
       if (strstr(value,".") == NULL && 
@@ -363,30 +363,29 @@ void clean_path(char *path)
 }
 
 // A function to convert a hex-formatted string into a color struct
-bool hex_to_color(char *text, SDL_Color *color, int bits)
+bool hex_to_color(char *text, SDL_Color *color)
 {
 
   // If strtoul returned 0, and the hex string wasn't 000..., then there was an error
-  Uint32 hex = (Uint32) strtoul(text,NULL,16);
+  int length = strlen(text);
+  Uint32 hex = (Uint32) strtoul(text, NULL, 16);
   if ((!hex && strcmp(text,"00000000")) || 
   (!hex && strcmp(text,"000000")) || 
-  strlen(text) != bits/4) {
+  (length != 6 && length != 8)) {
     return false;
   }
 
   // Convert int to SDL_Color struct via bitwise logic
-  if (bits == 32) {
+  if (length == 8) {
     color->r = (Uint8) (hex >> 24);
     color->g = (Uint8) ((hex & 0x00ff0000) >> 16);
     color->b = (Uint8) ((hex & 0x0000ff00) >> 8);
-    color->a = (Uint8) (hex & 0x000000ff);
     return true;
   }
-  else if (bits == 24) {
+  else if (length == 6) {
     color->r = (Uint8) (hex >> 16);
     color->g = (Uint8) ((hex & 0x0000ff00) >> 8);
     color->b = (Uint8) (hex & 0x000000ff);
-    color->a = (Uint8) 0xFF;
     return true;
   }
   else {

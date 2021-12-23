@@ -16,7 +16,7 @@ int config_handler(void* user, const char* section, const char* name, const char
 int convert_percent(char *string, int max_value);
 int utf8_length(char *string);
 int init_log();
-bool hex_to_color(char *text, SDL_Color *color, int bits);
+bool hex_to_color(char *text, SDL_Color *color);
 bool convert_bool(char *string, bool default_setting);
 char *join_paths(char *buffer, int num_paths, ...);
 char *find_file(char *file, int num_prefixes, char **prefixes);
