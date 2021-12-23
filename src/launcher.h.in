@@ -49,6 +49,7 @@ typedef int mode;
 #define MODE_RELEASED 0
 #define MODE_ON_LAUNCH_HIDE 0
 #define MODE_ON_LAUNCH_NONE 1
+#define MODE_ON_LAUNCH_BLACK_SCREEN 2
 
 // Types
 #define TYPE_BUTTON 0
@@ -275,6 +276,7 @@ int init_svg();
 int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
 int main(int argv, char *argc[]);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
+void set_draw_color();
 void calculate_geometry(entry_t *entry, int buttons);
 void render_buttons(menu_t *menu);
 void draw_buttons(entry_t *entry);

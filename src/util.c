@@ -145,14 +145,19 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->title_oversize_mode = MODE_TEXT_NONE;
       }
     }
+    #ifdef __unix__
     else if (!strcmp(name, SETTING_ON_LAUNCH)) {
-      if (!strcmp(value,"None")) {
+      if (!strcmp(value, "None")) {
         pconfig->on_launch = MODE_ON_LAUNCH_NONE;
+      }
+      else if (!strcmp(value, "BlackScreen")) {
+        pconfig->on_launch = MODE_ON_LAUNCH_BLACK_SCREEN;
       }
       else {
         pconfig->on_launch = MODE_ON_LAUNCH_HIDE;
       }
     }
+    #endif
     else if (!strcmp(name,SETTING_RESET_ON_BACK)) {
       pconfig->reset_on_back = convert_bool(value, DEFAULT_RESET_ON_BACK);
     }
@@ -718,6 +723,9 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s A: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.highlight_color.a);
   if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");
+  }
+  else if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"BlackScreen");
   }
   else if (config.on_launch == MODE_ON_LAUNCH_NONE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");

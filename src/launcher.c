@@ -147,16 +147,7 @@ int init_sdl()
   }
 
   // Set background color
-  if (config.background_mode == MODE_COLOR) {
-    SDL_SetRenderDrawColor(renderer,
-                           config.background_color.r,
-                           config.background_color.g,
-                           config.background_color.b,
-                           config.background_color.a);
-  }
-  else {
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-  }
+  set_draw_color();
 
   // Initialize SDL_image
   if (!(IMG_Init(img_flags) & img_flags)) {
@@ -166,6 +157,20 @@ int init_sdl()
     return 1;
   }
   return 0;
+}
+
+void set_draw_color()
+{
+  if (config.background_mode == MODE_COLOR) {
+    SDL_SetRenderDrawColor(renderer,
+                            config.background_color.r,
+                            config.background_color.g,
+                            config.background_color.b,
+                            config.background_color.a);
+  }
+  else {
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+  }
 }
 
 // A function to initialize SDL's TTF subsystem
@@ -993,8 +998,15 @@ void execute_command(char *command)
 
   // Launch external application
   else {
+
+    // Perform prelaunch behavior from OnLaunch setting
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_HideWindow(window);
+    }
+    else if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+      SDL_RenderClear(renderer);
+      SDL_RenderPresent(renderer);
     }
     #ifdef _WIN32
     cmd = convert_cmd(cmd);
@@ -1002,15 +1014,10 @@ void execute_command(char *command)
 
     // Launch application
     system(cmd);
-    
+
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
     }
-    
-    // Redraw screen after launched application is finished
-    SDL_Delay(50);
-    draw_screen();
-    updates = false;
   }
   free(cmd);
 }
@@ -1134,11 +1141,7 @@ int main(int argc, char *argv[])
     if (background_texture == NULL) {
       config.background_mode = MODE_COLOR;
       output_log(LOGLEVEL_ERROR, "Error: Couldn't load background image, defaulting to color background\n");
-      SDL_SetRenderDrawColor(renderer,
-                             config.background_color.r,
-                             config.background_color.g,
-                             config.background_color.b,
-                             config.background_color.a);
+      set_draw_color();
     }
   }
 
@@ -1217,6 +1220,17 @@ int main(int argc, char *argv[])
           if (event.cdevice.which == config.gamepad_device) {
             SDL_GameControllerClose(gamepad);
             gamepad = NULL;
+          }
+
+        case SDL_WINDOWEVENT:
+          if (event.window.event == SDL_WINDOWEVENT_SHOWN || event.window.event == SDL_WINDOWEVENT_EXPOSED) {
+            if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
+              set_draw_color();
+              draw_screen();
+            }
+            else {
+              draw_screen();
+            }
           }
       }
     }

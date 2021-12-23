@@ -107,6 +107,12 @@ set(DEFAULT_ESC_QUIT "true")
 set(DEFAULT_GAMEPAD_ENABLED "false")
 set(DEFAULT_GAMEPAD_DEVICE 0)
 
+if (UNIX)
+  set(ON_LAUNCH_LINE "\nOnLaunch=Hide")
+else ()
+  set(ON_LAUNCH_LINE "")
+endif ()
+
 # Linux configuration
 if (UNIX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
