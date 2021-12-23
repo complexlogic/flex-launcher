@@ -34,8 +34,8 @@ char* convert_cmd(char *cmd)
 // A function to hide the console window
 void hide_console()
 {
-    HWND console = GetConsoleWindow();
-    ShowWindow(console, SW_SHOWMINNOACTIVE);
+  HWND console = GetConsoleWindow();
+  ShowWindow(console, SW_SHOWMINNOACTIVE);
 }
 
 // A function to restore the console window

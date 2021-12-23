@@ -270,28 +270,28 @@ typedef struct
 } config_t;
 
 // Function prototypes
-int init_sdl();
-int init_ttf();
-int init_svg();
+int init_sdl(void);
+int init_ttf(void);
+int init_svg(void);
 int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
 int main(int argv, char *argc[]);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
-void set_draw_color();
+void set_draw_color(void);
 void calculate_geometry(entry_t *entry, int buttons);
 void render_buttons(menu_t *menu);
 void draw_buttons(entry_t *entry);
-void move_left();
-void move_right();
+void move_left(void);
+void move_right(void);
 void load_submenu(char *submenu);
 void load_back_menu(menu_t *menu);
-void draw_screen();
-void validate_settings();
+void draw_screen(void);
+void validate_settings(void);
 void handle_keypress(SDL_Keysym *key);
 void execute_command(char *command);
-void poll_gamepad();
+void poll_gamepad(void);
 void connect_gamepad(int device_index);
 void render_scroll_indicators();
-void cleanup();
+void cleanup(void);
 SDL_Texture *load_texture(char *path, SDL_Surface *surface);
 SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h);
 SDL_Texture *render_highlight(int width, int height, int rx);
