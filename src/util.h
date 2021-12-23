@@ -20,7 +20,7 @@ bool hex_to_color(char *text, SDL_Color *color);
 bool convert_bool(char *string, bool default_setting);
 char *join_paths(char *buffer, int num_paths, ...);
 char *find_file(char *file, int num_prefixes, char **prefixes);
-void copy_string(char *string, char **ptr);
+void copy_string(char **dest, char *string);
 void utf8_truncate(char *string, int width, int max_width);
 void add_gamepad_control(int type, int index, char *label, char *cmd);
 void print_usage();

@@ -28,11 +28,11 @@ int config_handler(void *user, const char *section, const char *name, const char
   // Parse settings
   if (!strcmp(section,"Settings")) {
     if (!strcmp(name,SETTING_BACKGROUND_IMAGE)) {
-      copy_string(value, &pconfig->background_image);
+      copy_string(&pconfig->background_image, value);
       clean_path(pconfig->background_image);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT)) {
-      copy_string(value, &pconfig->title_font_path);
+      copy_string(&pconfig->title_font_path, value);
       clean_path(pconfig->title_font_path);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT_SIZE)) {
@@ -59,7 +59,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name,SETTING_DEFAULT_MENU)) {
-      copy_string(value, &pconfig->default_menu);
+      copy_string(&pconfig->default_menu, value);
     }
     else if (!strcmp(name,SETTING_HIGHLIGHT_COLOR)) {
       hex_to_color(value, &pconfig->highlight_color);
@@ -178,7 +178,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name, SETTING_GAMEPAD_MAPPINGS_FILE)) {
-      copy_string(value, &pconfig->gamepad_mappings_file);
+      copy_string(&pconfig->gamepad_mappings_file, value);
       clean_path(pconfig->gamepad_mappings_file);
     }
     else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XM)) {
@@ -312,14 +312,14 @@ int config_handler(void *user, const char *section, const char *name, const char
     int i;
     for (i = 0;i < 3 && token != NULL; i++) {
         if (i == 0) {
-          copy_string(token, &entry->title);
+          copy_string(&entry->title, token);
         }
         else if (i == 1) {
-          copy_string(token, &entry->icon_path);
+          copy_string(&entry->icon_path, token);
           clean_path(entry->icon_path);
         }
         else if (i == 2){
-          copy_string(token, &entry->cmd);
+          copy_string(&entry->cmd, token);
         }
         token = strtok(NULL, ";");
     }
@@ -408,14 +408,15 @@ bool convert_bool(char *string, bool default_setting)
 }
 
 // Allocates memory and copies a variable length string
-void copy_string(char *string, char **ptr)
+void copy_string(char **dest, char *string)
 {
-  if (strlen(string)) {
-    *ptr = malloc(sizeof(char)*(strlen(string) + 1));
-    strcpy(*ptr, string);
+  int length = strlen(string);
+  if (length) {
+    *dest = malloc(sizeof(char)*(length + 1));
+    strcpy(*dest, string);
   }
   else {
-    *ptr = NULL;
+    *dest = NULL;
   }
 }
 
@@ -470,7 +471,7 @@ char *find_file(char *file, int num_prefixes, char **prefixes)
       join_paths(buffer, 2, prefixes[i], file);
       if (file_exists(buffer)) {
         char *output;
-        copy_string(buffer, &output);
+        copy_string(&output, buffer);
         return output;
       }
     }
@@ -551,7 +552,7 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
 
       // Current argument is config file path if -c or --config was previous argument
       if (*config_file_path == NULL && i == config_file_index) {
-        copy_string(argv[i], config_file_path);
+        copy_string(config_file_path, argv[i]);
       }
       if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
         config_file_index = i + 1;
@@ -639,8 +640,8 @@ void add_gamepad_control(int type, int index, char *label, char *cmd)
   current_gamepad_control->type = type;
   current_gamepad_control->index = index;
   current_gamepad_control->repeat = 0;
-  copy_string(label, &current_gamepad_control->label);
-  copy_string(cmd, &current_gamepad_control->cmd);
+  copy_string(&current_gamepad_control->label, label);
+  copy_string(&current_gamepad_control->cmd, cmd);
   current_gamepad_control->next = NULL;
 }
 
@@ -844,7 +845,7 @@ menu_t *get_menu(char *menu_name, menu_t *first_menu)
 menu_t *create_menu(char *menu_name, int *num_menus)
 {
   menu_t *menu = malloc(sizeof(menu_t));
-  copy_string(menu_name, &menu->name);  
+  copy_string(&menu->name, menu_name);  
   menu->first_entry = NULL;
   menu->next = NULL;
   menu->back = NULL;

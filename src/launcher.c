@@ -206,7 +206,7 @@ int init_ttf()
     if (default_font != NULL) {
       title_font = TTF_OpenFont(default_font,config.font_size);
       free(config.title_font_path);
-      copy_string(default_font, &config.title_font_path);
+      copy_string(&config.title_font_path, default_font);
     }
     if(title_font == NULL) {
       output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default font\n");
@@ -448,7 +448,7 @@ SDL_Texture *render_text(entry_t *entry)
 
   // Copy entry title to new buffer buffer
   char *title;
-  copy_string(entry->title, &title);
+  copy_string(&title, entry->title);
 
   // Calculate size of the rendered title
   int title_length = strlen(title);
@@ -943,7 +943,7 @@ void execute_command(char *command)
 
   // Copy command into separate buffer
   char *cmd;
-  copy_string(command, &cmd);
+  copy_string(&cmd, command);
 
   // Parse .desktop file (Linux only)
   #ifdef __unix__
