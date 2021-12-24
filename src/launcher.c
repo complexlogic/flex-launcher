@@ -299,6 +299,14 @@ void cleanup()
 // A function to handle key presses from keyboard
 void handle_keypress(SDL_Keysym *key)
 {
+  if (config.debug) {
+    output_log(LOGLEVEL_DEBUG, 
+               "Key %s (%X) detected\n", 
+               SDL_GetKeyName(key->sym),
+               key->sym);
+  }
+
+  // Check keys
   if (key->sym == SDLK_ESCAPE && config.esc_quit) {
     quit = true;
   }
@@ -611,6 +619,8 @@ int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_posi
     return 1;
   }
 
+  output_log(LOGLEVEL_DEBUG, "Loading menu \"%s\"\n", current_menu->name);
+
   // Return error if the menu doesn't contain entires
   if (current_menu->num_entries == 0) {
     output_log(LOGLEVEL_ERROR, 
@@ -646,9 +656,9 @@ int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_posi
   
   // Recalculate the screen geometry
   calculate_geometry(current_menu->root_entry, buttons);
-  if (config.debug) {
-    debug_button_positions(current_menu->root_entry, current_menu, &geo);
-  }
+  //if (config.debug) {
+  //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
+  //}
   highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
   highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
   
@@ -723,9 +733,9 @@ void move_left()
                         - config.highlight_hpadding;
     current_menu->page--;
     current_menu->highlight_position = buttons - 1;
-    if (config.debug) {
-      debug_button_positions(current_menu->root_entry, current_menu, &geo);
-    }
+    //if (config.debug) {
+    //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
+    //}
     updates = true;
   }
 }
@@ -755,9 +765,9 @@ void move_right()
     highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
     current_menu->page++;
     current_menu->highlight_position = 0;
-    if (config.debug) {
-      debug_button_positions(current_menu->root_entry, current_menu, &geo);
-    }
+    //if (config.debug) {
+    //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
+    //}
     updates = true;
   }
 }
@@ -1075,6 +1085,7 @@ void poll_gamepad()
 
     // Execute command if first press or valid repeat
     if (i->repeat == 1) {
+      output_log(LOGLEVEL_DEBUG, "Gamepad %s detected\n", i->label);
       execute_command(i->cmd);
     }
     else if (i->repeat == delay_period) {
@@ -1120,7 +1131,7 @@ int main(int argc, char *argv[])
   // Check settings against requirements
   validate_settings();
 
-  // Load gamepad overrides and connect gamepad
+  // Load gamepad overrides
   if (config.gamepad_enabled) {
     if (config.gamepad_mappings_file != NULL) {
       error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
@@ -1130,7 +1141,6 @@ int main(int argc, char *argv[])
                    config.gamepad_mappings_file);
       }
     }
-    connect_gamepad(config.gamepad_device);
   }
 
   // Render background image
@@ -1161,7 +1171,7 @@ int main(int argc, char *argv[])
 
   // Debug info
   if (config.debug) {
-    debug_settings(&config);  
+    debug_settings();  
     debug_menu_entries(config.first_menu, config.num_menus);
   }
 
@@ -1197,6 +1207,7 @@ int main(int argc, char *argv[])
 #endif
 
   // Main program loop
+  output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
   while (!quit) {
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
@@ -1232,6 +1243,12 @@ int main(int argc, char *argv[])
               draw_screen();
             }
           }
+          else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+            output_log(LOGLEVEL_DEBUG, "Lost keyboard focus\n");
+          }
+          else if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
+            output_log(LOGLEVEL_DEBUG, "Lost mouse focus\n");
+          }
       }
     }
     if (gamepad != NULL) {
@@ -1242,6 +1259,7 @@ int main(int argc, char *argv[])
     }
     SDL_Delay(POLLING_PERIOD);
   }
+  output_log(LOGLEVEL_DEBUG, "Quitting program\n");
   cleanup();
 
   #ifdef _WIN32

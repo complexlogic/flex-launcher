@@ -785,6 +785,7 @@ void debug_menu_entries(menu_t *first_menu, int num_menus)
     }
     menu = menu->next;
   }
+  output_log(LOGLEVEL_DEBUG, "\n");
 }
 
 // A function to print the current button geometry to the command line
@@ -879,7 +880,8 @@ int init_log()
     cleanup();
     exit(1);
   }
-  
+
+  printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
   return 0;
 }
 
