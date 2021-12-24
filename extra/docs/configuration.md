@@ -31,11 +31,10 @@ Key2=value
 ```
 A line can be commented out by using the # character at the beginning of the line, which will cause the line to be ignored by the program. Here are a few things to note about the configuration settings for Flex Launcher:
 - All keys and values are case sensitive.
-- Full UTF-8 text encoding is supported for titles.
+- Full UTF-8 character set is supported for titles.
 - The following image formats are supported: JPEG, PNG, and WebP
 - Relative paths are evaluated with respect to the *current working directory*, which may not be the same as the directory that the config file is located in. It is recommended to use absolute paths whenever possible to eliminate any confusion.
-- Color is specified in HEX format, *without* the 0x prefix e.g. the color red in 24 bit RGB should be FF0000. HEX color pickers can be easily found online to assist color choices.
-- The color settings that support transparency have a separate opacity setting which allows the user to specify the opacity as a percentage. This is for convenience purposes because many users prefer to specify opacity as a percentage instead of 0-255. The opacity settings may be commented out if they are not desired, in which case the alpha bits will be used to determine the opacity.
+- Color is specified in 24 bit RGB HEX format, *without* a 0x or # prefix e.g. the color red should be FF0000. HEX color pickers can be easily found online to assist color choices.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
 ## Settings
 Every config file must have a section titled "Settings". Within this section, the following keys may be used to control the behavior of Flex Launcher:
@@ -111,6 +110,9 @@ Every config file must have a section titled "Settings". Within this section, th
       <a href="#scrollindicatoropacity">ScrollIndicatorOpacity</a>
     </li>
     <li>
+      <a href="#onlaunch-linux-only">OnLaunch (Linux Only)</a>
+    </li>
+    <li>
       <a href="#resetonback">ResetOnBack</a>
     </li>
     <li>
@@ -133,7 +135,7 @@ Defines what mode the background will be. Possible values: "Color" and "Image"
 
 Default: Color
 #### BackgroundColor
-When ```BackgroundMode``` is set to "Color", this setting defines the color of the background. Specified in 24 bit RGB HEX format.
+When ```BackgroundMode``` is set to "Color", this setting defines the color of the background.
 
 Default: 000000 (Black)
 
@@ -161,12 +163,14 @@ Defines the font size of each menu entry title.
 Default: 36
 
 #### TitleColor
-Defines the color of the menu entry titles. Specified in 32 bit RGBA HEX format.
+Defines the color of the menu entry titles.
 
-Default: FFFFFFFF (Opaque White)
+Default: FFFFFF (White)
 
 #### TitleOpacity
-When present, this setting overrides the alpha bits of ```TitleColor```. Must be a percent value.
+Defines the opacity of the menu entry titles. Must be a percent value.
+
+Default: 100%
 
 #### TitleOversizeMode
 Defines the behavior when the width of a menu entry title exceeds the width of its icon (which is defined in ```IconSize```). Possible values: "Truncate", "Shrink", and "None"
@@ -177,17 +181,19 @@ Defines the behavior when the width of a menu entry title exceeds the width of i
 Default: Truncate
 
 #### TitlePadding
-Defines the space between the icon and its title, in pixels
+Defines the vertical spacing between an icon and its title, in pixels.
 
 Default: 20
 
 #### HighlightColor
-Defines the color of the highlight cursor. Specified in 32 bit RGBA HEX format.
+Defines the color of the highlight cursor.
 
-Default: FFFFFF40 (White with 25% Opacity)
+Default: FFFFFF (White)
 
 #### HighlightOpacity
-When present, this setting overrides the alpha bits of ```HighlightColor```. Must be a percent value.
+Defines the opacity of the highlight cursor. Must be a percent value.
+
+Default: 25%
 
 #### HighlightCornerRadius
 Defines the corner radius of the highlight cursor, in pixels. A value of 0 will yield a plain rectangle. Increasing the value will yield a rounded rectangle with increasingly round corners.
@@ -195,12 +201,12 @@ Defines the corner radius of the highlight cursor, in pixels. A value of 0 will 
 Default: 0
 
 #### HighlightVPadding
-Defines the amount of distance that the highlight cursor extends beyond the top and bottom of the menu entry icon, in pixels.
+Defines the amount of vertical distance that the highlight cursor extends beyond the top and bottom of the menu entry icon, in pixels.
 
 Default: 30
 
 #### HighlightHPadding
-Defines the amount of distance that the highlight cursor extends beyond the left and right of the menu entry icon, in pixels.
+Defines the amount of horizontal distance that the highlight cursor extends beyond the left and right of the menu entry icon, in pixels.
 
 Default: 30
 
@@ -215,12 +221,22 @@ Defines whether scroll indicators will be enabled in the event that a menu has m
 Default: true
 
 #### ScrollIndicatorColor
-Defines the color of the scroll indicators. Specified in 32 bit RGBA.
+Defines the color of the scroll indicators.
 
-Default: FFFFFFFF (Opaque White)
+Default: FFFFFF (White)
 
 #### ScrollIndicatorOpacity
-When present, this setting overrides the alpha bits of ```ScrollIndicatorColor```. Must be a percent value.
+Defines the opacity of the scroll indicators. Must be a percent value.
+
+Default: 100%
+
+#### OnLaunch (Linux only)
+Defines the action that Flex Launcher will take upon the launch of an application. This setting is currently Linux only, but is planned to be implemented for Windows in a future release. Possible values: "Hide", "None", and "BlackScreen"
+- Hide: Flex Launcher will hide its window while the application is running, and then show itself again after the application has closed. This avoids window focus conflicts between the launcher and the application, but will cause the desktop to be briefly visible when an application is launched
+- None: Flex Launcher will maintain its window, and the launched application will have to draw itself over Flex Launcher. The desktop will never be visible, but this mode could cause window focusing conflicts depending on your configuration
+- Blank: Same as "None", except Flex Launcher will change to a blank, black screen
+
+Default: Hide
 
 #### ResetOnBack
 Defines whether Flex Launcher will remember the previous entry position when going back to a previous menu. If set to true, the highlight will be reset to the first entry in the menu when going back. This setting is a boolean "true" or "false".
@@ -235,7 +251,11 @@ Default: true
 ## Creating Menus
 At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
 
-Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons. The command is typically the path to the program executable that you want to launch, or a special command. Windows users may also use a path to a shortcut to the program (.lnk file). A simple example menu titled ```Media``` is shown below:
+Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons:
+```
+Entry=title;icon_path;command
+```
+The command is typically the path to the program executable that you want to launch, or a [special command](#special-commands). Windows users may also use a path to a program shortcut (.lnk file). A simple example menu titled ```Media``` is shown below:
 ```
 [Media]
 Entry1=Kodi;C:\Pictures\Icons\kodi.png;C:\Program Shortcuts\kodi.lnk
@@ -277,7 +297,7 @@ Restart the computer. For Linux: only works in systemd distros. Non-systemd dist
 Put the computer to sleep. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
 
 ### Desktop Files (Linux Only)
-If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be a link to the .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
+If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be the path to its .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
 
 #### Desktop Actions
 Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with the pipe character |. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch Steam in Big Picture mode is shown below:
@@ -305,7 +325,7 @@ Default: 0
 A path to a text file that contains 1 or more controller mappings to override the default. This is usually not necessary, but if you want to change the mapping for your controller, or there is no default mapping for your controller in SDL, it can be specified via this interface. A community database of mappings for many common controllers can be found [here](https://github.com/gabomdq/SDL_GameControllerDB). Alternatively, you may create a custom mapping using a GUI tool such as the [SDL2 Gamepad Tool](https://generalarcade.com/gamepadtool/).
 
 ### Controls
-The controls are defined in key=value pairs, where the key is the name of the axis or button that is pressed, and the value is the command that is to be run, which is typically a special command. An axis is an analog stick or a trigger. For analog sticks, negative (-) represents left for the x axis and up for the y axis, and postive (+) represents right for the x axis and down for the y axis. 
+The controls are defined in key=value pairs, where the key is the name of the axis or button that is pressed, and the value is the command that is to be run, which is typically a [special command](#special-commands). An axis is an analog stick or a trigger. For analog sticks, negative (-) represents left for the x axis and up for the y axis, and postive (+) represents right for the x axis and down for the y axis. 
 
 The [SDL GameController](https://wiki.libsdl.org/CategoryGameController) interface is an abstraction which conceptualizes a controller as having an Xbox-style layout. The mapping names in SDL are based on the *location* of the buttons on an Xbox controller, and may not correspond to the actual labelling of the buttons on your controller. For example, ```ButtonA``` is for the "bottom" button, ```ButtonB``` is for the "right" button of the 4 main control buttons. If you have a Playstation-style controller, those mapping names will correspond to the X button and the Circle button, respectively. 
 
