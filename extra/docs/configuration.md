@@ -231,7 +231,7 @@ Defines the opacity of the scroll indicators. Must be a percent value.
 Default: 100%
 
 #### OnLaunch (Linux only)
-Defines the action that Flex Launcher will take upon the launch of an application. This setting is currently Linux only, but is planned to be implemented for Windows in a future release. Possible values: "Hide", "None", and "BlackScreen"
+Defines the action that Flex Launcher will take upon the launch of an application. This setting is currently Linux only, but is planned to be implemented for Windows in a future release. Possible values: "Hide", "None", and "Blank"
 - Hide: Flex Launcher will hide its window while the application is running, and then show itself again after the application has closed. This avoids window focus conflicts between the launcher and the application, but will cause the desktop to be briefly visible when an application is launched
 - None: Flex Launcher will maintain its window, and the launched application will have to draw itself over Flex Launcher. The desktop will never be visible, but this mode could cause window focusing conflicts depending on your configuration
 - Blank: Same as "None", except Flex Launcher will change to a blank, black screen
