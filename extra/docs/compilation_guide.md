@@ -24,7 +24,7 @@ Flex Launcher on Linux builds with GCC. This guide assumes you already have the 
 
 First, install the dependencies. The steps to do so are dependent on your distro:
 
-### APT-based Distributions (Debian, Ubuntu, Mint, etc.)
+### APT-based Distributions (Debian, Ubuntu, Mint, Raspberry Pi OS etc.)
 ```
 sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 ```
@@ -45,6 +45,8 @@ Generate the Makefile:
 ```
 cmake -Wno-dev .. 
 ```
+If you're building on Raspberry Pi, it's recommended to pass -DRPI=1 to cmake, which tweaks the default configuration to be more Pi-centric.
+
 Build and test the program:
 ```
 make
