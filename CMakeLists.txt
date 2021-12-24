@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.18)
 project("Flex Launcher" 
         LANGUAGES C 
-        VERSION "1.0.1" 
+        VERSION "1.1" 
         DESCRIPTION "Customizable HTPC Application Launcher"
         HOMEPAGE_URL "https://github.com/complexlogic/flex-launcher")
 set(EXECUTABLE_TITLE "flex-launcher")

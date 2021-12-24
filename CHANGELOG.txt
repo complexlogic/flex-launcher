@@ -1,4 +1,4 @@
-Unreleased
+v1.1 (2021-12-24)
 - Added logging interface
 - Linux: Added OnLaunch setting
 - Changed all RGBA color settings to RGB for simplicity. Transparency is now set solely in the separate opacity setting

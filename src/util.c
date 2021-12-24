@@ -728,7 +728,7 @@ void debug_settings()
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Blank");
   }
   else if (config.on_launch == MODE_ON_LAUNCH_NONE) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"None");
   }
   if (config.reset_on_back) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_RESET_ON_BACK,"true");
