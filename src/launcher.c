@@ -1013,7 +1013,7 @@ void execute_command(char *command)
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_HideWindow(window);
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
+    else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
@@ -1239,7 +1239,7 @@ int main(int argc, char *argv[])
           if (event.window.event == SDL_WINDOWEVENT_SHOWN || 
           event.window.event == SDL_WINDOWEVENT_EXPOSED || 
           event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-            if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
+            if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
               set_draw_color();
               updates = true;
             }

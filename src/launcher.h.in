@@ -49,7 +49,7 @@ typedef int mode;
 #define MODE_RELEASED 0
 #define MODE_ON_LAUNCH_HIDE 0
 #define MODE_ON_LAUNCH_NONE 1
-#define MODE_ON_LAUNCH_BLACK_SCREEN 2
+#define MODE_ON_LAUNCH_BLANK 2
 
 // Types
 #define TYPE_BUTTON 0

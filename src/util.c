@@ -150,8 +150,8 @@ int config_handler(void *user, const char *section, const char *name, const char
       if (!strcmp(value, "None")) {
         pconfig->on_launch = MODE_ON_LAUNCH_NONE;
       }
-      else if (!strcmp(value, "BlackScreen")) {
-        pconfig->on_launch = MODE_ON_LAUNCH_BLACK_SCREEN;
+      else if (!strcmp(value, "Blank")) {
+        pconfig->on_launch = MODE_ON_LAUNCH_BLANK;
       }
       else {
         pconfig->on_launch = MODE_ON_LAUNCH_HIDE;
@@ -724,8 +724,8 @@ void debug_settings()
   if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");
   }
-  else if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"BlackScreen");
+  else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Blank");
   }
   else if (config.on_launch == MODE_ON_LAUNCH_NONE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");
