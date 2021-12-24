@@ -906,7 +906,7 @@ void output_log(log_level_t log_level, const char *format, ...)
   SDL_RWwrite(log_file, buffer, 1, length);
   
   if (log_level > LOGLEVEL_DEBUG) {
-    printf(buffer);
+    fputs(buffer, stderr);
   }
   va_end(args);
 }
