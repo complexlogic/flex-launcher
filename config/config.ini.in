@@ -57,7 +57,7 @@
 [@DEFAULT_MENU@]
 Entry1=Kodi;@ICONS_PREFIX@kodi.png;@CMD_KODI@
 Entry2=Plex;@ICONS_PREFIX@plex.png;@CMD_PLEX@
-Entry3=Steam;@ICONS_PREFIX@steam.png;@CMD_STEAM@
+Entry3=@TITLE_GAMES@;@ICONS_PREFIX@@ICON_GAMES@;@CMD_GAMES@
 Entry4=System;@ICONS_PREFIX@system.png;:submenu System
 
 [System]

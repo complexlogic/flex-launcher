@@ -1028,6 +1028,8 @@ void execute_command(char *command)
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
     }
+
+    SDL_PumpEvents();
   }
   free(cmd);
 }
@@ -1234,13 +1236,15 @@ int main(int argc, char *argv[])
           }
 
         case SDL_WINDOWEVENT:
-          if (event.window.event == SDL_WINDOWEVENT_SHOWN || event.window.event == SDL_WINDOWEVENT_EXPOSED) {
+          if (event.window.event == SDL_WINDOWEVENT_SHOWN || 
+          event.window.event == SDL_WINDOWEVENT_EXPOSED || 
+          event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
             if (config.on_launch == MODE_ON_LAUNCH_BLACK_SCREEN) {
               set_draw_color();
-              draw_screen();
+              updates = true;
             }
             else {
-              draw_screen();
+              updates = true;
             }
           }
           else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
