@@ -101,7 +101,7 @@ Gamepad controls are built-in to the program, but are disabled by default. To en
 ### Debugging
 Flex Launcher has a debug mode which may be enabled as follows:
 ```
-flex launcher -d
+flex-launcher -d
 ```
 This will output a logfile named ```flex-launcher.log``` in the same directory as ```flex-launcher.exe``` on Windows, and in ~/.local/share/flex-launcher on Linux. 
 
