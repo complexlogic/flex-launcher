@@ -3,6 +3,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <SDL.h>
+#include <launcher.h>
+#include "util.h"
 #ifdef __unix__
 #include "platform/unix.h"
 #endif
@@ -10,12 +13,11 @@
 #include "platform/win32.h"
 #endif
 #include "external/ini.h"
-#include <SDL.h>
-#include <launcher.h>
-#include "util.h"
+
 
 extern config_t config;
 extern SDL_RWops *log_file;
+extern SDL_Renderer *renderer;
 menu_t *menu = NULL;
 entry_t *entry = NULL;
 gamepad_control_t *current_gamepad_control = NULL;
@@ -42,8 +44,11 @@ int config_handler(void *user, const char *section, const char *name, const char
       hex_to_color(value, &pconfig->title_color);
     }
     else if (!strcmp(name,SETTING_BACKGROUND_MODE)) {
-      if (!strcmp(value,"Image")) {
+      if (!strcmp(value, "Image")) {
         pconfig->background_mode = MODE_IMAGE;
+      }
+      else if (!strcmp(value, "Slideshow")) {
+        pconfig->background_mode = MODE_SLIDESHOW;
       }
       else {
         pconfig->background_mode = MODE_COLOR;
@@ -51,6 +56,10 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name,SETTING_BACKGROUND_COLOR)) {
         hex_to_color(value, &pconfig->background_color);
+    }
+    else if (!strcmp(name,SETTING_SLIDESHOW_DIRECTORY)) {
+      copy_string(&pconfig->slideshow_directory, value);
+      clean_path(pconfig->slideshow_directory);
     }
     else if (!strcmp(name,SETTING_ICON_SIZE)) {
       Uint16 icon_size = (Uint16) atoi(value);
@@ -103,6 +112,20 @@ int config_handler(void *user, const char *section, const char *name, const char
       int highlight_hpadding = atoi(value);
       if (highlight_hpadding > 0 || !strcmp(value,"0")) {
         pconfig->highlight_hpadding = highlight_hpadding;
+      }
+    }
+    else if (!strcmp(name, SETTING_SLIDESHOW_IMAGE_DURATION)) {
+      Uint32 slideshow_image_duration = atoi(value);
+      if (slideshow_image_duration >= MIN_SLIDESHOW_IMAGE_DURATION && 
+      slideshow_image_duration <= MAX_SLIDESHOW_IMAGE_DURATION) {
+        pconfig->slideshow_image_duration = slideshow_image_duration;
+      }
+    }
+    else if (!strcmp(name, SETTING_SLIDESHOW_TRANSITION_TIME)) {
+      Uint32 slideshow_transition_time = atoi(value);
+      if (slideshow_transition_time >= MIN_SLIDESHOW_TRANSITION_TIME && 
+      slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME) {
+        pconfig->slideshow_transition_time = slideshow_transition_time;
       }
     }
     else if (!strcmp(name,SETTING_TITLE_OPACITY)) {
@@ -539,6 +562,25 @@ void utf8_truncate(char *string, int width, int max_width)
   }
 }
 
+void random_array(int *array, int array_size)
+{
+  // Fill array with initial indices
+  for (int i = 0; i < array_size; i++) {
+    array[i] = i;
+  }
+
+  // Shuffle array indices randomly
+  srand(time(NULL));
+  int j;
+  int tmp;
+  for (int i = 0; i < array_size - 1; i++) {
+    int j = (rand() % (array_size - i)) + i;
+    tmp = array[i];
+    array[i] = array[j];
+    array[j] = tmp;
+  }
+}
+
 // A function to handle the arguments from the command line
 int handle_arguments(int argc, char *argv[], char **config_file_path)
 {
@@ -680,12 +722,20 @@ void debug_settings()
   else if (config.background_mode == MODE_IMAGE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_MODE,"Image");
   }
+  else if (config.background_mode == MODE_SLIDESHOW) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_MODE,"Slideshow");
+  }
   output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_BACKGROUND_COLOR,config.background_color.r);
   output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_BACKGROUND_COLOR,config.background_color.g);
   output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_BACKGROUND_COLOR,config.background_color.b);
   if (config.background_image != NULL) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_IMAGE,config.background_image);
   }
+  if (config.slideshow_directory != NULL) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SLIDESHOW_DIRECTORY ,config.slideshow_directory);
+  }
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_SLIDESHOW_IMAGE_DURATION,config.slideshow_image_duration);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_SLIDESHOW_TRANSITION_TIME,config.slideshow_transition_time);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_ICON_SIZE,config.icon_size);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_ICON_SPACING,config.icon_spacing);
   output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_TITLE_FONT,config.title_font_path);
@@ -788,6 +838,29 @@ void debug_menu_entries(menu_t *first_menu, int num_menus)
   output_log(LOGLEVEL_DEBUG, "\n");
 }
 
+void debug_slideshow(slideshow_t *slideshow)
+{
+  output_log(LOGLEVEL_DEBUG, "======================== Slideshow ========================\n");
+  output_log(LOGLEVEL_DEBUG, 
+             "Found %i images in directory %s:\n", 
+             slideshow->num_images, 
+             config.slideshow_directory);
+  for (int i = 0; i < slideshow->num_images; i++) {
+    output_log(LOGLEVEL_DEBUG, "%s\n", slideshow->images[slideshow->order[i]]);
+  }
+}
+
+
+void debug_video()
+{
+  SDL_RendererInfo info;
+  SDL_GetRendererInfo(renderer, &info);
+  output_log(LOGLEVEL_DEBUG, "Supported Texture formats:\n");
+  for(int i = 0; i < info.num_texture_formats; i++) {
+    output_log(LOGLEVEL_DEBUG, "%s\n", SDL_GetPixelFormatName(info.texture_formats[i]));
+  }
+}
+
 // A function to print the current button geometry to the command line
 void debug_button_positions(entry_t *entry, menu_t *current_menu, geometry_t *geo)
 {
@@ -880,8 +953,9 @@ int init_log()
     cleanup();
     exit(1);
   }
-
-  printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
+  if (config.debug) {
+    printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
+  }
   return 0;
 }
 

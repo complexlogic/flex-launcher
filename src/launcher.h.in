@@ -30,14 +30,20 @@
 #define GAMEPAD_REPEAT_DELAY 500
 #define GAMEPAD_REPEAT_INTERVAL 25
 #define SCROLL_INDICATOR_MARGIN 0.06F // Distance between screen edge and scroll indicators
+#define MAX_SLIDESHOW_IMAGES 250
+#define MIN_SLIDESHOW_IMAGE_DURATION 5000
+#define MAX_SLIDESHOW_IMAGE_DURATION 600000
+#define MIN_SLIDESHOW_TRANSITION_TIME 0
+#define MAX_SLIDESHOW_TRANSITION_TIME 3000
 
 // Dynamic SVG generation for highlight
 #define SVG_HIGHLIGHT "<svg viewBox=\"0 0 %i %i\"><rect x=\"0\" width=\"%i\" height=\"%i\" rx=\"%i\" fill=\"white\" /></svg>"
 
 // Modes
 typedef int mode;
-#define MODE_COLOR 1
-#define MODE_IMAGE 0
+#define MODE_COLOR 0
+#define MODE_IMAGE 1
+#define MODE_SLIDESHOW 2
 #define MODE_TEXT_TRUNCATE 0
 #define MODE_TEXT_SHRINK 1
 #define MODE_TEXT_NONE 2
@@ -87,6 +93,9 @@ typedef int mode;
 #define SETTING_BACKGROUND_MODE "@SETTING_BACKGROUND_MODE@"
 #define SETTING_BACKGROUND_IMAGE "@SETTING_BACKGROUND_IMAGE@"
 #define SETTING_BACKGROUND_COLOR "@SETTING_BACKGROUND_COLOR@"
+#define SETTING_SLIDESHOW_DIRECTORY "@SETTING_SLIDESHOW_DIRECTORY@"
+#define SETTING_SLIDESHOW_IMAGE_DURATION "@SETTING_SLIDESHOW_IMAGE_DURATION@"
+#define SETTING_SLIDESHOW_TRANSITION_TIME "@SETTING_SLIDESHOW_TRANSITION_TIME@"
 #define SETTING_ICON_SIZE "@SETTING_ICON_SIZE@"
 #define SETTING_ICON_SPACING "@SETTING_ICON_SPACING@"
 #define SETTING_TITLE_FONT "@SETTING_TITLE_FONT@"
@@ -141,6 +150,8 @@ typedef int mode;
 #define DEFAULT_BACKGROUND_COLOR_R 0x@DEFAULT_BACKGROUND_COLOR_R@
 #define DEFAULT_BACKGROUND_COLOR_G 0x@DEFAULT_BACKGROUND_COLOR_G@
 #define DEFAULT_BACKGROUND_COLOR_B 0x@DEFAULT_BACKGROUND_COLOR_B@
+#define DEFAULT_SLIDESHOW_IMAGE_DURATION @DEFAULT_SLIDESHOW_IMAGE_DURATION@
+#define DEFAULT_SLIDESHOW_TRANSITION_TIME @DEFAULT_SLIDESHOW_TRANSITION_TIME@
 #define DEFAULT_ICON_SIZE @DEFAULT_ICON_SIZE@
 #define DEFAULT_FONT_SIZE @DEFAULT_FONT_SIZE@
 #define DEFAULT_TITLE_COLOR_R 0x@DEFAULT_TITLE_COLOR_R@
@@ -164,6 +175,17 @@ typedef int mode;
 #define DEFAULT_ESC_QUIT @DEFAULT_ESC_QUIT@
 #define DEFAULT_GAMEPAD_ENABLED @DEFAULT_GAMEPAD_ENABLED@
 #define DEFAULT_GAMEPAD_DEVICE @DEFAULT_GAMEPAD_DEVICE@
+
+
+typedef struct {
+  bool screen_updates;
+  bool slideshow_transition;
+} state_t;
+
+typedef struct {
+  Uint32 main_loop;
+  Uint32 slideshow_load;
+} ticks_t;
 
 // Linked list for menu entries
 typedef struct entry
@@ -230,14 +252,27 @@ typedef struct gamepad_control {
   struct gamepad_control *next;
 } gamepad_control_t;
 
+// Slideshow
+typedef struct {
+  char *images[MAX_SLIDESHOW_IMAGES];
+  int order[MAX_SLIDESHOW_IMAGES];
+  int i;
+  int num_images;
+  float transition_alpha;
+  float transition_change_rate;
+  SDL_Texture *transition_texture;
+} slideshow_t;
+
+
 // Configuration settings
 typedef struct
 {
   char *default_menu;
   unsigned int max_buttons;
   mode background_mode; // Defines image or color background mode
-  SDL_Color background_color; // Background co
+  SDL_Color background_color; // Background color
   char *background_image; // Path to background image
+  char *slideshow_directory;
   Uint16 icon_size;
   int icon_spacing;
   char icon_spacing_str[PERCENT_MAX_CHARS];
@@ -267,6 +302,8 @@ typedef struct
   menu_t *first_menu;
   gamepad_control_t *gamepad_controls;
   int num_menus;
+  Uint32 slideshow_image_duration;
+  Uint32 slideshow_transition_time;
 } config_t;
 
 // Function prototypes
@@ -276,6 +313,7 @@ int init_svg(void);
 int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
 int main(int argv, char *argc[]);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
+void quit_slideshow(void);
 void set_draw_color(void);
 void calculate_geometry(entry_t *entry, int buttons);
 void render_buttons(menu_t *menu);
@@ -292,6 +330,7 @@ void poll_gamepad(void);
 void connect_gamepad(int device_index);
 void render_scroll_indicators();
 void cleanup(void);
+SDL_Texture *load_next_slideshow_background(void);
 SDL_Texture *load_texture(char *path, SDL_Surface *surface);
 SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h);
 SDL_Texture *render_highlight(int width, int height, int rx);

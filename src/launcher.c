@@ -2,27 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
+#include <time.h>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <launcher.h>
+#include "util.h"
 #ifdef __unix__
 #include "platform/unix.h"
 #endif
 #ifdef _WIN32
 #include "platform/win32.h"
 #endif
-#include <math.h>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
 #include "external/ini.h"
 #define NANOSVG_IMPLEMENTATION
 #include "external/nanosvg.h"
 #define NANOSVGRAST_IMPLEMENTATION
 #include "external/nanosvgrast.h"
-#include <launcher.h>
-#include "util.h"
+
 
 // Initialize default settings
 config_t config = {
   .background_image = NULL,
+  .slideshow_directory = NULL,
   .title_font_path = NULL,
   .font_size = DEFAULT_FONT_SIZE,
   .title_color.r = DEFAULT_TITLE_COLOR_R,
@@ -67,7 +70,14 @@ config_t config = {
   .exe_path = NULL,
   .first_menu = NULL,
   .gamepad_controls = NULL,
-  .num_menus = 0
+  .num_menus = 0,
+  .slideshow_image_duration = DEFAULT_SLIDESHOW_IMAGE_DURATION,
+  .slideshow_transition_time = DEFAULT_SLIDESHOW_TRANSITION_TIME
+};
+
+state_t state = {
+  .screen_updates = false,
+  .slideshow_transition = false
 };
 
 // Global variables
@@ -78,10 +88,12 @@ TTF_Font *title_font = NULL; // Font of the button title text
 menu_t *default_menu = NULL;
 menu_t *current_menu = NULL; // Current selected menu
 entry_t *current_entry = NULL; // Current selected entry
+ticks_t ticks;
 SDL_GameController *gamepad = NULL;
 int delay_period;
 int repeat_period; 
 scroll_t *scroll = NULL;
+slideshow_t *slideshow = NULL;
 SDL_Texture *background_texture = NULL; // Background texture (image only)
 NSVGrasterizer *rasterizer = NULL;
 highlight_t *highlight = NULL; // Pointer containing highlight texture and coordinates
@@ -264,6 +276,10 @@ void cleanup()
   free(highlight);
   free(scroll);
 
+  if (config.background_mode == MODE_SLIDESHOW) {
+    quit_slideshow();
+  }
+
   // Free menu and entry linked lists
   entry_t *entry = NULL;
   entry_t *tmp_entry = NULL;
@@ -339,6 +355,126 @@ unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int h
   return (buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding;
 }
 
+void quit_slideshow()
+{
+  // Free allocated image paths
+  for (int i = 0; i < slideshow->num_images; i++) {
+    free(slideshow->images[i]);
+  }
+  free(slideshow);
+  
+  //config.background_mode = MODE_COLOR;
+  //output_log(LOGLEVEL_ERROR, "Error: Couldn't load background image, defaulting to color background\n");
+  //set_draw_color();
+
+}
+
+void init_slideshow()
+{
+  if (!directory_exists(config.slideshow_directory)) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Slideshow directory %s does not exist\n"
+               "Switching to color background mode\n",
+               config.slideshow_directory);
+    config.background_mode = MODE_COLOR;
+    set_draw_color();
+    return;
+  }
+  // Allocate and initialize slideshow struct
+  slideshow = malloc(sizeof(slideshow_t));
+  slideshow->i = -1;
+  slideshow->num_images = 0;
+  slideshow->transition_texture = NULL;
+  slideshow->transition_alpha = 0.0f;
+  slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) POLLING_PERIOD);
+
+  // Find background images from directory
+  int num_images = scan_slideshow_directory(slideshow, config.slideshow_directory);
+  
+  // Handle errors
+  if (num_images == 0) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: No images found in slideshow directory %s\n"
+               "Changing background mode to color\n", 
+               config.slideshow_directory);
+    quit_slideshow();
+  } 
+  else if (num_images == 1) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Only one image found in slideshow directory %s\n"
+               "Changing background mode to single image\n", 
+               config.slideshow_directory);
+  }
+
+  // Generate array of random numbers for image order, load first image
+  else {
+    random_array(slideshow->order, slideshow->num_images);
+    background_texture = load_next_slideshow_background();
+    if (config.debug) {
+      debug_slideshow(slideshow);
+    }
+  }
+}
+
+SDL_Texture *load_next_slideshow_background()
+{
+  SDL_Surface *surface = NULL;
+  SDL_Texture *texture = NULL;
+  int initial_index = slideshow->i;
+  int attempts = 0;
+  do {
+    // Increment slideshow background index and load background
+    (slideshow->i)++;
+    if (slideshow->i >= slideshow->num_images) {
+      slideshow->i = 0;
+    }
+    surface = IMG_Load(slideshow->images[slideshow->order[slideshow->i]]);
+    
+    // If the loaded image has no alpha channel (e.g. JPEG), create one 
+    // so that we can have transparency for the background transition
+    if (surface->format->format == SDL_PIXELFORMAT_RGB24) {
+      SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(0,
+        surface->w,
+        surface->h,
+        32,
+        SDL_PIXELFORMAT_ARGB8888);
+      Uint32 color = SDL_MapRGBA(tmp->format, 0, 0, 0, 0xFF);
+      SDL_FillRect(tmp, NULL, color);
+      SDL_BlitSurface(surface, NULL, tmp, NULL);
+      SDL_FreeSurface(surface);
+      surface = tmp;
+      attempts++;
+    } 
+  } while (surface == NULL && slideshow->i != initial_index && attempts < slideshow->num_images);
+  
+  // Switch to color background mode if we failed to load any image from the array
+  if (surface == NULL) {
+    output_log(LOGLEVEL_ERROR, 
+      "Could not load images from slideshow directory %s\n"
+      "Changing background to color mode\n", 
+      config.slideshow_directory);
+    quit_slideshow();
+  }
+
+  // If only one image in the entire slideshow array was valid, switch to
+  // single image background mode
+  else if (slideshow->i == initial_index && surface != NULL) {
+    background_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    config.background_mode = MODE_IMAGE;
+  }
+
+  // Loading was successful, convert to texture
+  else {
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    
+    // Start as transparent except first image
+    if (initial_index > -1) {
+      SDL_SetTextureAlphaMod(texture, 0);
+    }
+  }
+  return texture;
+}
+
 // A function to load a texture from a file OR existing SDL surface
 SDL_Texture *load_texture(char *path, SDL_Surface *surface)
 {
@@ -351,6 +487,7 @@ SDL_Texture *load_texture(char *path, SDL_Surface *surface)
     else {
       loaded_surface = surface;
     }
+
     if (loaded_surface == NULL) {
         output_log(LOGLEVEL_ERROR, 
                   "Error: Could not load image %s\n%s\n", 
@@ -486,7 +623,8 @@ SDL_Texture *render_text(entry_t *entry)
         TTF_SizeUTF8(reduced_font,title,&w,&h);
       }
 
-      // Set offset so reduced font remains vertically centered
+      // Set vertical offset so reduced font title remains vertically centered
+      // with other titles
       if (font_size) {
         output_font = reduced_font;
         entry->title_offset = (geo.font_height - h) / 2;
@@ -663,7 +801,7 @@ int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_posi
   highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
   
   // Output to screen
-  updates = true;
+  state.screen_updates = true;
   return 0;
 }
 
@@ -720,7 +858,7 @@ void move_left()
     highlight->rect.x -= geo.x_advance;
     current_menu->highlight_position--;
     current_entry = current_entry->previous;
-    updates = true;
+    state.screen_updates = true;
   }
 
   // If we are in leftmost position, but there is a previous page, load the previous page
@@ -736,7 +874,7 @@ void move_left()
     //if (config.debug) {
     //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
     //}
-    updates = true;
+    state.screen_updates = true;
   }
 }
 
@@ -748,7 +886,7 @@ void move_right()
     highlight->rect.x += geo.x_advance;
     current_menu->highlight_position++;
     current_entry = current_entry->next;
-    updates = true;
+    state.screen_updates = true;
   }
 
   // If we are in the rightmost postion, but there are more entries in the menu, load next page
@@ -768,7 +906,7 @@ void move_right()
     //if (config.debug) {
     //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
     //}
-    updates = true;
+    state.screen_updates = true;
   }
 }
 
@@ -793,7 +931,11 @@ void draw_screen()
     SDL_RenderClear(renderer);
   }
   else {
-    SDL_RenderCopy(renderer,background_texture,NULL,NULL);
+    SDL_RenderCopy(renderer, background_texture, NULL, NULL);
+  }
+
+  if (config.background_mode == MODE_SLIDESHOW && state.slideshow_transition) {
+    SDL_RenderCopy(renderer, slideshow->transition_texture, NULL, NULL);
   }
 
   // Draw scroll indicators
@@ -816,7 +958,7 @@ void draw_screen()
 
   // Output to screen
   SDL_RenderPresent(renderer);
-  updates = false;
+  state.screen_updates = false;
 }
 
 // A function to make sure all settings are in their correct range
@@ -1097,6 +1239,7 @@ void poll_gamepad()
   }
 }
 
+
 int main(int argc, char *argv[]) 
 {
   SDL_Event event;
@@ -1123,6 +1266,9 @@ int main(int argc, char *argv[])
     return 1;
   }
   free(config_file_path);
+
+  //scan_slideshow_directory(NULL, config.slideshow_directory);
+  //return 0;
 
   // Initialize libraries
   if (init_sdl() || init_ttf() || init_svg()) {
@@ -1157,6 +1303,11 @@ int main(int argc, char *argv[])
     }
   }
 
+  // Initialize slideshow
+  else if (config.background_mode == MODE_SLIDESHOW) {
+    init_slideshow();
+  }
+
   // Render highlight
   int button_height = config.icon_size + config.title_padding + geo.font_height;
   highlight = malloc(sizeof(highlight_t));
@@ -1175,6 +1326,7 @@ int main(int argc, char *argv[])
   if (config.debug) {
     debug_settings();  
     debug_menu_entries(config.first_menu, config.num_menus);
+    debug_video();
   }
 
   // Load the default menu and display it
@@ -1200,17 +1352,24 @@ int main(int argc, char *argv[])
 
   // Draw initial screen
   draw_screen();
-  updates = false;
+  state.screen_updates = false;
 
-#ifdef _WIN32
-  if (!config.debug) {
+  #ifdef _WIN32
+    if (!config.debug) {
       hide_console();
+    }
+  #endif
+  
+  // Initialize timing
+  ticks.main_loop = SDL_GetTicks();
+  if (config.background_mode == MODE_SLIDESHOW) {
+    ticks.slideshow_load = ticks.main_loop;
   }
-#endif
-
+  
   // Main program loop
   output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
   while (!quit) {
+    ticks.main_loop = SDL_GetTicks();
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
@@ -1241,10 +1400,10 @@ int main(int argc, char *argv[])
           event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
             if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
               set_draw_color();
-              updates = true;
+              state.screen_updates = true;
             }
             else {
-              updates = true;
+              state.screen_updates = true;
             }
           }
           else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
@@ -1258,7 +1417,33 @@ int main(int argc, char *argv[])
     if (gamepad != NULL) {
       poll_gamepad();
     }
-    if (updates) {
+    if (config.background_mode == MODE_SLIDESHOW) {
+      if (!state.slideshow_transition && ticks.main_loop - ticks.slideshow_load > config.slideshow_image_duration) {
+        slideshow->transition_texture = load_next_slideshow_background();
+        ticks.slideshow_load = ticks.main_loop;
+        state.slideshow_transition = true;
+        state.screen_updates = true;
+
+      }
+      else if (state.slideshow_transition) {
+        slideshow->transition_alpha += slideshow->transition_change_rate;
+        if (slideshow->transition_alpha >= 255.0f) {
+          SDL_SetTextureAlphaMod(slideshow->transition_texture, 0xFF);
+          slideshow->transition_alpha = 0.0f;
+          SDL_DestroyTexture(background_texture);
+          background_texture = slideshow->transition_texture;
+          SDL_SetTextureBlendMode(background_texture, SDL_BLENDMODE_BLEND);
+          slideshow->transition_texture = NULL;
+          state.slideshow_transition = false;
+        }
+        else {
+          SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
+        }
+      state.screen_updates = true;
+      }
+    }
+
+    if (state.screen_updates) {
       draw_screen();
     }
     SDL_Delay(POLLING_PERIOD);

@@ -5,4 +5,6 @@ endif ()
 
 if (WIN32)
   add_library(platform "win32.c")
+  target_include_directories(platform PUBLIC "${PROJECT_BINARY_DIR}")
+  target_link_libraries(platform SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static)
 endif ()
