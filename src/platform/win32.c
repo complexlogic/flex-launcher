@@ -11,9 +11,7 @@
 #include <launcher.h>
 #include "win32.h"
 #include "../util.h"
-
-#define NUM_EXTENSIONS 4
-const char* extensions[NUM_EXTENSIONS] = { ".jpg", ".jpeg", ".png", ".webp" };
+#include "slideshow.h"
 
 // A function to determine if a file exists in the filesystem
 
@@ -89,7 +87,7 @@ void restore_console()
   ShowWindow(console, SW_RESTORE);
 }
 
-int scan_slideshow_directory(slideshow_t* slideshow, const char* directory)
+int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
 {
   WIN32_FIND_DATAW data;
   HANDLE handle;

@@ -569,7 +569,7 @@ void random_array(int *array, int array_size)
     array[i] = i;
   }
 
-  // Shuffle array indices randomly
+  // Shuffle array indices randomly, see https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
   srand(time(NULL));
   int j;
   int tmp;
@@ -660,7 +660,7 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
 }
 
 // A function to add a gamepad control to the linked list
-void add_gamepad_control(int type, int index, char *label, char *cmd)
+void add_gamepad_control(int type, int index, const char *label, const char *cmd)
 {
   if (!strlen(cmd)) {
     return;

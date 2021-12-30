@@ -398,25 +398,35 @@ void init_slideshow()
                "Changing background mode to color\n", 
                config.slideshow_directory);
     quit_slideshow();
+    config.background_mode = MODE_COLOR;
+    set_draw_color();
   } 
   else if (num_images == 1) {
     output_log(LOGLEVEL_ERROR, 
                "Error: Only one image found in slideshow directory %s\n"
                "Changing background mode to single image\n", 
                config.slideshow_directory);
+    background_texture = load_next_slideshow_background(false);
+    quit_slideshow();
+    config.background_mode = MODE_IMAGE;
   }
 
   // Generate array of random numbers for image order, load first image
   else {
     random_array(slideshow->order, slideshow->num_images);
-    background_texture = load_next_slideshow_background();
+    background_texture = load_next_slideshow_background(false);
     if (config.debug) {
       debug_slideshow(slideshow);
     }
   }
 }
 
-SDL_Texture *load_next_slideshow_background()
+void resume_slideshow()
+{
+  ticks.slideshow_load = ticks.main;
+}
+
+SDL_Texture *load_next_slideshow_background(bool transition)
 {
   SDL_Surface *surface = NULL;
   SDL_Texture *texture = NULL;
@@ -432,7 +442,7 @@ SDL_Texture *load_next_slideshow_background()
     
     // If the loaded image has no alpha channel (e.g. JPEG), create one 
     // so that we can have transparency for the background transition
-    if (surface->format->format == SDL_PIXELFORMAT_RGB24) {
+    if (surface != NULL && surface->format->format == SDL_PIXELFORMAT_RGB24 && transition) {
       SDL_Surface *tmp = SDL_CreateRGBSurfaceWithFormat(0,
         surface->w,
         surface->h,
@@ -450,15 +460,21 @@ SDL_Texture *load_next_slideshow_background()
   // Switch to color background mode if we failed to load any image from the array
   if (surface == NULL) {
     output_log(LOGLEVEL_ERROR, 
-      "Could not load images from slideshow directory %s\n"
+      "Error: Could not load any image from slideshow directory %s\n"
       "Changing background to color mode\n", 
       config.slideshow_directory);
     quit_slideshow();
+    config.background_mode = MODE_COLOR;
+    set_draw_color();
   }
 
   // If only one image in the entire slideshow array was valid, switch to
   // single image background mode
   else if (slideshow->i == initial_index && surface != NULL) {
+    output_log(LOGLEVEL_ERROR, 
+      "Error: Could only load one image from slideshow directory %s\n"
+      "Changing background to single image mode\n",
+      config.slideshow_directory);
     background_texture = SDL_CreateTextureFromSurface(renderer, surface);
     config.background_mode = MODE_IMAGE;
   }
@@ -467,8 +483,8 @@ SDL_Texture *load_next_slideshow_background()
   else {
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     
-    // Start as transparent except first image
-    if (initial_index > -1) {
+    // Start as transparent, except first image
+    if (transition) {
       SDL_SetTextureAlphaMod(texture, 0);
     }
   }
@@ -1167,6 +1183,13 @@ void execute_command(char *command)
     // Launch application
     system(cmd);
 
+    // Rebaseline the timing after the program is done
+    ticks.main = SDL_GetTicks();
+
+    if (config.background_mode == MODE_SLIDESHOW) {
+      resume_slideshow();
+    }
+
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
     }
@@ -1239,6 +1262,44 @@ void poll_gamepad()
   }
 }
 
+void update_slideshow()
+{
+  // If image duration time has elapsed, load the next image and start the transition
+  if (!state.slideshow_transition && ticks.main - ticks.slideshow_load > config.slideshow_image_duration) {
+    if (config.slideshow_transition_time > 0) {
+      slideshow->transition_texture = load_next_slideshow_background(true);
+      state.slideshow_transition = true;
+    }
+    else {
+      SDL_DestroyTexture(background_texture);
+      background_texture = NULL;
+      background_texture = load_next_slideshow_background(false);
+      ticks.slideshow_load = ticks.main;
+    }
+    state.screen_updates = true;
+  }
+  else if (state.slideshow_transition) {
+    
+    // Increase the transparency
+    slideshow->transition_alpha += slideshow->transition_change_rate;
+    
+    // If transition is done, destroy old background and replace it with the new one
+    if (slideshow->transition_alpha >= 255.0f) {
+      SDL_SetTextureAlphaMod(slideshow->transition_texture, 0xFF);
+      slideshow->transition_alpha = 0.0f;
+      SDL_DestroyTexture(background_texture);
+      background_texture = slideshow->transition_texture;
+      slideshow->transition_texture = NULL;
+      state.slideshow_transition = false;
+      ticks.slideshow_load = ticks.main;
+    }
+    else {
+      SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
+    }
+  state.screen_updates = true;
+  }
+}
+
 
 int main(int argc, char *argv[]) 
 {
@@ -1267,14 +1328,13 @@ int main(int argc, char *argv[])
   }
   free(config_file_path);
 
-  //scan_slideshow_directory(NULL, config.slideshow_directory);
-  //return 0;
-
   // Initialize libraries
   if (init_sdl() || init_ttf() || init_svg()) {
     cleanup();
     return 1;
   }
+
+  ticks.main = 0;
 
   // Check settings against requirements
   validate_settings();
@@ -1359,17 +1419,11 @@ int main(int argc, char *argv[])
       hide_console();
     }
   #endif
-  
-  // Initialize timing
-  ticks.main_loop = SDL_GetTicks();
-  if (config.background_mode == MODE_SLIDESHOW) {
-    ticks.slideshow_load = ticks.main_loop;
-  }
-  
+   
   // Main program loop
   output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
   while (!quit) {
-    ticks.main_loop = SDL_GetTicks();
+    ticks.main = SDL_GetTicks();
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
@@ -1418,31 +1472,9 @@ int main(int argc, char *argv[])
       poll_gamepad();
     }
     if (config.background_mode == MODE_SLIDESHOW) {
-      if (!state.slideshow_transition && ticks.main_loop - ticks.slideshow_load > config.slideshow_image_duration) {
-        slideshow->transition_texture = load_next_slideshow_background();
-        ticks.slideshow_load = ticks.main_loop;
-        state.slideshow_transition = true;
-        state.screen_updates = true;
-
-      }
-      else if (state.slideshow_transition) {
-        slideshow->transition_alpha += slideshow->transition_change_rate;
-        if (slideshow->transition_alpha >= 255.0f) {
-          SDL_SetTextureAlphaMod(slideshow->transition_texture, 0xFF);
-          slideshow->transition_alpha = 0.0f;
-          SDL_DestroyTexture(background_texture);
-          background_texture = slideshow->transition_texture;
-          SDL_SetTextureBlendMode(background_texture, SDL_BLENDMODE_BLEND);
-          slideshow->transition_texture = NULL;
-          state.slideshow_transition = false;
-        }
-        else {
-          SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
-        }
-      state.screen_updates = true;
-      }
+      update_slideshow();
     }
-
+    //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
     if (state.screen_updates) {
       draw_screen();
     }

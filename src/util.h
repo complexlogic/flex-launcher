@@ -22,7 +22,7 @@ char *join_paths(char *buffer, int num_paths, ...);
 char *find_file(char *file, int num_prefixes, char **prefixes);
 void copy_string(char **dest, char *string);
 void utf8_truncate(char *string, int width, int max_width);
-void add_gamepad_control(int type, int index, char *label, char *cmd);
+void add_gamepad_control(int type, int index, const char *label, const char *cmd);
 void random_array(int *array, int array_size);
 void print_usage(void);
 void print_version(void);

@@ -8,9 +8,7 @@
 #include <launcher.h>
 #include "unix.h"
 #include "../util.h"
-
-#define NUM_EXTENSIONS 4
-const char *extensions[NUM_EXTENSIONS] = {".jpg", ".jpeg", ".png", ".webp"};
+#include "slideshow.h"
 
 // A function to handle .desktop lines
 static int desktop_handler(void* user, const char* section, const char* name, const char* value)

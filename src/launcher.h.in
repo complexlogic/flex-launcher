@@ -183,7 +183,7 @@ typedef struct {
 } state_t;
 
 typedef struct {
-  Uint32 main_loop;
+  Uint32 main;
   Uint32 slideshow_load;
 } ticks_t;
 
@@ -313,6 +313,8 @@ int init_svg(void);
 int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
 int main(int argv, char *argc[]);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
+void update_slideshow(void);
+void resume_slideshow(void);
 void quit_slideshow(void);
 void set_draw_color(void);
 void calculate_geometry(entry_t *entry, int buttons);
@@ -330,7 +332,7 @@ void poll_gamepad(void);
 void connect_gamepad(int device_index);
 void render_scroll_indicators();
 void cleanup(void);
-SDL_Texture *load_next_slideshow_background(void);
+SDL_Texture *load_next_slideshow_background(bool transition);
 SDL_Texture *load_texture(char *path, SDL_Surface *surface);
 SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h);
 SDL_Texture *render_highlight(int width, int height, int rx);
