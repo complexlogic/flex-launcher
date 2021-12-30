@@ -5,15 +5,17 @@
 #include <dirent.h>
 #include <SDL.h>
 #include "../external/ini.h"
-#include <launcher.h>
+#include "../launcher.h"
+#include <launcher_config.h>
 #include "unix.h"
 #include "../util.h"
+#include "../debug.h"
 #include "slideshow.h"
 
 // A function to handle .desktop lines
-static int desktop_handler(void* user, const char* section, const char* name, const char* value)
+static int desktop_handler(void *user, const char *section, const char *name, const char *value)
 {
-  desktop_t* pdesktop = (desktop_t*) user;
+  desktop_t *pdesktop = (desktop_t*) user;
   if (!strcmp(pdesktop->section, section) && !strcmp(name, EXEC)) {
     *pdesktop->exec = malloc(sizeof(char)*(strlen(value) + 1));
     strcpy(*pdesktop->exec, value);

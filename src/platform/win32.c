@@ -8,9 +8,11 @@
 #include <stringapiset.h>
 #include <fileapi.h>
 #include <SDL.h>
-#include <launcher.h>
+#include "../launcher.h"
+#include <launcher_config.h>
 #include "win32.h"
 #include "../util.h"
+#include "../debug.h"
 #include "slideshow.h"
 
 // A function to determine if a file exists in the filesystem
