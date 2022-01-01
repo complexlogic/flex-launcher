@@ -2,27 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
+#include <time.h>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <SDL_thread.h>
+#include "launcher.h"
+#include <launcher_config.h>
+#include "image.h"
+#include "util.h"
+#include "debug.h"
 #ifdef __unix__
 #include "platform/unix.h"
 #endif
 #ifdef _WIN32
 #include "platform/win32.h"
 #endif
-#include <math.h>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include "external/ini.h"
-#define NANOSVG_IMPLEMENTATION
-#include "external/nanosvg.h"
-#define NANOSVGRAST_IMPLEMENTATION
-#include "external/nanosvgrast.h"
-#include <launcher.h>
-#include "util.h"
+
 
 // Initialize default settings
 config_t config = {
   .background_image = NULL,
+  .slideshow_directory = NULL,
   .title_font_path = NULL,
   .font_size = DEFAULT_FONT_SIZE,
   .title_color.r = DEFAULT_TITLE_COLOR_R,
@@ -67,7 +69,16 @@ config_t config = {
   .exe_path = NULL,
   .first_menu = NULL,
   .gamepad_controls = NULL,
-  .num_menus = 0
+  .num_menus = 0,
+  .slideshow_image_duration = DEFAULT_SLIDESHOW_IMAGE_DURATION,
+  .slideshow_transition_time = DEFAULT_SLIDESHOW_TRANSITION_TIME
+};
+
+state_t state = {
+  .screen_updates = false,
+  .slideshow_transition = false,
+  .slideshow_background_ready = false,
+  .quit = false
 };
 
 // Global variables
@@ -78,16 +89,17 @@ TTF_Font *title_font = NULL; // Font of the button title text
 menu_t *default_menu = NULL;
 menu_t *current_menu = NULL; // Current selected menu
 entry_t *current_entry = NULL; // Current selected entry
+ticks_t ticks;
 SDL_GameController *gamepad = NULL;
+SDL_Thread *slideshow_thread = NULL;
 int delay_period;
 int repeat_period; 
 scroll_t *scroll = NULL;
+slideshow_t *slideshow = NULL;
 SDL_Texture *background_texture = NULL; // Background texture (image only)
-NSVGrasterizer *rasterizer = NULL;
 highlight_t *highlight = NULL; // Pointer containing highlight texture and coordinates
 bool updates; // Bool to update the screen at the end of the main loop
 geometry_t geo; // Struct containing screen geometry for the current page of buttons
-bool quit = false;
 
 // A function to initialize SDL
 int init_sdl()
@@ -219,17 +231,6 @@ int init_ttf()
   return 0;
 }
 
-// A function to initalize SVG rasterization
-int init_svg()
-{
-  rasterizer = nsvgCreateRasterizer();
-  if (rasterizer == NULL) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not initialize SVG rasterizer.\n");
-    return 1;
-  }
-  return 0;
-}
-
 // A function to close subsystems and free memory before quitting
 void cleanup()
 {
@@ -243,13 +244,11 @@ void cleanup()
     window = NULL;
   }
 
-  // Destroy SVG rasterizer
-  nsvgDeleteRasterizer(rasterizer);
-
-  // Quit SDL subsystems
+  // Quit subsystems
   SDL_Quit();
   IMG_Quit();
   TTF_Quit();
+  quit_svg();
 
   // Close log file if open
   if (log_file != NULL) {
@@ -263,6 +262,10 @@ void cleanup()
   free(config.exe_path);
   free(highlight);
   free(scroll);
+
+  if (config.background_mode == MODE_SLIDESHOW) {
+    quit_slideshow();
+  }
 
   // Free menu and entry linked lists
   entry_t *entry = NULL;
@@ -308,7 +311,7 @@ void handle_keypress(SDL_Keysym *key)
 
   // Check keys
   if (key->sym == SDLK_ESCAPE && config.esc_quit) {
-    quit = true;
+    state.quit = true;
   }
   else if (key->sym == SDLK_LEFT) {
     move_left();
@@ -339,182 +342,82 @@ unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int h
   return (buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding;
 }
 
-// A function to load a texture from a file OR existing SDL surface
-SDL_Texture *load_texture(char *path, SDL_Surface *surface)
+// A function to quit the slideshow mode in case of error or program exit
+void quit_slideshow()
 {
-  SDL_Texture *texture = NULL;
-  SDL_Surface *loaded_surface = NULL;
+  // Free allocated image paths
+  for (int i = 0; i < slideshow->num_images; i++) {
+    free(slideshow->images[i]);
+  }
+  free(slideshow);
+  
+  //config.background_mode = MODE_COLOR;
+  //output_log(LOGLEVEL_ERROR, "Error: Couldn't load background image, defaulting to color background\n");
+  //set_draw_color();
 
-    if (surface == NULL) {
-      loaded_surface = IMG_Load(path);
-    }
-    else {
-      loaded_surface = surface;
-    }
-    if (loaded_surface == NULL) {
-        output_log(LOGLEVEL_ERROR, 
-                  "Error: Could not load image %s\n%s\n", 
-                  path, 
-                  IMG_GetError());
-    }
-    else {
-        //Convert surface to screen format
-        texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
-        if (texture == NULL) {
-            output_log(LOGLEVEL_ERROR, "Error: Could not create texture from %s\n%s", 
-                       path, 
-                       SDL_GetError());
-        }
-
-        //Get rid of old loaded surface
-        SDL_FreeSurface(loaded_surface);
-    }
-    return texture;
 }
 
-// A function to rasterize an SVG from a file OR from xml text buffer
-SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h)
+// A function to initialize the slideshow background mode
+void init_slideshow()
 {
-  NSVGimage *image = NULL;
-  unsigned char *pixel_buffer = NULL;
-  int width, height, pitch;
-  float scale;
-
-  // Parse SVG to NSVGimage struct
-  if (filename == NULL) {
-    image = nsvgParse(xml, "px", 96.0f);
+  if (!directory_exists(config.slideshow_directory)) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Slideshow directory %s does not exist\n"
+               "Switching to color background mode\n",
+               config.slideshow_directory);
+    config.background_mode = MODE_COLOR;
+    set_draw_color();
+    return;
   }
+  // Allocate and initialize slideshow struct
+  slideshow = malloc(sizeof(slideshow_t));
+  slideshow->i = -1;
+  slideshow->num_images = 0;
+  slideshow->transition_texture = NULL;
+  slideshow->transition_alpha = 0.0f;
+  slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) POLLING_PERIOD);
+
+  // Find background images from directory
+  int num_images = scan_slideshow_directory(slideshow, config.slideshow_directory);
+  
+  // Handle errors
+  if (num_images == 0) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: No images found in slideshow directory %s\n"
+               "Changing background mode to color\n", 
+               config.slideshow_directory);
+    quit_slideshow();
+    config.background_mode = MODE_COLOR;
+    set_draw_color();
+  } 
+  else if (num_images == 1) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Only one image found in slideshow directory %s\n"
+               "Changing background mode to single image\n", 
+               config.slideshow_directory);
+    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
+    background_texture = load_texture(NULL, surface);
+    //SDL_FreeSurface(surface);
+    quit_slideshow();
+    config.background_mode = MODE_IMAGE;
+  }
+
+  // Generate array of random numbers for image order, load first image
   else {
-    image = nsvgParseFromFile(filename, "px", 96.0f);
-  }
-  if (image == NULL) {
-    output_log(LOGLEVEL_ERROR, "Error: could not open SVG image.\n");
-    return NULL;
-  }
-
-  // Calculate scaling
-  if (w == -1 && h == -1) {
-    width = (int) image->width;
-    height = (int) image->height;
-    scale = 1.0f;
-  }
-  else {
-    width = w;
-    height = h;
-    scale = (float) w / (float) image->width; // Assuming aspect ratio is conserved
-  }
-
-  // Allocate memory
-  pitch = 4*width;
-  pixel_buffer = malloc(4*width*height);
-  if (pixel_buffer == NULL) {
-    output_log(LOGLEVEL_ERROR, "Error: Could not alloc SVG pixel buffer.\n");
-    return NULL;
-  }
-
-  // Rasterize image
-  nsvgRasterize(rasterizer, image, 0, 0, scale, pixel_buffer, width, height, pitch);
-  SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(pixel_buffer,
-                                                  width,
-                                                  height,
-                                                  32,
-                                                  pitch,
-                                                  COLOR_MASKS);
-  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-  free(pixel_buffer);
-  SDL_FreeSurface(surface);
-  nsvgDelete(image);
-  return texture;
-}
-
-// A function to render the highlight for the buttons
-SDL_Texture *render_highlight(int width, int height, int rx)
-{
-  // Insert user config variables into SVG-formatted text buffer
-  char buf[1024];
-  sprintf(buf, SVG_HIGHLIGHT, width, height, width, height, rx);
-  
-  // Rasterize the SVG
-  SDL_Texture *texture = rasterize_svg(NULL, buf, -1, -1);
-  
-  // Set color
-  SDL_SetTextureColorMod(texture,
-                         config.highlight_color.r,
-                         config.highlight_color.g,
-                         config.highlight_color.b);
-  SDL_SetTextureAlphaMod(texture,config.highlight_color.a);
-  return texture;
-}
-
-// A function to render title text for an entry
-SDL_Texture *render_text(entry_t *entry)
-{
-  TTF_Font *output_font = NULL;
-  TTF_Font *reduced_font = NULL; // Font for Shrink text oversize mode
-  int max_width = config.icon_size;
-  int w, h;
-
-  // Copy entry title to new buffer buffer
-  char *title;
-  copy_string(&title, entry->title);
-
-  // Calculate size of the rendered title
-  int title_length = strlen(title);
-  TTF_SizeUTF8(title_font,title,&w,&h);
-
-  // If title is too large to fit
-  if (w > max_width) {
-
-    // Truncate mode:
-    if (config.title_oversize_mode == MODE_TEXT_TRUNCATE) {
-      utf8_truncate(title, w, max_width);
-      TTF_SizeUTF8(title_font,title,&w,&h);
-    }
-
-    // Shrink mode:
-    else if (config.title_oversize_mode == MODE_TEXT_SHRINK) {
-      int font_size = config.font_size - 1;
-      reduced_font = TTF_OpenFont(config.title_font_path, font_size);
-      TTF_SizeUTF8(reduced_font,title,&w,&h);
-
-      // Keep trying smaller font until it fits
-      while (w > max_width && font_size > 0) {
-        TTF_CloseFont(reduced_font);
-        reduced_font = NULL;
-        font_size--;
-        reduced_font = TTF_OpenFont(config.title_font_path, font_size);
-        TTF_SizeUTF8(reduced_font,title,&w,&h);
-      }
-
-      // Set offset so reduced font remains vertically centered
-      if (font_size) {
-        output_font = reduced_font;
-        entry->title_offset = (geo.font_height - h) / 2;
-      }
-      else {
-        reduced_font = NULL;
-      }
+    random_array(slideshow->order, slideshow->num_images);
+    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
+    background_texture = load_texture(NULL, surface);
+    //SDL_FreeSurface(surface);
+    if (config.debug) {
+      debug_slideshow(slideshow);
     }
   }
-  
-  // Set geometry
-  entry->text_rect.w = w;
-  entry->text_rect.h = h;
-  if (reduced_font == NULL) {
-    output_font = title_font;
-  }
+}
 
-  // Render texture
-  SDL_Surface *text_surface = TTF_RenderUTF8_Blended(output_font,
-                                                    title,
-                                                    config.title_color);
-  SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer,text_surface);
-  SDL_FreeSurface(text_surface);
-  if (reduced_font != NULL) {
-    TTF_CloseFont(reduced_font);
-  }
-  free(title);
-  return text_texture;
+// A function to resume th slideshow after a launched application returns
+void resume_slideshow()
+{
+  ticks.slideshow_load = ticks.main;
 }
 
 // A function to advance X spaces in the entry linked list (left or right)
@@ -663,7 +566,7 @@ int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_posi
   highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
   
   // Output to screen
-  updates = true;
+  state.screen_updates = true;
   return 0;
 }
 
@@ -697,7 +600,7 @@ void render_buttons(menu_t *menu)
   entry_t *entry;
   for (entry = menu->first_entry; entry != NULL; entry = entry->next) {
     entry->icon = load_texture(entry->icon_path, NULL);
-    entry->title_texture = render_text(entry);
+    entry->title_texture = render_text(entry, &geo);
   }
   menu->rendered = true;
 }
@@ -720,7 +623,7 @@ void move_left()
     highlight->rect.x -= geo.x_advance;
     current_menu->highlight_position--;
     current_entry = current_entry->previous;
-    updates = true;
+    state.screen_updates = true;
   }
 
   // If we are in leftmost position, but there is a previous page, load the previous page
@@ -736,7 +639,7 @@ void move_left()
     //if (config.debug) {
     //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
     //}
-    updates = true;
+    state.screen_updates = true;
   }
 }
 
@@ -748,7 +651,7 @@ void move_right()
     highlight->rect.x += geo.x_advance;
     current_menu->highlight_position++;
     current_entry = current_entry->next;
-    updates = true;
+    state.screen_updates = true;
   }
 
   // If we are in the rightmost postion, but there are more entries in the menu, load next page
@@ -768,7 +671,7 @@ void move_right()
     //if (config.debug) {
     //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
     //}
-    updates = true;
+    state.screen_updates = true;
   }
 }
 
@@ -793,7 +696,11 @@ void draw_screen()
     SDL_RenderClear(renderer);
   }
   else {
-    SDL_RenderCopy(renderer,background_texture,NULL,NULL);
+    SDL_RenderCopy(renderer, background_texture, NULL, NULL);
+  }
+
+  if (config.background_mode == MODE_SLIDESHOW && state.slideshow_transition) {
+    SDL_RenderCopy(renderer, slideshow->transition_texture, NULL, NULL);
   }
 
   // Draw scroll indicators
@@ -816,7 +723,7 @@ void draw_screen()
 
   // Output to screen
   SDL_RenderPresent(renderer);
-  updates = false;
+  state.screen_updates = false;
 }
 
 // A function to make sure all settings are in their correct range
@@ -993,7 +900,7 @@ void execute_command(char *command)
       load_back_menu(current_menu);
     }
     else if (!strcmp(special_command, SCMD_QUIT)) {
-      quit = true;
+      state.quit = true;
     }
     else if (!strcmp(special_command, SCMD_SHUTDOWN)) {
       system(CMD_SHUTDOWN);
@@ -1024,6 +931,13 @@ void execute_command(char *command)
 
     // Launch application
     system(cmd);
+
+    // Rebaseline the timing after the program is done
+    ticks.main = SDL_GetTicks();
+
+    if (config.background_mode == MODE_SLIDESHOW) {
+      resume_slideshow();
+    }
 
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
@@ -1097,6 +1011,61 @@ void poll_gamepad()
   }
 }
 
+void update_slideshow()
+{
+  // If image duration time has elapsed, load the next image and start the transition
+  if (!state.slideshow_transition && ticks.main - ticks.slideshow_load > config.slideshow_image_duration) {
+    
+    // Render the new background image in a separate thread so we don't block the main thread
+    if (!state.slideshow_background_rendering && !state.slideshow_background_ready) {
+      slideshow_thread = SDL_CreateThread(load_next_slideshow_background_async, "Slideshow Thread", (void*) slideshow);
+      state.slideshow_background_rendering = true;
+      output_log(LOGLEVEL_DEBUG, "Loading next background\n");
+    }
+
+    // Convert background to texture after the rendering thread has completed
+    else if (state.slideshow_background_ready) {
+      SDL_WaitThread(slideshow_thread, NULL);
+      slideshow_thread = NULL;
+      output_log(LOGLEVEL_DEBUG, "Converting to texture\n");
+      if (config.slideshow_transition_time > 0) {
+        slideshow->transition_texture = load_texture(NULL, slideshow->transition_surface);
+        SDL_SetTextureAlphaMod(slideshow->transition_texture, 0);
+        state.slideshow_transition = true;
+      }
+      else {
+        SDL_DestroyTexture(background_texture);
+        background_texture = load_texture(NULL, slideshow->transition_surface);
+        ticks.slideshow_load = ticks.main;
+      }
+    slideshow->transition_surface = NULL;
+    state.slideshow_background_ready = false;
+    state.screen_updates = true;  
+    }
+  }
+  else if (state.slideshow_transition) {
+    
+    // Increase the transparency
+    slideshow->transition_alpha += slideshow->transition_change_rate;
+    
+    // If transition is done, destroy old background and replace it with the new one
+    if (slideshow->transition_alpha >= 255.0f) {
+      SDL_SetTextureAlphaMod(slideshow->transition_texture, 0xFF);
+      slideshow->transition_alpha = 0.0f;
+      SDL_DestroyTexture(background_texture);
+      background_texture = slideshow->transition_texture;
+      slideshow->transition_texture = NULL;
+      state.slideshow_transition = false;
+      ticks.slideshow_load = ticks.main;
+    }
+    else {
+      SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
+    }
+  state.screen_updates = true;
+  }
+}
+
+
 int main(int argc, char *argv[]) 
 {
   SDL_Event event;
@@ -1130,6 +1099,8 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  ticks.main = SDL_GetTicks();
+
   // Check settings against requirements
   validate_settings();
 
@@ -1157,6 +1128,11 @@ int main(int argc, char *argv[])
     }
   }
 
+  // Initialize slideshow
+  else if (config.background_mode == MODE_SLIDESHOW) {
+    init_slideshow();
+  }
+  
   // Render highlight
   int button_height = config.icon_size + config.title_padding + geo.font_height;
   highlight = malloc(sizeof(highlight_t));
@@ -1166,15 +1142,17 @@ int main(int argc, char *argv[])
                                         highlight->rect.h,
                                         config.highlight_rx);
 
+  
   // Render scroll indicators
   if (config.scroll_indicators) {
     render_scroll_indicators();
   }
-
+  
   // Debug info
   if (config.debug) {
     debug_settings();  
     debug_menu_entries(config.first_menu, config.num_menus);
+    debug_video(renderer);
   }
 
   // Load the default menu and display it
@@ -1197,24 +1175,24 @@ int main(int argc, char *argv[])
     cleanup();
     exit(1);
   }
-
+  
   // Draw initial screen
   draw_screen();
-  updates = false;
 
-#ifdef _WIN32
-  if (!config.debug) {
+  #ifdef _WIN32
+    if (!config.debug) {
       hide_console();
-  }
-#endif
-
+    }
+  #endif
+   
   // Main program loop
   output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
-  while (!quit) {
+  while (!state.quit) {
+    ticks.main = SDL_GetTicks();
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
-          quit = true;
+          state.quit = true;
           break;
 
         case SDL_KEYDOWN:
@@ -1241,10 +1219,10 @@ int main(int argc, char *argv[])
           event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
             if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
               set_draw_color();
-              updates = true;
+              state.screen_updates = true;
             }
             else {
-              updates = true;
+              state.screen_updates = true;
             }
           }
           else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
@@ -1258,7 +1236,13 @@ int main(int argc, char *argv[])
     if (gamepad != NULL) {
       poll_gamepad();
     }
-    if (updates) {
+    if (config.background_mode == MODE_SLIDESHOW) {
+      update_slideshow();
+    }
+    
+    //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
+    
+    if (state.screen_updates) {
       draw_screen();
     }
     SDL_Delay(POLLING_PERIOD);

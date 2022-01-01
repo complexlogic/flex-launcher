@@ -19,7 +19,10 @@ typedef struct {
 } desktop_t;
 
 
-bool file_exists(char *path);
+bool file_exists(const char *path);
+bool directory_exists(const char *path);
 int parse_desktop_file(char *command, char **exec);
 void make_directory(const char *directory);
 void strip_field_codes(char *cmd);
+int image_filter(struct dirent *file);
+int scan_slideshow_directory(slideshow_t *slideshow, const char *directory);
