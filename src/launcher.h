@@ -28,6 +28,8 @@
 #define MAX_SLIDESHOW_IMAGE_DURATION 600000
 #define MIN_SLIDESHOW_TRANSITION_TIME 0
 #define MAX_SLIDESHOW_TRANSITION_TIME 3000
+#define MIN_SCREENSAVER_IDLE_TIME 3
+#define MAX_SCREENSAVER_IDLE_TIME 900
 
 // Modes
 typedef int mode;
@@ -183,6 +185,9 @@ typedef struct
   bool reset_on_back;
   mode on_launch;
   mode esc_quit;
+  bool screensaver_enabled;
+  Uint32 screensaver_idle_time;
+  char screensaver_intensity_str[PERCENT_MAX_CHARS];
   bool gamepad_enabled;
   int gamepad_device;
   char *gamepad_mappings_file;

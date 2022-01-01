@@ -122,10 +122,10 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCROLL_INDICATORS,"false");
   }
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.highlight_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.highlight_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.highlight_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.highlight_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.a);
   if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");
   }
@@ -147,6 +147,21 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_ESC_QUIT,"false");
   }
+  output_log(LOGLEVEL_DEBUG, "======================= Screensaver =======================\n");
+  if (config.screensaver_enabled) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_ENABLED, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_ENABLED, "false");
+  }
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_SCREENSAVER_IDLE_TIME, config.screensaver_idle_time / 1000);
+  if(strlen(config.screensaver_intensity_str)) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_INTENSITY, config.screensaver_intensity_str);
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_INTENSITY, DEFAULT_SCREENSAVER_INTENSITY);
+  }
+
   output_log(LOGLEVEL_DEBUG, "======================== Gamepad ========================\n");
   if (config.gamepad_enabled) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_GAMEPAD_ENABLED, "true");

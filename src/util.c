@@ -115,14 +115,14 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name, SETTING_SLIDESHOW_IMAGE_DURATION)) {
-      Uint32 slideshow_image_duration = atoi(value);
+      Uint32 slideshow_image_duration = (Uint32) atoi(value);
       if (slideshow_image_duration >= MIN_SLIDESHOW_IMAGE_DURATION && 
       slideshow_image_duration <= MAX_SLIDESHOW_IMAGE_DURATION) {
         pconfig->slideshow_image_duration = slideshow_image_duration;
       }
     }
     else if (!strcmp(name, SETTING_SLIDESHOW_TRANSITION_TIME)) {
-      Uint32 slideshow_transition_time = atoi(value);
+      Uint32 slideshow_transition_time = (Uint32) atoi(value);
       if (slideshow_transition_time >= MIN_SLIDESHOW_TRANSITION_TIME && 
       slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME) {
         pconfig->slideshow_transition_time = slideshow_transition_time;
@@ -189,6 +189,26 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
   }
 
+  // Parse screensaver setttings
+  else if (!strcmp(section, "Screensaver")) {
+    if (!strcmp(name, SETTING_SCREENSAVER_ENABLED)) {
+      pconfig->screensaver_enabled = convert_bool(value, DEFAULT_SCREENSAVER_ENABLED);
+    }
+    else if (!strcmp(name, SETTING_SCREENSAVER_IDLE_TIME)) {
+      Uint32 screensaver_idle_time = (Uint32) atoi(value);
+      if (screensaver_idle_time >= MIN_SCREENSAVER_IDLE_TIME &&
+      screensaver_idle_time <= MAX_SCREENSAVER_IDLE_TIME) {
+        pconfig->screensaver_idle_time = screensaver_idle_time*1000; // Convert to ms
+      }
+    }
+    else if (!strcmp(name, SETTING_SCREENSAVER_INTENSITY)) {
+      if (strstr(value,".") == NULL && 
+      strstr(value,"%") != NULL && 
+      strlen(value) < PERCENT_MAX_CHARS) {
+        strcpy(pconfig->screensaver_intensity_str, value);
+      }
+    }
+  }
   // Parse gamepad settings
   else if (!strcmp(section, "Gamepad")) {
     if (!strcmp(name, SETTING_GAMEPAD_ENABLED)) {
