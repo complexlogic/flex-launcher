@@ -7,6 +7,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_thread.h>
 #include "launcher.h"
 #include <launcher_config.h>
 #include "image.h"
@@ -76,6 +77,7 @@ config_t config = {
 state_t state = {
   .screen_updates = false,
   .slideshow_transition = false,
+  .slideshow_background_ready = false,
   .quit = false
 };
 
@@ -89,6 +91,7 @@ menu_t *current_menu = NULL; // Current selected menu
 entry_t *current_entry = NULL; // Current selected entry
 ticks_t ticks;
 SDL_GameController *gamepad = NULL;
+SDL_Thread *slideshow_thread = NULL;
 int delay_period;
 int repeat_period; 
 scroll_t *scroll = NULL;
@@ -392,7 +395,9 @@ void init_slideshow()
                "Error: Only one image found in slideshow directory %s\n"
                "Changing background mode to single image\n", 
                config.slideshow_directory);
-    background_texture = load_next_slideshow_background(slideshow, false);
+    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
+    background_texture = load_texture(NULL, surface);
+    //SDL_FreeSurface(surface);
     quit_slideshow();
     config.background_mode = MODE_IMAGE;
   }
@@ -400,7 +405,9 @@ void init_slideshow()
   // Generate array of random numbers for image order, load first image
   else {
     random_array(slideshow->order, slideshow->num_images);
-    background_texture = load_next_slideshow_background(slideshow, false);
+    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
+    background_texture = load_texture(NULL, surface);
+    //SDL_FreeSurface(surface);
     if (config.debug) {
       debug_slideshow(slideshow);
     }
@@ -1008,17 +1015,33 @@ void update_slideshow()
 {
   // If image duration time has elapsed, load the next image and start the transition
   if (!state.slideshow_transition && ticks.main - ticks.slideshow_load > config.slideshow_image_duration) {
-    if (config.slideshow_transition_time > 0) {
-      slideshow->transition_texture = load_next_slideshow_background(slideshow, true);
-      state.slideshow_transition = true;
+    
+    // Render the new background image in a separate thread so we don't block the main thread
+    if (!state.slideshow_background_rendering && !state.slideshow_background_ready) {
+      slideshow_thread = SDL_CreateThread(load_next_slideshow_background_async, "Slideshow Thread", (void*) slideshow);
+      state.slideshow_background_rendering = true;
+      output_log(LOGLEVEL_DEBUG, "Loading next background\n");
     }
-    else {
-      SDL_DestroyTexture(background_texture);
-      background_texture = NULL;
-      background_texture = load_next_slideshow_background(slideshow, false);
-      ticks.slideshow_load = ticks.main;
+
+    // Convert background to texture after the rendering thread has completed
+    else if (state.slideshow_background_ready) {
+      SDL_WaitThread(slideshow_thread, NULL);
+      slideshow_thread = NULL;
+      output_log(LOGLEVEL_DEBUG, "Converting to texture\n");
+      if (config.slideshow_transition_time > 0) {
+        slideshow->transition_texture = load_texture(NULL, slideshow->transition_surface);
+        SDL_SetTextureAlphaMod(slideshow->transition_texture, 0);
+        state.slideshow_transition = true;
+      }
+      else {
+        SDL_DestroyTexture(background_texture);
+        background_texture = load_texture(NULL, slideshow->transition_surface);
+        ticks.slideshow_load = ticks.main;
+      }
+    slideshow->transition_surface = NULL;
+    state.slideshow_background_ready = false;
+    state.screen_updates = true;  
     }
-    state.screen_updates = true;
   }
   else if (state.slideshow_transition) {
     
@@ -1076,7 +1099,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  ticks.main = 0;
+  ticks.main = SDL_GetTicks();
 
   // Check settings against requirements
   validate_settings();
@@ -1124,6 +1147,7 @@ int main(int argc, char *argv[])
   if (config.scroll_indicators) {
     render_scroll_indicators();
   }
+  
   // Debug info
   if (config.debug) {
     debug_settings();  
@@ -1154,7 +1178,6 @@ int main(int argc, char *argv[])
   
   // Draw initial screen
   draw_screen();
-  state.screen_updates = false;
 
   #ifdef _WIN32
     if (!config.debug) {

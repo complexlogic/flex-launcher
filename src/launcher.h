@@ -67,6 +67,8 @@ typedef int mode;
 typedef struct {
   bool screen_updates;
   bool slideshow_transition;
+  bool slideshow_background_rendering;
+  bool slideshow_background_ready;
   bool quit;
 } state_t;
 
@@ -104,7 +106,6 @@ typedef struct menu
   struct menu *next;
   struct menu *back;
 } menu_t;
-
 
 // Struct for the geometry parameters of the onscreen buttons
 typedef struct {
@@ -148,6 +149,7 @@ typedef struct {
   int num_images;
   float transition_alpha;
   float transition_change_rate;
+  SDL_Surface *transition_surface;
   SDL_Texture *transition_texture;
 } slideshow_t;
 

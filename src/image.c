@@ -16,6 +16,7 @@
 #include "external/nanosvgrast.h"
 
 extern config_t config;
+extern state_t state;
 extern SDL_Renderer *renderer;
 extern SDL_Texture *background_texture;
 extern TTF_Font *title_font;
@@ -40,10 +41,9 @@ void quit_svg()
 }
 
 // A function to load the next slideshow background from the struct
-SDL_Texture *load_next_slideshow_background(slideshow_t *slideshow, bool transition)
+SDL_Surface *load_next_slideshow_background(slideshow_t *slideshow, bool transition)
 {
   SDL_Surface *surface = NULL;
-  SDL_Texture *texture = NULL;
   int initial_index = slideshow->i;
   int attempts = 0;
   do {
@@ -93,16 +93,16 @@ SDL_Texture *load_next_slideshow_background(slideshow_t *slideshow, bool transit
     config.background_mode = MODE_IMAGE;
   }
 
-  // Loading was successful, convert to texture
-  else {
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    
-    // Start as transparent, except first image
-    if (transition) {
-      SDL_SetTextureAlphaMod(texture, 0);
-    }
-  }
-  return texture;
+  return surface;
+}
+
+int load_next_slideshow_background_async(void *data)
+{
+  slideshow_t *slideshow = (slideshow_t*) data;
+  slideshow->transition_surface = load_next_slideshow_background(slideshow, true);
+  state.slideshow_background_rendering = false;
+  state.slideshow_background_ready = true;
+  return 0;
 }
 
 // A function to load a texture from a file OR existing SDL surface
