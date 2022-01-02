@@ -10,6 +10,9 @@
       <a href="#settings">Settings</a>
     </li>
     <li>
+      <a href="#screensaver">Screensaver</a>
+    </li>
+    <li>
       <a href="#creating-menus">Creating Menus</a>
       <ul>
         <li><a href="#special-commands">Special Commands</a></li>
@@ -57,6 +60,15 @@ Every config file must have a section titled "Settings". Within this section, th
     </li>
     <li>
       <a href="#backgroundimage">BackgroundImage</a>
+    </li>
+    <li>
+      <a href="#slideshowdirectory">SlideshowDirectory</a>
+    </li>
+    <li>
+      <a href="#slideshowimageduration">SlideshowImageDuration</a>
+    </li>
+     <li>
+      <a href="#slideshowtransitiontime">SlideshowTransitionTime</a>
     </li>
     <li>
       <a href="#iconsize">IconSize</a>
@@ -129,9 +141,10 @@ The maximum number of buttons that can be displayed on the screen. If your menu 
 
 Default: 4
 #### BackgroundMode
-Defines what mode the background will be. Possible values: "Color" and "Image"
+Defines what mode the background will be. Possible values: "Color", "Image", and "Slideshow"
 - Color: The background will be a solid color.
 - Image: The background will be an image.
+- Slideshow: The background will be a series of images displayed in random order, with a fading transition between each image.
 
 Default: Color
 #### BackgroundColor
@@ -141,6 +154,19 @@ Default: 000000 (Black)
 
 #### BackgroundImage
 When ```BackgroundMode``` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to an image file. If the image is not the same resolution as your desktop, it will be stretched accordingly.
+
+#### SlideshowDirectory
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem.
+
+#### SlideshowImageDuration
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in *milliseconds* to display each image.
+
+Default: 30000 (30 seconds)
+
+#### SlideshowTransitionTime
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in *milliseconds* that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images.
+
+Default: 1500 (1.5 seconds)
 
 #### IconSize
 The width and height of icons on the screen in pixels. If an icon is not the same resolution, it will be stretched accordingly.
@@ -245,6 +271,29 @@ Default: false
 
 #### EscQuit
 Defines whether the user can exit Flex Launcher by pressing the Esc key. When set to false, it prevents a regular user from exiting to the desktop, so Flex Launcher will operate in a "Kiosk Mode" of sorts. This setting is a boolean "true" or "false".
+
+Default: true
+
+## Screensaver
+Flex Launcher contains a screensaver feature, which will dim the screen after the input has been idle for the specified amount of time. Here are the settings that control the behavior of the screensaver
+
+#### Enabled
+Defines whether or not the screensaver is enabled. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### IdleTime
+Defines the amount of time in *seconds* that the input should be idle before activating the screensaver
+
+Default: 300 (5 minutes)
+
+#### Intensity
+Defines the amount to dim the screen. Must be a percent value.
+
+Default: 70%
+
+#### PauseSlideshow
+When ```BackgroundMode``` is set to "Slideshow", this setting defines whether or not the slideshow should be paused while the screensaver is active. This setting is a boolean "true" or "false".
 
 Default: true
 
