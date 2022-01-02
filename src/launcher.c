@@ -1226,7 +1226,7 @@ int main(int argc, char *argv[])
     
     //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
     
-    if (state.screen_updates) {
+    if (!state.quit && state.screen_updates) {
       draw_screen();
     }
     SDL_Delay(POLLING_PERIOD);
