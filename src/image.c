@@ -106,7 +106,7 @@ int load_next_slideshow_background_async(void *data)
 }
 
 // A function to load a texture from a file OR existing SDL surface
-SDL_Texture *load_texture(char *path, SDL_Surface *surface)
+SDL_Texture *load_texture(const char *path, SDL_Surface *surface)
 {
   SDL_Texture *texture = NULL;
   SDL_Surface *loaded_surface = NULL;
@@ -140,7 +140,7 @@ SDL_Texture *load_texture(char *path, SDL_Surface *surface)
 }
 
 // A function to rasterize an SVG from a file OR from xml text buffer
-SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h)
+SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h)
 {
   NSVGimage *image = NULL;
   unsigned char *pixel_buffer = NULL;
@@ -195,7 +195,7 @@ SDL_Texture *rasterize_svg(char *filename, char *xml, int w, int h)
 }
 
 // A function to render the highlight for the buttons
-SDL_Texture *render_highlight(int width, int height, int rx)
+SDL_Texture *render_highlight(int width, int height, unsigned int rx)
 {
   // Insert user config variables into SVG-formatted text buffer
   char buf[1024];

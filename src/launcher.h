@@ -188,7 +188,7 @@ typedef struct
   unsigned int title_padding;  
   SDL_Color highlight_color;
   char highlight_opacity[PERCENT_MAX_CHARS];
-  Uint16 highlight_rx;
+  unsigned int highlight_rx;
   int highlight_vpadding;
   int highlight_hpadding;
   char button_centerline[PERCENT_MAX_CHARS];
