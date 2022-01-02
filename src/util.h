@@ -8,8 +8,13 @@ typedef enum {
 #define NO_ERROR_QUIT 1
 #define ERROR_QUIT 2 
 #define MAX_LOG_LINE_BYTES 501
-#define MAX_PATH_LENGTH 512
 #define MAX_PATH_BYTES 1001 //250 wide characters
+
+#ifdef _WIN32
+#define PATH_SEPARATOR "\\"
+#else
+#define PATH_SEPARATOR "/"
+#endif
 
 int handle_arguments(int argc, char *argv[], char **config_file_path);
 int config_handler(void *user, const char *section, const char *name, const char *value);

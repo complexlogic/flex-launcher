@@ -500,7 +500,7 @@ char *join_paths(char *buffer, int num_paths, ...)
     // Add trailing slash if not present, except last argument
     if ((i != num_paths - 1) && bytes > 0 && *(buffer + strlen(buffer) - 1) != '/' &&
     *(buffer + strlen(buffer) - 1) != '\\')  {
-      strncat(buffer, "/", bytes);
+      strncat(buffer, PATH_SEPARATOR, bytes);
       bytes -= 1;
     }
   }
@@ -660,14 +660,14 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
   #ifdef __unix__
   char *prefixes[4];
   char home_config_buffer[MAX_PATH_BYTES];
-  prefixes[0] = "./";
+  prefixes[0] = CURRENT_DIRECTORY;
   prefixes[1] = config.exe_path;
   prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
   prefixes[3] = PATH_CONFIG_SYSTEM;
   *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 4, prefixes);
   #else
   char *prefixes[2];
-  prefixes[0] = "./";
+  prefixes[0] = CURRENT_DIRECTORY;
   prefixes[1] = config.exe_path;
   *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 2, prefixes);
   #endif

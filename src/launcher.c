@@ -212,7 +212,7 @@ int init_ttf()
     output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
     char *prefixes[2];
     char fonts_exe_buffer[MAX_PATH_BYTES];
-    prefixes[0] = join_paths(fonts_exe_buffer, 2, config.exe_path, PATH_FONTS_EXE);
+    prefixes[0] = join_paths(fonts_exe_buffer, 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
     #ifdef __unix__
     prefixes[1] = PATH_FONTS_SYSTEM;
     #else
@@ -399,9 +399,7 @@ void init_slideshow()
                "Error: Only one image found in slideshow directory %s\n"
                "Changing background mode to single image\n", 
                config.slideshow_directory);
-    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
-    background_texture = load_texture(NULL, surface);
-    //SDL_FreeSurface(surface);
+    background_texture = load_texture(slideshow->images[0], NULL);
     quit_slideshow();
     config.background_mode = MODE_IMAGE;
   }
@@ -411,7 +409,6 @@ void init_slideshow()
     random_array(slideshow->order, slideshow->num_images);
     SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
     background_texture = load_texture(NULL, surface);
-    //SDL_FreeSurface(surface);
     if (config.debug) {
       debug_slideshow(slideshow);
     }
@@ -872,7 +869,7 @@ void execute_command(const char *command)
       SDL_ShowWindow(window);
     }
 
-    SDL_PumpEvents();
+    //SDL_PumpEvents();
   }
   free(cmd);
 }
@@ -1133,7 +1130,7 @@ int main(int argc, char *argv[])
   if (config.debug) {
     debug_settings();  
     debug_menu_entries(config.first_menu, config.num_menus);
-    debug_video(renderer);
+    //debug_video(renderer);
   }
 
   // Load the default menu and display it

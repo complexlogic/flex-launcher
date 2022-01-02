@@ -10,13 +10,18 @@
 #define FILENAME_DEFAULT_CONFIG "config.ini"
 #define FILENAME_DEFAULT_FONT "OpenSans-Regular.ttf"
 #define FILENAME_LOG "@EXECUTABLE_TITLE@.log"
-#define PATH_ASSETS_EXE "assets/"
-#define PATH_ASSETS_RELATIVE "./assets/"
-#define PATH_FONTS_EXE "assets/fonts/"
-#define PATH_FONTS_RELATIVE "./assets/fonts/"
+#define PATH_ASSETS_EXE "assets"
+#define PATH_FONTS_EXE "fonts"
 #define PATH_CONFIG_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/"
 #define PATH_ASSETS_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/assets/"
 #define PATH_FONTS_SYSTEM "@CMAKE_INSTALL_PREFIX@/share/@EXECUTABLE_TITLE@/assets/fonts"
+#ifdef _WIN32
+#define CURRENT_DIRECTORY ".\\"
+#define PATH_FONTS_RELATIVE ".\\assets\\fonts"
+#define PATH_ASSETS_RELATIVE ".\\assets"
+#else
+#define CURRENT_DIRECTORY "./"
+#endif
 
 // Config file setting names
 #define SETTING_DEFAULT_MENU "@SETTING_DEFAULT_MENU@"

@@ -16,7 +16,6 @@
 #include "slideshow.h"
 
 // A function to determine if a file exists in the filesystem
-
 bool file_exists_w(wchar_t *path)
 {
   if (_waccess(path, 4) == 0) {
@@ -29,7 +28,7 @@ bool file_exists_w(wchar_t *path)
 
 bool file_exists(const char *path)
 {
-  WCHAR w_path[2*MAX_PATH_BYTES + 1];
+  WCHAR w_path[2*MAX_PATH_BYTES];
   MultiByteToWideChar(CP_UTF8,
     0,
     path,
@@ -41,7 +40,7 @@ bool file_exists(const char *path)
 
 bool directory_exists(const char *path)
 {
-  WCHAR w_path[2*MAX_PATH_BYTES + 1];
+  WCHAR w_path[2*MAX_PATH_BYTES];
   MultiByteToWideChar(CP_UTF8,
     0,
     path,
@@ -94,7 +93,7 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   WIN32_FIND_DATAW data;
   HANDLE handle;
   char file_search_utf8[MAX_PATH_BYTES];
-  WCHAR file_search[2*MAX_PATH_BYTES + 1];
+  WCHAR file_search[2*MAX_PATH_BYTES];
   char file_result_utf8[2*sizeof(file_search)];
   char file_output[sizeof(file_result_utf8)];
   char extension[10];

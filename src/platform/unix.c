@@ -111,7 +111,7 @@ int parse_desktop_file(char *command, char **exec)
 // directories if necessary
 void make_directory(const char *directory) 
 {
-  char buffer[MAX_PATH_LENGTH];
+  char buffer[MAX_PATH_BYTES];
   char *i = NULL;
   int length;
   snprintf(buffer, sizeof(buffer), "%s", directory);
