@@ -15,9 +15,9 @@
 
 ## Overview
  Flex Launcher builds natively on Linux and Windows, and features a cross-platform CMake build system. The following external dependencies are required:
- - SDL
- - SDL_image
- - SDL_ttf
+ - SDL >= 2.0.14
+ - SDL_image >=2.0.5
+ - SDL_ttf >= 2.0.15
 
 ## Linux
 Flex Launcher on Linux builds with GCC. This guide assumes you already have the tools Git, CMake, and GCC installed on your system. If not, consult your distro's documentation. 
