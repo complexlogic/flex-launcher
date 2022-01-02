@@ -53,21 +53,21 @@ Binary packages are available on the [release page](https://github.com/complexlo
 
 #### APT-based x86-64 Distributions (Debian, Ubuntu, Mint, etc.)
 ```
-VERSION=1.1
+VERSION=1.2
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
-sudo apt install flex-launcher_${VERSION}_amd64.deb
+sudo apt install ./flex-launcher_${VERSION}_amd64.deb
 ```
 #### Pacman-based x86-64 Distributions (Arch, Manjaro, etc.)
 ```
-VERSION=1.1
+VERSION=1.2
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
 ```
-VERSION=1.1
+VERSION=1.2
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_armhf.deb
-sudo apt install flex-launcher_${VERSION}_armhf.deb
+sudo apt install ./flex-launcher_${VERSION}_armhf.deb
 ```
 #### Copying Assets to Home Directory
 The Linux packages install a default config file and assets to /usr/share/flex-launcher. It is strongly recommended to NOT edit this config file directly, as it will be overwritten if you upgrade to a later version of Flex Launcher. Instead, copy these files to your home directory and edit it there.
