@@ -30,6 +30,7 @@
 #define MAX_SLIDESHOW_TRANSITION_TIME 3000
 #define MIN_SCREENSAVER_IDLE_TIME 3
 #define MAX_SCREENSAVER_IDLE_TIME 900
+#define SCREENSAVER_TRANSITION_TIME 3000
 
 // Modes
 typedef int mode;
@@ -71,12 +72,16 @@ typedef struct {
   bool slideshow_transition;
   bool slideshow_background_rendering;
   bool slideshow_background_ready;
+  bool slideshow_paused;
+  bool screensaver_active;
+  bool screensaver_transition;
   bool quit;
 } state_t;
 
 typedef struct {
   Uint32 main;
   Uint32 slideshow_load;
+  Uint32 last_input;
 } ticks_t;
 
 // Linked list for menu entries
@@ -155,6 +160,14 @@ typedef struct {
   SDL_Texture *transition_texture;
 } slideshow_t;
 
+// Screensaver
+typedef struct {
+  float alpha;
+  float alpha_end_value;
+  float transition_change_rate;
+  SDL_Texture *texture;
+} screensaver_t;
+
 // Configuration settings
 typedef struct
 {
@@ -188,6 +201,7 @@ typedef struct
   bool screensaver_enabled;
   Uint32 screensaver_idle_time;
   char screensaver_intensity_str[PERCENT_MAX_CHARS];
+  bool screensaver_pause_slideshow;
   bool gamepad_enabled;
   int gamepad_device;
   char *gamepad_mappings_file;
@@ -203,11 +217,14 @@ typedef struct
 // Function prototypes
 int init_sdl(void);
 int init_ttf(void);
-int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
+int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
 int main(int argv, char *argc[]);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
 void update_slideshow(void);
 void resume_slideshow(void);
+void update_screensaver(void);
+void init_slideshow(void);
+void init_screensaver(void);
 void quit_slideshow(void);
 void set_draw_color(void);
 void calculate_geometry(entry_t *entry, int buttons);
@@ -218,9 +235,8 @@ void move_right(void);
 void load_submenu(char *submenu);
 void load_back_menu(menu_t *menu);
 void draw_screen(void);
-void validate_settings(void);
 void handle_keypress(SDL_Keysym *key);
-void execute_command(char *command);
+void execute_command(const char *command);
 void poll_gamepad(void);
 void connect_gamepad(int device_index);
 void render_scroll_indicators();

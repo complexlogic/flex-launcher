@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <math.h>
 #include <time.h>
 #include <SDL.h>
 #include <SDL_image.h>
@@ -64,6 +63,7 @@ config_t config = {
   .screensaver_enabled = false,
   .screensaver_idle_time = DEFAULT_SCREENSAVER_IDLE_TIME*1000,
   .screensaver_intensity_str[0] = '\0',
+  .screensaver_pause_slideshow = DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW,
   .gamepad_enabled = DEFAULT_GAMEPAD_ENABLED,
   .gamepad_device = DEFAULT_GAMEPAD_DEVICE,
   .gamepad_mappings_file = NULL,
@@ -81,6 +81,9 @@ state_t state = {
   .screen_updates = false,
   .slideshow_transition = false,
   .slideshow_background_ready = false,
+  .slideshow_paused = false,
+  .screensaver_active = false,
+  .screensaver_transition = false,
   .quit = false
 };
 
@@ -99,9 +102,9 @@ int delay_period;
 int repeat_period; 
 scroll_t *scroll = NULL;
 slideshow_t *slideshow = NULL;
+screensaver_t *screensaver = NULL;
 SDL_Texture *background_texture = NULL; // Background texture (image only)
 highlight_t *highlight = NULL; // Pointer containing highlight texture and coordinates
-bool updates; // Bool to update the screen at the end of the main loop
 geometry_t geo; // Struct containing screen geometry for the current page of buttons
 
 // A function to initialize SDL
@@ -269,6 +272,9 @@ void cleanup()
   if (config.background_mode == MODE_SLIDESHOW) {
     quit_slideshow();
   }
+  if (config.screensaver_enabled) {
+    free(screensaver);
+  }
 
   // Free menu and entry linked lists
   entry_t *entry = NULL;
@@ -353,11 +359,6 @@ void quit_slideshow()
     free(slideshow->images[i]);
   }
   free(slideshow);
-  
-  //config.background_mode = MODE_COLOR;
-  //output_log(LOGLEVEL_ERROR, "Error: Couldn't load background image, defaulting to color background\n");
-  //set_draw_color();
-
 }
 
 // A function to initialize the slideshow background mode
@@ -415,6 +416,51 @@ void init_slideshow()
       debug_slideshow(slideshow);
     }
   }
+}
+
+void init_screensaver()
+{
+  // Allocate memory for structure
+  screensaver = malloc(sizeof(screensaver_t));
+  
+  // Convert intensity string to float
+  char intensity[PERCENT_MAX_CHARS];
+  int length = strlen(config.screensaver_intensity_str);
+  if (length && 
+  strchr(config.screensaver_intensity_str, (int) '%') == config.screensaver_intensity_str + length - 1) {
+    strcpy(intensity, config.screensaver_intensity_str);
+  }
+  else {
+    strcpy(intensity, DEFAULT_SCREENSAVER_INTENSITY);
+  }
+  intensity[length - 1] = '\0';
+  float percent = atof(intensity);
+
+  // Calculate alpha end value
+  screensaver->alpha_end_value = 255.0f * percent / 100.0f;
+  if (screensaver->alpha_end_value < 1.0f) {
+    output_log(LOGLEVEL_ERROR, "Invalid screensaver intensity value, disabling feature\n");
+    config.screensaver_enabled = false;
+    free(screensaver);
+    return;
+  }
+  else if (screensaver->alpha_end_value >= 255.0f) {
+    screensaver->alpha_end_value = 255.0f;
+  }
+  screensaver->transition_change_rate = screensaver->alpha_end_value / ((float) SCREENSAVER_TRANSITION_TIME / (float) POLLING_PERIOD);
+  
+  // Render texture
+  SDL_Surface *surface = NULL;
+  surface = SDL_CreateRGBSurfaceWithFormat(0, 
+              geo.screen_width, 
+              geo.screen_height, 
+              32,
+              SDL_PIXELFORMAT_ARGB8888);
+  Uint32 color = SDL_MapRGBA(surface->format, 0, 0, 0, 0xFF);
+  SDL_FillRect(surface, NULL, color);
+  screensaver->texture = load_texture(NULL, surface);
+  screensaver->alpha = 0.0f;
+  SDL_SetTextureAlphaMod(screensaver->texture, 0.0f);
 }
 
 // A function to resume th slideshow after a launched application returns
@@ -501,7 +547,7 @@ void render_scroll_indicators()
 }
 
 // A function to load a menu by name OR existing menu struct
-int load_menu(char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position)
+int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position)
 {
   int buttons;
   menu_t *previous_menu = current_menu;
@@ -724,138 +770,17 @@ void draw_screen()
   // Draw buttons
   draw_buttons(current_menu->root_entry);
 
+  if (state.screensaver_active) {
+    SDL_RenderCopy(renderer, screensaver->texture, NULL, NULL);
+  }
+
   // Output to screen
   SDL_RenderPresent(renderer);
   state.screen_updates = false;
 }
 
-// A function to make sure all settings are in their correct range
-void validate_settings()
-{
-  // Reduce number of buttons if they can't all fit on screen
-  if (config.icon_size * config.max_buttons > geo.screen_width) {
-    int i;
-    for (i = config.max_buttons; i * config.icon_size > geo.screen_width && i > 0; i--);
-    output_log(LOGLEVEL_ERROR, "Error: Not enough screen space for %i buttons, reducing to %i\n", 
-                               config.max_buttons, 
-                               i);
-    config.max_buttons = i; 
-  }
-
-  // Convert % opacity settings to 0-255
-  if (strlen(config.title_opacity)) {
-    int opacity = convert_percent(config.title_opacity,0xFF);
-    if (opacity != -1) {
-      config.title_color.a = (Uint8) opacity;
-    }
-  }
-  if (strlen(config.highlight_opacity)) {
-    int opacity = convert_percent(config.highlight_opacity,0xFF);
-    if (opacity != -1) {
-      config.highlight_color.a = (Uint8) opacity;
-    }
-  }
-  if (strlen(config.scroll_indicator_opacity)) {
-    int opacity = convert_percent(config.scroll_indicator_opacity,0xFF);
-    if (opacity != -1) {
-      config.scroll_indicator_color.a = (Uint8) opacity;
-    }
-  }
-
-  // Set default IconSpacing if none is in the config file
-  if (config.icon_spacing < 0) {
-    config.icon_spacing = geo.screen_width / 20;
-  }
-
-  // Convert % for IconSpacing setting
-  if (strlen(config.icon_spacing_str)) {
-    int icon_spacing = convert_percent(config.icon_spacing_str,geo.screen_width);
-    if (icon_spacing < 0) {
-      config.icon_spacing = 0;
-    }
-    else {
-      config.icon_spacing = icon_spacing;
-    }
-  }
-  
-  // Reduce highlight hpadding to prevent overlaps
-  if (config.highlight_hpadding > (config.icon_spacing / 2)) {
-    config.highlight_hpadding = config.icon_spacing / 2;
-  }
-
-  // Reduce icon spacing and highlight padding if too large to fit onscreen
-  unsigned int required_length = calculate_width(config.max_buttons,
-                                                 config.icon_spacing,
-                                                 config.icon_size,
-                                                 config.highlight_hpadding);
-  int highlight_hpadding = config.highlight_hpadding;
-  int icon_spacing = config.icon_spacing;
-  for (int i = 0; i < 100 && required_length > geo.screen_width; i++) {
-    if (highlight_hpadding > 0) {
-      highlight_hpadding = (highlight_hpadding * 9) / 10;
-    }
-    if (icon_spacing > 0) {
-      icon_spacing = (icon_spacing * 9) / 10;
-    }
-    required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
-  }
-  if (config.highlight_hpadding != highlight_hpadding) {
-    output_log(LOGLEVEL_ERROR, 
-               "Error: Highlight padding value %i too large to fit screen, shrinking to %i\n",
-               config.highlight_hpadding, 
-               highlight_hpadding);
-    config.highlight_hpadding = highlight_hpadding;
-  }
-  if (config.icon_spacing != icon_spacing) {
-    output_log(LOGLEVEL_ERROR, 
-               "Error: Icon spacing value %i too large to fit screen, shrinking to %i\n",
-               config.icon_spacing, 
-               icon_spacing);
-    config.icon_spacing = icon_spacing;
-  }
-
-  // Make sure title padding is in valid range
-  if (config.title_padding < 0 || config.title_padding > config.icon_size / 2) {
-    int title_padding = config.icon_size / 10;
-    output_log(LOGLEVEL_ERROR, 
-               "Error: Text padding value %i invalid, changing to %i\n",
-               config.title_padding, 
-               title_padding);
-    config.title_padding = title_padding;
-  }
-
-  // Calculate y coordinates for buttons from centerline setting
-  if (strlen(config.button_centerline)) {
-    int button_centerline;
-    int button_height = config.icon_size + config.title_padding + geo.font_height;
-    if (strstr(config.button_centerline,"%") != NULL) {
-      button_centerline = convert_percent(config.button_centerline,geo.screen_height);
-      if (button_centerline == -1) {
-        button_centerline = geo.screen_height / 2;
-      }
-    }
-    else {
-      button_centerline = atoi(config.button_centerline);
-      if (button_centerline == 0 && strcmp(config.button_centerline,"0")) {
-          button_centerline = geo.screen_height / 2;
-        }
-    }
-    if (button_centerline < geo.screen_height / 4) {
-      button_centerline = geo.screen_height / 4;
-    }
-    else if (button_centerline > 3*geo.screen_height / 4) {
-      button_centerline = 3*geo.screen_height / 4;
-    }
-    geo.y_margin = button_centerline - button_height / 2;
-  }
-  else {
-    int button_height = config.icon_size + config.title_padding + geo.font_height;
-    geo.y_margin = geo.screen_height / 2 - button_height / 2;
-  }
-}
-
 // A function to execute the user's command
-void execute_command(char *command)
+void execute_command(const char *command)
 {
   if (strlen(command) == 0) {
     return;
@@ -937,6 +862,7 @@ void execute_command(char *command)
 
     // Rebaseline the timing after the program is done
     ticks.main = SDL_GetTicks();
+    ticks.last_input = ticks.main;
 
     if (config.background_mode == MODE_SLIDESHOW) {
       resume_slideshow();
@@ -1005,32 +931,34 @@ void poll_gamepad()
     // Execute command if first press or valid repeat
     if (i->repeat == 1) {
       output_log(LOGLEVEL_DEBUG, "Gamepad %s detected\n", i->label);
+      ticks.last_input = ticks.main;
       execute_command(i->cmd);
     }
     else if (i->repeat == delay_period) {
+      ticks.last_input = ticks.main;
       execute_command(i->cmd);
       i->repeat -= repeat_period;
     }
   }
 }
 
+// A function to update the slideshow
 void update_slideshow()
 {
   // If image duration time has elapsed, load the next image and start the transition
-  if (!state.slideshow_transition && ticks.main - ticks.slideshow_load > config.slideshow_image_duration) {
+  if (!state.slideshow_transition && (ticks.main - ticks.slideshow_load > config.slideshow_image_duration) &&
+  !state.slideshow_paused) {
     
     // Render the new background image in a separate thread so we don't block the main thread
     if (!state.slideshow_background_rendering && !state.slideshow_background_ready) {
       slideshow_thread = SDL_CreateThread(load_next_slideshow_background_async, "Slideshow Thread", (void*) slideshow);
       state.slideshow_background_rendering = true;
-      output_log(LOGLEVEL_DEBUG, "Loading next background\n");
     }
 
     // Convert background to texture after the rendering thread has completed
     else if (state.slideshow_background_ready) {
       SDL_WaitThread(slideshow_thread, NULL);
       slideshow_thread = NULL;
-      output_log(LOGLEVEL_DEBUG, "Converting to texture\n");
       if (config.slideshow_transition_time > 0) {
         slideshow->transition_texture = load_texture(NULL, slideshow->transition_surface);
         SDL_SetTextureAlphaMod(slideshow->transition_texture, 0);
@@ -1065,6 +993,50 @@ void update_slideshow()
       SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
     }
   state.screen_updates = true;
+  }
+}
+
+// A function to update the screensaver
+void update_screensaver()
+{
+  // Activate the screensaver if the launcher has been idle for the required time
+  if (!state.screensaver_active && ticks.main - ticks.last_input > config.screensaver_idle_time) {
+    state.screensaver_active = true;
+    state.screensaver_transition = true;
+    if (config.background_mode == MODE_SLIDESHOW && config.screensaver_pause_slideshow) {
+      state.slideshow_paused = true;
+    }
+  }
+  else {
+
+    // Transition the screen to dark
+    if (state.screensaver_transition) {
+      screensaver->alpha += screensaver->transition_change_rate;
+      if (screensaver->alpha >= screensaver->alpha_end_value) {
+        SDL_SetTextureAlphaMod(screensaver->texture, (Uint8) screensaver->alpha_end_value);
+        state.screensaver_transition = false;
+      }
+      else {
+        SDL_SetTextureAlphaMod(screensaver->texture, (Uint8) screensaver->alpha);
+      }
+    state.screen_updates = true;
+    }
+
+    // User has pressed input, deactivate the screensaver
+    if (state.screensaver_active && ticks.last_input == ticks.main) {
+      SDL_SetTextureAlphaMod(screensaver->texture, 0);
+      screensaver->alpha = 0.0f;
+      state.screensaver_active = false;
+      state.screensaver_transition = false;
+      if (config.background_mode == MODE_SLIDESHOW) {
+        state.slideshow_paused = false;
+        
+        // Reset the slideshow time so we don't have a transition immediately 
+        // after coming out of screensaver mode
+        ticks.slideshow_load = ticks.main;
+      }
+      state.screen_updates = true;
+    }
   }
 }
 
@@ -1103,9 +1075,10 @@ int main(int argc, char *argv[])
   }
 
   ticks.main = SDL_GetTicks();
+  ticks.last_input = ticks.main;
 
   // Check settings against requirements
-  validate_settings();
+  validate_settings(&geo);
 
   // Load gamepad overrides
   if (config.gamepad_enabled) {
@@ -1134,6 +1107,11 @@ int main(int argc, char *argv[])
   // Initialize slideshow
   else if (config.background_mode == MODE_SLIDESHOW) {
     init_slideshow();
+  }
+
+  // Initialize screensaver
+  if (config.screensaver_enabled) {
+    init_screensaver();
   }
   
   // Render highlight
@@ -1199,6 +1177,7 @@ int main(int argc, char *argv[])
           break;
 
         case SDL_KEYDOWN:
+          ticks.last_input = ticks.main;
           handle_keypress(&event.key.keysym);         
           break;
 
@@ -1236,11 +1215,16 @@ int main(int argc, char *argv[])
           }
       }
     }
+
+    // Post-loop updates
     if (gamepad != NULL) {
       poll_gamepad();
     }
     if (config.background_mode == MODE_SLIDESHOW) {
       update_slideshow();
+    }
+    if (config.screensaver_enabled) {
+      update_screensaver();
     }
     
     //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);

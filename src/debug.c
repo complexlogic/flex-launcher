@@ -161,6 +161,12 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_INTENSITY, DEFAULT_SCREENSAVER_INTENSITY);
   }
+  if (config.screensaver_pause_slideshow) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_PAUSE_SLIDESHOW, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_PAUSE_SLIDESHOW, "false");
+  }
 
   output_log(LOGLEVEL_DEBUG, "======================== Gamepad ========================\n");
   if (config.gamepad_enabled) {

@@ -208,6 +208,9 @@ int config_handler(void *user, const char *section, const char *name, const char
         strcpy(pconfig->screensaver_intensity_str, value);
       }
     }
+    else if (!strcmp(name, SETTING_SCREENSAVER_PAUSE_SLIDESHOW)) {
+      pconfig->screensaver_pause_slideshow = convert_bool(value, DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW);
+    }
   }
   // Parse gamepad settings
   else if (!strcmp(section, "Gamepad")) {
@@ -406,14 +409,14 @@ void clean_path(char *path)
 }
 
 // A function to convert a hex-formatted string into a color struct
-bool hex_to_color(char *text, SDL_Color *color)
+bool hex_to_color(const char *string, SDL_Color *color)
 {
 
   // If strtoul returned 0, and the hex string wasn't 000..., then there was an error
-  int length = strlen(text);
-  Uint32 hex = (Uint32) strtoul(text, NULL, 16);
-  if ((!hex && strcmp(text,"00000000")) || 
-  (!hex && strcmp(text,"000000")) || 
+  int length = strlen(string);
+  Uint32 hex = (Uint32) strtoul(string, NULL, 16);
+  if ((!hex && strcmp(string,"00000000")) || 
+  (!hex && strcmp(string,"000000")) || 
   (length != 6 && length != 8)) {
     return false;
   }
@@ -437,7 +440,7 @@ bool hex_to_color(char *text, SDL_Color *color)
 }
 
 // A function to convert a string into a bool
-bool convert_bool(char *string, bool default_setting)
+bool convert_bool(const char *string, bool default_setting)
 {
   if (!strcmp(string, "true")) {
     return true;
@@ -451,7 +454,7 @@ bool convert_bool(char *string, bool default_setting)
 }
 
 // Allocates memory and copies a variable length string
-void copy_string(char **dest, char *string)
+void copy_string(char **dest, const char *string)
 {
   int length = strlen(string);
   if (length) {
@@ -506,7 +509,7 @@ char *join_paths(char *buffer, int num_paths, ...)
 }
 
 // A function to find a file from a filename and list of path prefixes
-char *find_file(char *file, int num_prefixes, char **prefixes)
+char *find_file(const char *file, int num_prefixes, const char **prefixes)
 {
   char buffer[MAX_PATH_BYTES];
   for (int i = 0; i < num_prefixes; i++) {
@@ -523,7 +526,7 @@ char *find_file(char *file, int num_prefixes, char **prefixes)
 }
 
 // Calculates the length of a utf-8 encoded string
-int utf8_length(char *string)
+int utf8_length(const char *string)
 {
   int length = 0;
   char *ptr = string;
@@ -731,7 +734,7 @@ void print_version()
 }
 
 // A function to convert a percentage string to a integer value
-int convert_percent(char *string, int max_value)
+int convert_percent(const char *string, int max_value)
 {
   float percent = atof(strtok(string,"%"));
   if (percent < 0 || percent > 100) {
@@ -739,6 +742,131 @@ int convert_percent(char *string, int max_value)
   }
   else {
     return (int)((float) max_value*percent*0.01F);
+  }
+}
+
+// A function to make sure all settings are in their correct range
+void validate_settings(geometry_t *geo)
+{
+  // Reduce number of buttons if they can't all fit on screen
+  if (config.icon_size * config.max_buttons > geo->screen_width) {
+    int i;
+    for (i = config.max_buttons; i * config.icon_size > geo->screen_width && i > 0; i--);
+    output_log(LOGLEVEL_ERROR, "Error: Not enough screen space for %i buttons, reducing to %i\n", 
+                               config.max_buttons, 
+                               i);
+    config.max_buttons = i; 
+  }
+
+  // Convert % opacity settings to 0-255
+  if (strlen(config.title_opacity)) {
+    int opacity = convert_percent(config.title_opacity,0xFF);
+    if (opacity != -1) {
+      config.title_color.a = (Uint8) opacity;
+    }
+  }
+  if (strlen(config.highlight_opacity)) {
+    int opacity = convert_percent(config.highlight_opacity,0xFF);
+    if (opacity != -1) {
+      config.highlight_color.a = (Uint8) opacity;
+    }
+  }
+  if (strlen(config.scroll_indicator_opacity)) {
+    int opacity = convert_percent(config.scroll_indicator_opacity,0xFF);
+    if (opacity != -1) {
+      config.scroll_indicator_color.a = (Uint8) opacity;
+    }
+  }
+
+  // Set default IconSpacing if none is in the config file
+  if (config.icon_spacing < 0) {
+    config.icon_spacing = geo->screen_width / 20;
+  }
+
+  // Convert % for IconSpacing setting
+  if (strlen(config.icon_spacing_str)) {
+    int icon_spacing = convert_percent(config.icon_spacing_str,geo->screen_width);
+    if (icon_spacing < 0) {
+      config.icon_spacing = 0;
+    }
+    else {
+      config.icon_spacing = icon_spacing;
+    }
+  }
+  
+  // Reduce highlight hpadding to prevent overlaps
+  if (config.highlight_hpadding > (config.icon_spacing / 2)) {
+    config.highlight_hpadding = config.icon_spacing / 2;
+  }
+
+  // Reduce icon spacing and highlight padding if too large to fit onscreen
+  unsigned int required_length = calculate_width(config.max_buttons,
+                                                 config.icon_spacing,
+                                                 config.icon_size,
+                                                 config.highlight_hpadding);
+  int highlight_hpadding = config.highlight_hpadding;
+  int icon_spacing = config.icon_spacing;
+  for (int i = 0; i < 100 && required_length > geo->screen_width; i++) {
+    if (highlight_hpadding > 0) {
+      highlight_hpadding = (highlight_hpadding * 9) / 10;
+    }
+    if (icon_spacing > 0) {
+      icon_spacing = (icon_spacing * 9) / 10;
+    }
+    required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
+  }
+  if (config.highlight_hpadding != highlight_hpadding) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Highlight padding value %i too large to fit screen, shrinking to %i\n",
+               config.highlight_hpadding, 
+               highlight_hpadding);
+    config.highlight_hpadding = highlight_hpadding;
+  }
+  if (config.icon_spacing != icon_spacing) {
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Icon spacing value %i too large to fit screen, shrinking to %i\n",
+               config.icon_spacing, 
+               icon_spacing);
+    config.icon_spacing = icon_spacing;
+  }
+
+  // Make sure title padding is in valid range
+  if (config.title_padding < 0 || config.title_padding > config.icon_size / 2) {
+    int title_padding = config.icon_size / 10;
+    output_log(LOGLEVEL_ERROR, 
+               "Error: Text padding value %i invalid, changing to %i\n",
+               config.title_padding, 
+               title_padding);
+    config.title_padding = title_padding;
+  }
+
+  // Calculate y coordinates for buttons from centerline setting
+  if (strlen(config.button_centerline)) {
+    int button_centerline;
+    int button_height = config.icon_size + config.title_padding + geo->font_height;
+    if (strstr(config.button_centerline,"%") != NULL) {
+      button_centerline = convert_percent(config.button_centerline,geo->screen_height);
+      if (button_centerline == -1) {
+        button_centerline = geo->screen_height / 2;
+      }
+    }
+    else {
+      button_centerline = atoi(config.button_centerline);
+      if (button_centerline == 0 && strcmp(config.button_centerline,"0")) {
+          button_centerline = geo->screen_height / 2;
+        }
+    }
+    if (button_centerline < geo->screen_height / 4) {
+      button_centerline = geo->screen_height / 4;
+    }
+    else if (button_centerline > 3*geo->screen_height / 4) {
+      button_centerline = 3*geo->screen_height / 4;
+    }
+    geo->y_margin = button_centerline - button_height / 2;
+  }
+  else {
+    int button_height = config.icon_size + config.title_padding + geo->font_height;
+    geo->y_margin = geo->screen_height / 2 - button_height / 2;
   }
 }
 
