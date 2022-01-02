@@ -87,7 +87,7 @@ If your config file is in one of the above locations, Flex Launcher can be start
 ```
 flex-launcher -c /path/to/config.ini
 ```
-Flex Launcher ships with a default config file which is intended strictly for demonstation purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings.
+Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings.
 
 ### Controls
 The keyboard arrow keys move the cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. 
