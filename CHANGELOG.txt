@@ -1,3 +1,11 @@
+Unreleased
+- Added hotkeys feature
+- Removed EscQuit setting. Esc to quit functionality is now implemented as a configurable hotkey
+- Changed slideshow time units from milliseconds to seconds
+- Windows: Applications now launch via WIN32 API instead of CRT
+- Windows: Implemented OnLaunch setting that was previously Linux exclusive
+- Windows: Fixed web browser blocking issue
+
 v1.2 (2022-1-2)
 - Added slideshow background mode
 - Added screensaver feature

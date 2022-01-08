@@ -116,14 +116,14 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name, SETTING_SLIDESHOW_IMAGE_DURATION)) {
-      Uint32 slideshow_image_duration = (Uint32) atoi(value);
+      Uint32 slideshow_image_duration = ((Uint32) atoi(value))*1000;
       if (slideshow_image_duration >= MIN_SLIDESHOW_IMAGE_DURATION && 
       slideshow_image_duration <= MAX_SLIDESHOW_IMAGE_DURATION) {
         pconfig->slideshow_image_duration = slideshow_image_duration;
       }
     }
     else if (!strcmp(name, SETTING_SLIDESHOW_TRANSITION_TIME)) {
-      Uint32 slideshow_transition_time = (Uint32) atoi(value);
+      Uint32 slideshow_transition_time = (Uint32) (atof(value)*1000.0f);
       if (slideshow_transition_time >= MIN_SLIDESHOW_TRANSITION_TIME && 
       slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME) {
         pconfig->slideshow_transition_time = slideshow_transition_time;

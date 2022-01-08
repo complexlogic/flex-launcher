@@ -95,8 +95,8 @@ void debug_settings()
   if (config.slideshow_directory != NULL) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SLIDESHOW_DIRECTORY ,config.slideshow_directory);
   }
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_SLIDESHOW_IMAGE_DURATION,config.slideshow_image_duration);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_SLIDESHOW_TRANSITION_TIME,config.slideshow_transition_time);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_SLIDESHOW_IMAGE_DURATION, config.slideshow_image_duration / 1000);
+  output_log(LOGLEVEL_DEBUG, "%s: %f\n",SETTING_SLIDESHOW_TRANSITION_TIME, ((float) config.slideshow_transition_time) / 1000.0f);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_ICON_SIZE,config.icon_size);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_ICON_SPACING,config.icon_spacing);
   output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_TITLE_FONT,config.title_font_path);
