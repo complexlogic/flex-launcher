@@ -60,7 +60,6 @@ config_t config = {
   .scroll_indicator_opacity[0] = '\0',
   .title_oversize_mode = MODE_TEXT_TRUNCATE,
   .reset_on_back = DEFAULT_RESET_ON_BACK,
-  .esc_quit = DEFAULT_ESC_QUIT,
   .screensaver_enabled = false,
   .screensaver_idle_time = DEFAULT_SCREENSAVER_IDLE_TIME*1000,
   .screensaver_intensity_str[0] = '\0',
@@ -97,6 +96,7 @@ TTF_Font *title_font = NULL; // Font of the button title text
 menu_t *default_menu = NULL;
 menu_t *current_menu = NULL; // Current selected menu
 entry_t *current_entry = NULL; // Current selected entry
+hotkey_t *hotkeys = NULL;
 ticks_t ticks;
 SDL_GameController *gamepad = NULL;
 SDL_Thread *slideshow_thread = NULL;
@@ -301,6 +301,16 @@ void cleanup()
     free(tmp_menu);
   }
 
+  // Free hotkeys
+
+  hotkey_t *tmp_hotkey = NULL;
+  for(hotkey_t *i = hotkeys; i != NULL; i = i->next) {
+    free(tmp_hotkey);
+    free(i->cmd);
+    tmp_hotkey = i;
+  }
+  free(tmp_hotkey);
+
   // Free gamepad control linked list
   gamepad_control_t *tmp_gamepad = NULL;
   for (gamepad_control_t *i = config.gamepad_controls; i != NULL; i = i->next) {
@@ -322,11 +332,8 @@ void handle_keypress(SDL_Keysym *key)
                key->sym);
   }
 
-  // Check keys
-  if (key->sym == SDLK_ESCAPE && config.esc_quit) {
-    quit(0);
-  }
-  else if (key->sym == SDLK_LEFT) {
+  // Check default keys
+  if (key->sym == SDLK_LEFT) {
     move_left();
   }
   else if (key->sym == SDLK_RIGHT) {
@@ -346,6 +353,16 @@ void handle_keypress(SDL_Keysym *key)
   }
   else if (key->sym == SDLK_BACKSPACE) {
     load_back_menu(current_menu);
+  }
+
+  //Check hotkeys
+  else {
+    for (hotkey_t *i = hotkeys; i != NULL; i = i->next) {
+      if (key->sym == i->keycode) {
+        execute_command(i->cmd);
+        break;
+      }
+    }
   }
 }
 
@@ -1131,7 +1148,8 @@ int main(int argc, char *argv[])
   // Debug info
   if (config.debug) {
     debug_video(renderer, &display_mode);
-    debug_settings();  
+    debug_settings();
+    debug_hotkeys(hotkeys);  
     debug_menu_entries(config.first_menu, config.num_menus);
   }
 

@@ -84,8 +84,7 @@ typedef struct {
 } ticks_t;
 
 // Linked list for menu entries
-typedef struct entry
-{
+typedef struct entry {
   char *title;
   char *icon_path;
   char *cmd;
@@ -99,8 +98,7 @@ typedef struct entry
 } entry_t;
 
 // Linked list for menus
-typedef struct menu
-{
+typedef struct menu {
   char *name;
   int num_entries;
   bool rendered;
@@ -112,6 +110,12 @@ typedef struct menu
   struct menu *next;
   struct menu *back;
 } menu_t;
+
+typedef struct hotkey {
+  SDL_Keycode keycode;
+  char *cmd;
+  struct hotkey *next;
+} hotkey_t;
 
 // Struct for the geometry parameters of the onscreen buttons
 typedef struct {
@@ -196,7 +200,6 @@ typedef struct
   char scroll_indicator_opacity[PERCENT_MAX_CHARS];
   bool reset_on_back;
   mode on_launch;
-  mode esc_quit;
   bool screensaver_enabled;
   Uint32 screensaver_idle_time;
   char screensaver_intensity_str[PERCENT_MAX_CHARS];

@@ -147,12 +147,6 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_RESET_ON_BACK,"false");
   }
-  if (config.esc_quit) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_ESC_QUIT,"true");
-  }
-  else {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_ESC_QUIT,"false");
-  }
   output_log(LOGLEVEL_DEBUG, "======================= Screensaver =======================\n");
   if (config.screensaver_enabled) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_ENABLED, "true");
@@ -219,6 +213,21 @@ void debug_menu_entries(menu_t *first_menu, int num_menus)
     menu = menu->next;
   }
   output_log(LOGLEVEL_DEBUG, "\n");
+}
+
+void debug_hotkeys(hotkey_t *hotkeys)
+{
+  if (hotkeys == NULL) {
+    output_log(LOGLEVEL_DEBUG, "No hotkeys detected\n");
+    return;
+  }
+  output_log(LOGLEVEL_DEBUG, "======================== Hotkeys =========================\n");
+  int index = 0;
+  for (hotkey_t *i = hotkeys; i != NULL; i = i->next) {
+    output_log(LOGLEVEL_DEBUG, "Hotkey %i Keycode: %X\n", index, i->keycode);
+    output_log(LOGLEVEL_DEBUG, "Hotkey %i Command: %s\n", index, i->cmd);
+    index++;
+  }
 }
 
 void debug_slideshow(slideshow_t *slideshow)

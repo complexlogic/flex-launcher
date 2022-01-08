@@ -18,6 +18,7 @@
 
 
 extern config_t config;
+extern hotkey_t *hotkeys;
 menu_t *menu = NULL;
 entry_t *entry = NULL;
 gamepad_control_t *current_gamepad_control = NULL;
@@ -182,9 +183,6 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (!strcmp(name,SETTING_RESET_ON_BACK)) {
       pconfig->reset_on_back = convert_bool(value, DEFAULT_RESET_ON_BACK);
     }
-    else if (!strcmp(name,SETTING_ESC_QUIT)) {
-      pconfig->esc_quit = convert_bool(value, DEFAULT_ESC_QUIT);
-    }
   }
 
   // Parse screensaver setttings
@@ -208,6 +206,16 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name, SETTING_SCREENSAVER_PAUSE_SLIDESHOW)) {
       pconfig->screensaver_pause_slideshow = convert_bool(value, DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW);
+    }
+  }
+  // Parse hotkeys
+  else if (!strcmp(section, "Hotkeys")) {
+    char *keycode = strtok(value, ";");
+    if (keycode != NULL) {
+      char *cmd = strtok(NULL, "");
+      if (cmd != NULL) {
+        add_hotkey(&hotkeys, keycode, cmd);
+      }
     }
   }
   // Parse gamepad settings
@@ -684,6 +692,23 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
   else {
     return NO_ERROR;
   }
+}
+
+void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd)
+{
+  static hotkey_t *current_hotkey = NULL;
+  SDL_Keycode code = (SDL_Keycode) strtol(keycode, NULL, 16);
+  if (current_hotkey == NULL) {
+    *first_hotkey = malloc(sizeof(hotkey_t));
+    current_hotkey = *first_hotkey;
+  }
+  else {
+    current_hotkey->next = malloc(sizeof(hotkey_t));
+    current_hotkey = current_hotkey->next;
+  }
+  current_hotkey->keycode = code;
+  copy_string(&current_hotkey->cmd, cmd);
+  current_hotkey->next = NULL;
 }
 
 // A function to add a gamepad control to the linked list
