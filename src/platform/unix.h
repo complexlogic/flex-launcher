@@ -22,7 +22,9 @@ typedef struct {
 bool file_exists(const char *path);
 bool directory_exists(const char *path);
 int parse_desktop_file(char *command, char **exec);
+static int desktop_handler(void *user, const char *section, const char *name, const char *value);
 void make_directory(const char *directory);
-void strip_field_codes(char *cmd);
-int image_filter(struct dirent *file);
+static void strip_field_codes(char *cmd);
+void launch_application(char *cmd);
+static int image_filter(struct dirent *file);
 int scan_slideshow_directory(slideshow_t *slideshow, const char *directory);

@@ -75,7 +75,6 @@ typedef struct {
   bool slideshow_paused;
   bool screensaver_active;
   bool screensaver_transition;
-  bool quit;
 } state_t;
 
 typedef struct {
@@ -240,5 +239,6 @@ void execute_command(const char *command);
 void poll_gamepad(void);
 void connect_gamepad(int device_index);
 void render_scroll_indicators();
+void quit(int status);
 void cleanup(void);
 entry_t *advance_entries(entry_t *entry, int spaces, mode direction);

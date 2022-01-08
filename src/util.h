@@ -8,7 +8,7 @@ typedef enum {
 #define NO_ERROR_QUIT 1
 #define ERROR_QUIT 2 
 #define MAX_LOG_LINE_BYTES 501
-#define MAX_PATH_BYTES 1001 //250 wide characters
+#define MAX_PATH_CHARS 1001 //250 wide characters
 
 #ifdef _WIN32
 #define PATH_SEPARATOR "\\"

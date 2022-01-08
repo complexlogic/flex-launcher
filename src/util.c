@@ -168,7 +168,6 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->title_oversize_mode = MODE_TEXT_NONE;
       }
     }
-    #ifdef __unix__
     else if (!strcmp(name, SETTING_ON_LAUNCH)) {
       if (!strcmp(value, "None")) {
         pconfig->on_launch = MODE_ON_LAUNCH_NONE;
@@ -180,7 +179,6 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->on_launch = MODE_ON_LAUNCH_HIDE;
       }
     }
-    #endif
     else if (!strcmp(name,SETTING_RESET_ON_BACK)) {
       pconfig->reset_on_back = convert_bool(value, DEFAULT_RESET_ON_BACK);
     }
@@ -333,7 +331,8 @@ int config_handler(void *user, const char *section, const char *name, const char
     // Parse entry line for title, icon path, command
     char *string = (char*) value;
     char *token;
-    token = strtok(string, ";");
+    char *delimitor = ";";
+    token = strtok(string, delimitor);
     if (token != NULL) {
 
       // Create first entry in the menu if none exists
@@ -363,11 +362,12 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (i == 1) {
           copy_string(&entry->icon_path, token);
           clean_path(entry->icon_path);
+          delimitor = "";
         }
         else if (i == 2){
           copy_string(&entry->cmd, token);
         }
-        token = strtok(NULL, ";");
+        token = strtok(NULL, delimitor);
     }
 
     // Delete entry if parse failed to find 3 valid tokens
@@ -472,8 +472,8 @@ char *join_paths(char *buffer, int num_paths, ...)
   va_list list;
   char *arg;
   int length;
-  memset(buffer, 0, MAX_PATH_BYTES);
-  int bytes = MAX_PATH_BYTES - 1;
+  memset(buffer, 0, MAX_PATH_CHARS + 1);
+  int bytes = MAX_PATH_CHARS;
   va_start(list, num_paths);
 
   // Add each subdirectory to path
@@ -511,7 +511,7 @@ char *join_paths(char *buffer, int num_paths, ...)
 // A function to find a file from a filename and list of path prefixes
 char *find_file(const char *file, int num_prefixes, const char **prefixes)
 {
-  char buffer[MAX_PATH_BYTES];
+  char buffer[MAX_PATH_CHARS + 1];
   for (int i = 0; i < num_prefixes; i++) {
     if (prefixes[i] != NULL) {
       join_paths(buffer, 2, prefixes[i], file);
@@ -625,12 +625,14 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
       else if (!strcmp(argv[i],"-d") || !strcmp(argv[i],"--debug")) {
         config.debug = true;
       }
+      #ifdef __unix__
       else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"--help")) {
         help = true;
       }
       else if (!strcmp(argv[i],"-v") || !strcmp(argv[i],"--version")) {
         version = true;
       }
+      #endif
       else if (i != config_file_index) {
         printf("Unrecognized option %s\n",argv[i]);
         print_usage();
@@ -639,6 +641,7 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
     }
 
     // Check version, help flags
+    #ifdef __unix__
     if (version) {
       print_version();
       if (*config_file_path == NULL) {
@@ -651,6 +654,7 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
         return NO_ERROR_QUIT;
       }
     }
+    #endif
     if (*config_file_path != NULL) {
       return NO_ERROR;
     } 
@@ -659,7 +663,7 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
   // Try to find config file if none is specified on the command line
   #ifdef __unix__
   char *prefixes[4];
-  char home_config_buffer[MAX_PATH_BYTES];
+  char home_config_buffer[MAX_PATH_CHARS + 1];
   prefixes[0] = CURRENT_DIRECTORY;
   prefixes[1] = config.exe_path;
   prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);

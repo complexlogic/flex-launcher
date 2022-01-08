@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#define _WIN32_WINNT 0x0601
 #include <windows.h>
 #include <stringapiset.h>
+#include <processthreadsapi.h>
 #include <fileapi.h>
+#include <psapi.h>
+#include <shlwapi.h>
 #include <SDL.h>
+#include <SDL_syswm.h>
 #include "../launcher.h"
 #include <launcher_config.h>
 #include "win32.h"
@@ -15,10 +18,85 @@
 #include "../debug.h"
 #include "slideshow.h"
 
-// A function to determine if a file exists in the filesystem
-bool file_exists_w(wchar_t *path)
+// Internal function prototypes
+static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_size);
+static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size);
+static void convert_utf8_alloc(LPWSTR *buffer, const char *string);
+static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params);
+static LPWSTR path_basename(LPCWSTR w_path);
+static bool process_running_name(LPCWSTR w_target_process);
+static bool file_exists_w(LPCWSTR w_path);
+static bool is_browser(LPCWSTR w_exe_basename);
+bool process_running(HANDLE process);
+
+extern config_t config;
+extern SDL_SysWMinfo wmInfo;
+bool web_browser;
+LPWSTR w_process_basename = NULL;
+
+static LPWSTR path_basename(LPCWSTR w_path)
 {
-  if (_waccess(path, 4) == 0) {
+  size_t length = wcslen(w_path);
+  if (length) {
+    // Find first path separator, count back from end of string
+    LPWSTR p = w_path + length - 1;
+    while (*p != L'\\' && *p != L'/' && p > w_path) {
+      p -= 1;
+    } 
+    return p + 1;
+  }
+  return NULL;
+}
+
+static bool is_browser(LPCWSTR w_exe_basename)
+{
+  LPCWSTR browsers[NUM_BROWSERS] = {
+    L"chrome.exe",
+    L"msedge.exe",
+    L"firefox.exe"};
+  for (int i = 0; i < NUM_BROWSERS; i++) {
+    if (!wcscmp(w_exe_basename, browsers[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_size)
+{
+  MultiByteToWideChar(CP_UTF8,
+    0,
+    string,
+    -1,
+    w_string,
+    buffer_size);
+}
+
+static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size)
+{
+  WideCharToMultiByte(CP_UTF8,
+    0,
+    w_string,
+    -1,
+    string,
+    buffer_size,
+    NULL,
+    NULL);
+}
+
+static void convert_utf8_alloc(LPWSTR *buffer, const char *string)
+{
+  int length = strlen(string);
+  int buffer_size = sizeof(WCHAR)*(length + 1);
+  *buffer = malloc(buffer_size);
+  convert_utf8_string(*buffer, string, buffer_size);
+}
+
+// A function to determine if a file exists in the filesystem
+static bool file_exists_w(LPCWSTR w_path)
+{
+  if (_waccess(w_path, 4) == 0) {
     return true;
   }
   else {
@@ -28,25 +106,15 @@ bool file_exists_w(wchar_t *path)
 
 bool file_exists(const char *path)
 {
-  WCHAR w_path[2*MAX_PATH_BYTES];
-  MultiByteToWideChar(CP_UTF8,
-    0,
-    path,
-    -1,
-    w_path,
-    sizeof(w_path));
+  WCHAR w_path[MAX_PATH_CHARS + 1];
+  convert_utf8_string(w_path, path, sizeof(w_path));
   return file_exists_w(w_path);
 }
 
 bool directory_exists(const char *path)
 {
-  WCHAR w_path[2*MAX_PATH_BYTES];
-  MultiByteToWideChar(CP_UTF8,
-    0,
-    path,
-    -1,
-    w_path,
-    sizeof(w_path));
+  WCHAR w_path[MAX_PATH_CHARS + 1];
+  convert_utf8_string(w_path, path, sizeof(w_path));
   if (!file_exists_w(w_path)) {
     return false;
   }
@@ -61,41 +129,198 @@ bool directory_exists(const char *path)
   }
 }
 
-// A function to put double quotes around the command for the system call
-char *convert_cmd(char *cmd)
+static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params)
 {
-  int cmd_length = strlen(cmd);
-  char *cmd_output = malloc(sizeof(char) * cmd_length + 3);
-  *cmd_output = '"';
-  strcpy(cmd_output + 1, cmd);
-  *(cmd_output + cmd_length + 1) = '"';
-  *(cmd_output + cmd_length + 2) = '\0';
-  free(cmd);
-  return cmd_output;
+  char *start = NULL;
+  char *quote_begin = NULL;
+  char *quote_end = NULL;
+  char *p = cmd;
+  w_file[0] = L'\0';
+
+  // Skip any whitespace at beginning of command
+  while (*p == ' ') {
+    p++;
+  }
+  start = p;
+
+  // Check for quote, in which case ignore spaces until the end quote is detecetd
+  if (*p == '"') {
+    quote_begin = p;
+  }
+
+  while (*p != '\0') {
+    // If the quote is complete, copy the file
+    if (*p == '"' && p != quote_begin) {
+      quote_end = p;
+      *p = '\0';
+      convert_utf8_string(w_file, quote_begin + 1, sizeof(WCHAR)*(MAX_PATH_CHARS + 1));
+    }
+
+    else if (*p == ' ') {
+      // If a space was detected but there hasn't been a quote detected yet, this is the end of the file
+      if (!quote_begin) {
+        *p = '\0';
+        convert_utf8_string(w_file, start, sizeof(WCHAR)*(MAX_PATH_CHARS + 1));
+        p++;
+
+        // Skip any preceding white space for parameters
+        while (*p == ' ') {
+          p++;
+        }
+
+        // Copy parameters
+        if (*p != '\0') {
+          convert_utf8_alloc(w_params, p);
+          break;
+        }
+      }
+
+      // If a space was detected after the quote
+      else if (quote_begin && quote_end) {
+        // Skip any preceding white space for parameters
+        while (*p == ' ') {
+          p++;
+        }
+
+        // Copy rest of command as parameters
+        if (*p != '\0') {
+          convert_utf8_alloc(w_params, p);
+        }
+        break;
+      }
+    }
+    p++;
+  }
+
+  // If there were no quotes or spaces, copy whole command into file buffer
+  if (start && w_file[0] == L'\0') {
+    convert_utf8_string(w_file, start, sizeof(WCHAR)*(MAX_PATH_CHARS + 1));
+  }
 }
 
-// A function to hide the console window
-void hide_console()
+static bool process_running_name(LPCWSTR w_target_process)
 {
-  HWND console = GetConsoleWindow();
-  ShowWindow(console, SW_SHOWMINNOACTIVE);
+  static Uint32 ticks = 0;
+  Uint32 current_ticks = SDL_GetTicks();
+
+  // Only check the process if we've exceeded the process check interval
+  if (current_ticks - ticks < BROWSER_CHECK_PERIOD) {
+    return true;
+  }
+  else {
+    ticks = current_ticks;
+
+    // Generate an array of process IDs
+    DWORD processes[1024], needed, num_processes;
+    if (!EnumProcesses(processes, sizeof(processes), &needed)) {
+      return false;
+    }
+    num_processes = needed / sizeof(DWORD);
+    WCHAR w_current_process[MAX_PATH + 1];
+    HANDLE process = NULL;
+    HMODULE module = NULL;
+    DWORD flags = PROCESS_QUERY_INFORMATION | PROCESS_VM_READ;
+
+    // Get the image name of each running process
+    for (int i = 0; i < num_processes; i++) {
+      process = OpenProcess(flags, FALSE, processes[i]);
+      if (process != NULL && 
+      EnumProcessModulesEx(process, &module, sizeof(module), &needed, LIST_MODULES_ALL)) {
+        GetModuleBaseNameW(process, module, w_current_process, sizeof(w_current_process) / sizeof(WCHAR));
+        
+        // Check if the target process's name is the same as the current process
+        if (!wcscmp(w_current_process, w_target_process)) {
+          CloseHandle(process);
+          return true;
+        }
+        CloseHandle(process);
+      }
+    }
+  return false;
+  }
 }
 
-// A function to restore the console window
-void restore_console()
+bool process_running(HANDLE process)
 {
-  HWND console = GetConsoleWindow();
-  ShowWindow(console, SW_RESTORE);
+  if (web_browser) {
+    return process_running_name(w_process_basename);
+  }
+  else {
+    DWORD status = WaitForSingleObject(process, 0);
+    if (status == WAIT_OBJECT_0) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
 }
+
+
+void launch_application(char *cmd)
+{
+  WCHAR w_file[MAX_PATH_CHARS + 1];
+  LPWSTR w_params = NULL;
+  
+  // Parse command into file and parameters strings
+  parse_command(cmd, w_file, &w_params);
+
+  // Set up info struct
+  SHELLEXECUTEINFOW info = {
+    .cbSize = sizeof(SHELLEXECUTEINFOW),
+    .fMask = SEE_MASK_NOCLOSEPROCESS,
+    .hwnd = NULL,
+    .lpVerb = L"open",
+    .lpFile = w_file,
+    .lpParameters = w_params,
+    .lpDirectory = NULL,
+    .nShow = SW_SHOWMAXIMIZED,
+    .lpIDList = NULL,
+    .lpClass = NULL,  
+  };
+
+  BOOL successful = ShellExecuteExW(&info);
+  if (successful) {
+    HANDLE child_process = info.hProcess;
+
+    // Check if launched application is a web browser
+    WCHAR w_process_name[MAX_PATH_CHARS + 1];
+    DWORD ret = GetProcessImageFileNameW(child_process, w_process_name, sizeof(w_process_name));
+    if (ret) {
+      w_process_basename = path_basename(w_process_name);
+      web_browser = is_browser(w_process_basename);
+    }
+    
+    // Block until application has closed
+    if (config.on_launch == MODE_ON_LAUNCH_HIDE && !web_browser) {
+      WaitForSingleObject(child_process, INFINITE);
+    }
+
+    // Non-blocking, run event pump so we don't lose communication with window manager
+    else {
+        HWND hwnd = wmInfo.info.win.window;
+        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
+      do {
+        SDL_PumpEvents();
+        SDL_Delay(100);
+      } while (process_running(child_process));
+    }
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "Failed to launch command\n");
+  }
+  free(w_params);
+}
+
 
 int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
 {
   WIN32_FIND_DATAW data;
   HANDLE handle;
-  char file_search_utf8[MAX_PATH_BYTES];
-  WCHAR file_search[2*MAX_PATH_BYTES];
-  char file_result_utf8[2*sizeof(file_search)];
-  char file_output[sizeof(file_result_utf8)];
+  char file_search[MAX_PATH_CHARS + 1];
+  WCHAR w_file_search[MAX_PATH_CHARS + 1];
+  char file_result[MAX_PATH_UTF8_CONVERT + 1];
+  char file_output[sizeof(file_result)];
   char extension[10];
   int num_images = 0;
 
@@ -103,27 +328,15 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   for (int i = 0; i < NUM_EXTENSIONS && num_images < MAX_SLIDESHOW_IMAGES; i++) {
     strcpy(extension, "*");
     strcat(extension, extensions[i]);
-    join_paths(file_search_utf8, 2, directory, extension);
-    MultiByteToWideChar(CP_UTF8, 
-      0, 
-      file_search_utf8, 
-      -1, 
-      file_search, 
-      sizeof(file_search));
+    join_paths(file_search, 2, directory, extension);
+    convert_utf8_string(w_file_search, file_search, sizeof(w_file_search));
 
     // Convert every search result to back to UTF-8, store in slideshow struct
-    handle = FindFirstFileW(file_search, &data);
+    handle = FindFirstFileW(w_file_search, &data);
     if (handle != INVALID_HANDLE_VALUE) {
       do {
-        WideCharToMultiByte(CP_UTF8, 
-          0, 
-          data.cFileName, 
-          -1, 
-          file_result_utf8, 
-          sizeof(file_result_utf8), 
-          NULL, 
-          NULL);
-        join_paths(file_output, 2, directory, file_result_utf8);
+        convert_utf16_string(file_result, data.cFileName, sizeof(file_result));
+        join_paths(file_output, 2, directory, file_result);
         copy_string(&slideshow->images[num_images], file_output);
         num_images++;
       } while (FindNextFileW(handle, &data) != 0 && num_images < MAX_SLIDESHOW_IMAGES);

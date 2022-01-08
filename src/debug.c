@@ -17,9 +17,9 @@ extern SDL_RWops *log_file;
 int init_log()
 {
   // Determine log path
-  char log_file_path[MAX_PATH_BYTES];
+  char log_file_path[MAX_PATH_CHARS + 1];
   #ifdef __unix__
-  char log_file_directory[MAX_PATH_BYTES];
+  char log_file_directory[MAX_PATH_CHARS + 1];
   join_paths(log_file_directory, 4, getenv("HOME"), ".local", "share", EXECUTABLE_TITLE);
   make_directory(log_file_directory);
   join_paths(log_file_path, 2, log_file_directory, FILENAME_LOG);
@@ -30,12 +30,16 @@ int init_log()
   // Open log
   log_file = SDL_RWFromFile(log_file_path, "w");
   if (log_file == NULL) {
+    #ifdef __unix__
     printf("Failed to create log file\n");
+    #endif
     cleanup();
     exit(1);
   }
   if (config.debug) {
+    #ifdef __unix__
     printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
+    #endif
   }
   return 0;
 }
@@ -60,9 +64,11 @@ void output_log(log_level_t log_level, const char *format, ...)
   int length = vsnprintf(buffer, MAX_LOG_LINE_BYTES - 1, format, args);
   SDL_RWwrite(log_file, buffer, 1, length);
   
+  #ifdef __unix__
   if (log_level > LOGLEVEL_DEBUG) {
     fputs(buffer, stderr);
   }
+  #endif
   va_end(args);
 }
 // A function to print the parsed settings to the command line

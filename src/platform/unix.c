@@ -46,7 +46,7 @@ bool directory_exists(const char *path)
 }
 
 // A function to remove field codes from .desktop file Exec line
-void strip_field_codes(char *cmd)
+static void strip_field_codes(char *cmd)
 {
   int start = 0;
   for (int i = 0; i < strlen(cmd); i++) {
@@ -111,7 +111,7 @@ int parse_desktop_file(char *command, char **exec)
 // directories if necessary
 void make_directory(const char *directory) 
 {
-  char buffer[MAX_PATH_BYTES];
+  char buffer[MAX_PATH_CHARS + 1];
   char *i = NULL;
   int length;
   snprintf(buffer, sizeof(buffer), "%s", directory);
@@ -127,6 +127,11 @@ void make_directory(const char *directory)
     }
   }
   mkdir(buffer, S_IRWXU);
+}
+
+void launch_application(char *cmd)
+{
+  system(cmd);
 }
 
 int image_filter(struct dirent *file)
@@ -147,7 +152,7 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
 {
   struct dirent **files;
   int n = scandir(directory, &files, image_filter, NULL);
-  char file_path[MAX_PATH_BYTES];
+  char file_path[MAX_PATH_CHARS + 1];
   for (int i = 0; i < n; i++) {
     if (i < MAX_SLIDESHOW_IMAGES) {
       join_paths(file_path, 2, directory, files[i]->d_name);

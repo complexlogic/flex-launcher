@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <SDL.h>
+#include <SDL_syswm.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_thread.h>
@@ -83,13 +84,13 @@ state_t state = {
   .slideshow_background_ready = false,
   .slideshow_paused = false,
   .screensaver_active = false,
-  .screensaver_transition = false,
-  .quit = false
+  .screensaver_transition = false
 };
 
 // Global variables
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
+SDL_SysWMinfo wmInfo;
 SDL_RWops *log_file = NULL;
 TTF_Font *title_font = NULL; // Font of the button title text
 menu_t *default_menu = NULL;
@@ -174,6 +175,10 @@ int init_sdl()
                IMG_GetError());
     return 1;
   }
+  #ifdef _WIN32
+  SDL_VERSION(&wmInfo.version);
+  SDL_GetWindowWMInfo(window, &wmInfo);
+  #endif
   return 0;
 }
 
@@ -211,7 +216,7 @@ int init_ttf()
   if (title_font == NULL){
     output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
     char *prefixes[2];
-    char fonts_exe_buffer[MAX_PATH_BYTES];
+    char fonts_exe_buffer[MAX_PATH_CHARS + 1];
     prefixes[0] = join_paths(fonts_exe_buffer, 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
     #ifdef __unix__
     prefixes[1] = PATH_FONTS_SYSTEM;
@@ -320,7 +325,7 @@ void handle_keypress(SDL_Keysym *key)
 
   // Check keys
   if (key->sym == SDLK_ESCAPE && config.esc_quit) {
-    state.quit = true;
+    quit(0);
   }
   else if (key->sym == SDLK_LEFT) {
     move_left();
@@ -495,7 +500,7 @@ void render_scroll_indicators()
 
   // Find scroll indicator file
   char *prefixes[2];
-  char assets_exe_buffer[MAX_PATH_BYTES];
+  char assets_exe_buffer[MAX_PATH_CHARS + 1];
   prefixes[0] = join_paths(assets_exe_buffer, 2, config.exe_path, PATH_ASSETS_EXE);
   #ifdef __unix__
   prefixes[1] = PATH_ASSETS_SYSTEM;
@@ -825,7 +830,7 @@ void execute_command(const char *command)
       load_back_menu(current_menu);
     }
     else if (!strcmp(special_command, SCMD_QUIT)) {
-      state.quit = true;
+      quit(0);
     }
     else if (!strcmp(special_command, SCMD_SHUTDOWN)) {
       system(CMD_SHUTDOWN);
@@ -850,12 +855,9 @@ void execute_command(const char *command)
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
     }
-    #ifdef _WIN32
-    cmd = convert_cmd(cmd);
-    #endif
 
     // Launch application
-    system(cmd);
+    launch_application(cmd);
 
     // Rebaseline the timing after the program is done
     ticks.main = SDL_GetTicks();
@@ -868,8 +870,6 @@ void execute_command(const char *command)
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
     }
-
-    //SDL_PumpEvents();
   }
   free(cmd);
 }
@@ -1037,6 +1037,13 @@ void update_screensaver()
   }
 }
 
+void quit(int status)
+{
+  output_log(LOGLEVEL_DEBUG, "Quitting program\n");
+  cleanup();
+  exit(status);
+}
+
 
 int main(int argc, char *argv[]) 
 {
@@ -1047,12 +1054,10 @@ int main(int argc, char *argv[])
 
   error = handle_arguments(argc, argv, &config_file_path);
   if (error == NO_ERROR_QUIT) {
-    cleanup();
-    return 0;
+    quit(0);
   }
   else if (error == ERROR_QUIT) {
-    cleanup();
-    return 1;
+    quit(1);
   }
   output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", config_file_path);
 
@@ -1060,15 +1065,13 @@ int main(int argc, char *argv[])
   error = ini_parse(config_file_path, config_handler, &config);
   if (error < 0) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", config_file_path);
-    cleanup();
-    return 1;
+    quit(1);
   }
   free(config_file_path);
 
   // Initialize libraries
   if (init_sdl() || init_ttf() || init_svg()) {
-    cleanup();
-    return 1;
+    quit(1);
   }
 
   ticks.main = SDL_GetTicks();
@@ -1136,8 +1139,7 @@ int main(int argc, char *argv[])
   // Load the default menu and display it
   if (config.default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
-    cleanup();
-    exit(1);
+    quit(1);
   }
 
   default_menu = get_menu(config.default_menu, config.first_menu);
@@ -1145,32 +1147,25 @@ int main(int argc, char *argv[])
     output_log(LOGLEVEL_FATAL, 
                "Fatal Error: Default Menu \"%s\" not found in config file\n", 
                config.default_menu);
-    cleanup();
-    exit(1);
+    quit(1);
+
   }
   error = load_menu(NULL, default_menu, false, true);
   if (error) {
-    cleanup();
-    exit(1);
+    quit(1);
   }
   
   // Draw initial screen
   draw_screen();
-
-  #ifdef _WIN32
-    if (!config.debug) {
-      hide_console();
-    }
-  #endif
    
   // Main program loop
   output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
-  while (!state.quit) {
+  while (1) {
     ticks.main = SDL_GetTicks();
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
-          state.quit = true;
+          quit(0);
           break;
 
         case SDL_KEYDOWN:
@@ -1226,18 +1221,11 @@ int main(int argc, char *argv[])
     
     //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
     
-    if (!state.quit && state.screen_updates) {
+    if (state.screen_updates) {
       draw_screen();
     }
     SDL_Delay(POLLING_PERIOD);
   }
-  output_log(LOGLEVEL_DEBUG, "Quitting program\n");
-  cleanup();
 
-  #ifdef _WIN32
-  if (!config.debug) {
-    restore_console();
-  }
-  #endif
-  return 0;
+  quit(0);
 }

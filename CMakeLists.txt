@@ -120,12 +120,6 @@ set(DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW "true")
 set(DEFAULT_GAMEPAD_ENABLED "false")
 set(DEFAULT_GAMEPAD_DEVICE 0)
 
-if (UNIX)
-  set(ON_LAUNCH_LINE "\nOnLaunch=Hide")
-else ()
-  set(ON_LAUNCH_LINE "")
-endif ()
-
 # Linux configuration
 if (UNIX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
@@ -174,11 +168,11 @@ if (WIN32)
   find_package(sdl2-ttf CONFIG REQUIRED)
     
   # Application commands
-  set(CMD_KODI "C:\\Program Files\\Kodi\\kodi.exe")
-  set(CMD_PLEX "C:\\Program Files\\Plex\\Plex Media Player\\PlexMediaPlayer.exe")
+  set(CMD_KODI "\"C:\\Program Files\\Kodi\\kodi.exe\"")
+  set(CMD_PLEX "\"C:\\Program Files\\Plex\\Plex Media Player\\PlexMediaPlayer.exe\"")
   set(TITLE_GAMES "Steam")
   set(ICON_GAMES "steam.png")
-  set(CMD_GAMES "\"C:\\Program Files (x86)\\Steam\\steam.exe\" \"steam://open/bigpicture\"")
+  set(CMD_GAMES "\"C:\\Program Files (x86)\\Steam\\steam.exe\" steam://open/bigpicture")
   
   if (NOT PACKAGE)
     set(PACKAGE "ZIP")
