@@ -91,6 +91,7 @@ state_t state = {
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_SysWMinfo wmInfo;
+SDL_DisplayMode display_mode;
 SDL_RWops *log_file = NULL;
 TTF_Font *title_font = NULL; // Font of the button title text
 menu_t *default_menu = NULL;
@@ -110,9 +111,7 @@ geometry_t geo; // Struct containing screen geometry for the current page of but
 
 // A function to initialize SDL
 int init_sdl()
-{
-  SDL_DisplayMode display_mode;
-  
+{  
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
   int img_flags = IMG_INIT_PNG | 
@@ -1131,9 +1130,9 @@ int main(int argc, char *argv[])
   
   // Debug info
   if (config.debug) {
+    debug_video(renderer, &display_mode);
     debug_settings();  
     debug_menu_entries(config.first_menu, config.num_menus);
-    //debug_video(renderer);
   }
 
   // Load the default menu and display it
@@ -1226,6 +1225,5 @@ int main(int argc, char *argv[])
     }
     SDL_Delay(POLLING_PERIOD);
   }
-
   quit(0);
 }

@@ -234,8 +234,12 @@ void debug_slideshow(slideshow_t *slideshow)
 }
 
 
-void debug_video(SDL_Renderer *renderer)
+void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
 {
+  output_log(LOGLEVEL_DEBUG, "===================== Video Information =====================\n");
+  output_log(LOGLEVEL_DEBUG, "Resolution: %ix%i\n", display_mode->w, display_mode->h);
+  output_log(LOGLEVEL_DEBUG, "Refresh rate: %i Hz\n", display_mode->refresh_rate);
+  output_log(LOGLEVEL_DEBUG, "Video driver: %s\n", SDL_GetCurrentVideoDriver());
   SDL_RendererInfo info;
   SDL_GetRendererInfo(renderer, &info);
   output_log(LOGLEVEL_DEBUG, "Supported Texture formats:\n");
