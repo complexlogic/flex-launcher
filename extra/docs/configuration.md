@@ -18,6 +18,9 @@
         <li><a href="#special-commands">Special Commands</a></li>
         <li><a href="#desktop-files-linux-only">Desktop Files (Linux Only)</a></li>
       </ul>
+     <li>
+      <a href="#hotkeys">Hotkeys</a>
+    </li>
     </li>
     <li><a href="#gamepad-controls">Gamepad Controls</a></li>
   </ol>
@@ -122,13 +125,10 @@ Every config file must have a section titled "Settings". Within this section, th
       <a href="#scrollindicatoropacity">ScrollIndicatorOpacity</a>
     </li>
     <li>
-      <a href="#onlaunch-linux-only">OnLaunch (Linux Only)</a>
+      <a href="#onlaunch">OnLaunch</a>
     </li>
     <li>
       <a href="#resetonback">ResetOnBack</a>
-    </li>
-    <li>
-      <a href="#escquit">EscQuit</a>
     </li>
   </ul>
 </details>
@@ -156,17 +156,17 @@ Default: 000000 (Black)
 When ```BackgroundMode``` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to an image file. If the image is not the same resolution as your desktop, it will be stretched accordingly.
 
 #### SlideshowDirectory
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem.
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem. The number of images that may be scanned from the directory is limited to 250.
 
 #### SlideshowImageDuration
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in *milliseconds* to display each image.
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds to display each image. Must be an integer value
 
-Default: 30000 (30 seconds)
+Default: 30
 
 #### SlideshowTransitionTime
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in *milliseconds* that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images.
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images. Decimal values are acceptable.
 
-Default: 1500 (1.5 seconds)
+Default: 1.5
 
 #### IconSize
 The width and height of icons on the screen in pixels. If an icon is not the same resolution, it will be stretched accordingly.
@@ -256,10 +256,10 @@ Defines the opacity of the scroll indicators. Must be a percent value.
 
 Default: 100%
 
-#### OnLaunch (Linux only)
-Defines the action that Flex Launcher will take upon the launch of an application. This setting is currently Linux only, but is planned to be implemented for Windows in a future release. Possible values: "Hide", "None", and "Blank"
+#### OnLaunch
+Defines the action that Flex Launcher will take upon the launch of an application. Possible values: "Hide", "None", and "Blank"
 - Hide: Flex Launcher will hide its window while the application is running, and then show itself again after the application has closed. This avoids window focus conflicts between the launcher and the application, but will cause the desktop to be briefly visible when an application is launched
-- None: Flex Launcher will maintain its window, and the launched application will have to draw itself over Flex Launcher. The desktop will never be visible, but this mode could cause window focusing conflicts depending on your configuration
+- None: Flex Launcher will maintain its window, and the launched application will have to draw itself over Flex Launcher. The desktop will never be visible, but this mode could cause window focusing conflicts depending on your configuration. This setting should only be used if all your applications launch in a fullscreen mode.
 - Blank: Same as "None", except Flex Launcher will change to a blank, black screen
 
 Default: Hide
@@ -268,11 +268,6 @@ Default: Hide
 Defines whether Flex Launcher will remember the previous entry position when going back to a previous menu. If set to true, the highlight will be reset to the first entry in the menu when going back. This setting is a boolean "true" or "false".
 
 Default: false
-
-#### EscQuit
-Defines whether the user can exit Flex Launcher by pressing the Esc key. When set to false, it prevents a regular user from exiting to the desktop, so Flex Launcher will operate in a "Kiosk Mode" of sorts. This setting is a boolean "true" or "false".
-
-Default: true
 
 ## Screensaver
 Flex Launcher contains a screensaver feature, which will dim the screen after the input has been idle for the specified amount of time. Here are the settings that control the behavior of the screensaver
@@ -283,7 +278,7 @@ Defines whether or not the screensaver is enabled. This setting is a boolean "tr
 Default: false
 
 #### IdleTime
-Defines the amount of time in *seconds* that the input should be idle before activating the screensaver
+Defines the amount of time in seconds that the input should be idle before activating the screensaver
 
 Default: 300 (5 minutes)
 
@@ -296,6 +291,7 @@ Default: 70%
 When ```BackgroundMode``` is set to "Slideshow", this setting defines whether or not the slideshow should be paused while the screensaver is active. This setting is a boolean "true" or "false".
 
 Default: true
+
 
 ## Creating Menus
 At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
@@ -352,6 +348,20 @@ If the application you want to launch was installed via your distro's package ma
 Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with the pipe character |. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch Steam in Big Picture mode is shown below:
 ```
 Entry1=Steam;/path/to/steamicon.png;/usr/share/applications/steam.desktop|BigPicture
+```
+
+## Hotkeys
+Flex Launch supports configurable hotkeys, which executes a command when a specified key is pressed. Each hotkey consists of a key=value pair, where the key is an arbitrary name, and the value contains the SDL keycode of the hotkey and the command to run when it is pressed, delimited by a semicolon:
+```
+Hotkey=keycode;command
+```
+The keycode is a HEX value *without* any 0x or # prefix. There are two ways to find a keycode for a given key. The first is to use the [lookup table provided by SDL](https://wiki.libsdl.org/SDLKeycodeLookup). The name of each key is in the right column of the table, and the corresponding HEX keycode is in the center column. The second is to [run Flex Launcher in debug mode](../../README.md#debugging), press the key, then check the log. For each keystroke, the name of the key will be printed and the HEX value will be in parenthesis next to it.
+
+Any key can be set as a hotkey, except keys that are reserved for the default controls: the left/right arrow keys, enter/return, and backspace. Hotkeys may be used to "speed dial" your favorite applications, or to add controls via [special commands](#special-commands). As an example configuration below, the first hotkey is mapped to F1 and will launch Kodi when it is pressed, and the second hotkey is mapped to F12 and will cause Flex Launcher to quit when it is pressed:
+```
+[Hotkeys]
+Hotkey1=4000003A;"C:\Program Shortcuts\kodi.lnk"
+Hotkey2=40000045;:quit
 ```
 
 ## Gamepad Controls
