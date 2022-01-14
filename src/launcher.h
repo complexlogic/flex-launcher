@@ -27,7 +27,7 @@
 #define MIN_SLIDESHOW_IMAGE_DURATION 5000
 #define MAX_SLIDESHOW_IMAGE_DURATION 600000
 #define MIN_SLIDESHOW_TRANSITION_TIME 0
-#define MAX_SLIDESHOW_TRANSITION_TIME 3000000
+#define MAX_SLIDESHOW_TRANSITION_TIME 3000
 #define MIN_SCREENSAVER_IDLE_TIME 3
 #define MAX_SCREENSAVER_IDLE_TIME 900
 #define SCREENSAVER_TRANSITION_TIME 1500
@@ -40,12 +40,8 @@ typedef int mode;
 #define MODE_TEXT_TRUNCATE 0
 #define MODE_TEXT_SHRINK 1
 #define MODE_TEXT_NONE 2
-#define MODE_ESC_NO_QUIT 0
-#define MODE_ESC_QUIT 1
 #define DIRECTION_LEFT 0
 #define DIRECTION_RIGHT 1
-#define MODE_PRESSED 1
-#define MODE_RELEASED 0
 #define MODE_ON_LAUNCH_HIDE 0
 #define MODE_ON_LAUNCH_NONE 1
 #define MODE_ON_LAUNCH_BLANK 2
@@ -172,8 +168,7 @@ typedef struct {
 } screensaver_t;
 
 // Configuration settings
-typedef struct
-{
+typedef struct {
   char *default_menu;
   unsigned int max_buttons;
   mode background_mode; // Defines image or color background mode

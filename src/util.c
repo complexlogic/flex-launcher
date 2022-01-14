@@ -208,6 +208,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       pconfig->screensaver_pause_slideshow = convert_bool(value, DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW);
     }
   }
+  
   // Parse hotkeys
   else if (!strcmp(section, "Hotkeys")) {
     char *keycode = strtok(value, ";");
@@ -218,6 +219,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
   }
+
   // Parse gamepad settings
   else if (!strcmp(section, "Gamepad")) {
     if (!strcmp(name, SETTING_GAMEPAD_ENABLED)) {
@@ -642,8 +644,10 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
       }
       #endif
       else if (i != config_file_index) {
+        #ifdef __unix__
         printf("Unrecognized option %s\n",argv[i]);
         print_usage();
+        #endif
         return ERROR_QUIT;
       }
     }
@@ -694,10 +698,14 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
   }
 }
 
+// A function to add a hotkey to the linked list
 void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd)
 {
+  // Convert hex string to binary
   static hotkey_t *current_hotkey = NULL;
   SDL_Keycode code = (SDL_Keycode) strtol(keycode, NULL, 16);
+
+  // Create first node if not initialized, else add to end of linked list
   if (current_hotkey == NULL) {
     *first_hotkey = malloc(sizeof(hotkey_t));
     current_hotkey = *first_hotkey;

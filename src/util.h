@@ -1,9 +1,3 @@
-typedef enum {
-  LOGLEVEL_DEBUG = 0,
-  LOGLEVEL_ERROR,
-  LOGLEVEL_FATAL
-} log_level_t;
-
 #define NO_ERROR 0
 #define NO_ERROR_QUIT 1
 #define ERROR_QUIT 2 

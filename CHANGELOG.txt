@@ -2,9 +2,10 @@ Unreleased
 - Added hotkeys feature
 - Removed EscQuit setting. Esc to quit functionality is now implemented as a configurable hotkey
 - Changed slideshow time units from milliseconds to seconds
-- Windows: Applications now launch via WIN32 API instead of CRT
+- Windows: Applications now launch via WIN32 API instead of the standard C runtime
 - Windows: Implemented OnLaunch setting that was previously Linux exclusive
-- Windows: Fixed web browser blocking issue
+- Windows: Fixed web browser non-blocking issue
+- Linux: Improved Wayland support
 
 v1.2 (2022-1-2)
 - Added slideshow background mode

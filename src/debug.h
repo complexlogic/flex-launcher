@@ -1,3 +1,9 @@
+typedef enum {
+	LOGLEVEL_DEBUG = 0,
+	LOGLEVEL_ERROR,
+	LOGLEVEL_FATAL
+} log_level_t;
+
 int init_log(void);
 void output_log(log_level_t log_level, const char *format, ...);
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode);

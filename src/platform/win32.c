@@ -34,6 +34,7 @@ extern SDL_SysWMinfo wmInfo;
 bool web_browser;
 LPWSTR w_process_basename = NULL;
 
+// A function to get the basename of a file
 static LPWSTR path_basename(LPCWSTR w_path)
 {
   size_t length = wcslen(w_path);
@@ -48,6 +49,7 @@ static LPWSTR path_basename(LPCWSTR w_path)
   return NULL;
 }
 
+// A function to determine if a process name is a web browser
 static bool is_browser(LPCWSTR w_exe_basename)
 {
   LPCWSTR browsers[NUM_BROWSERS] = {
@@ -62,7 +64,7 @@ static bool is_browser(LPCWSTR w_exe_basename)
   return false;
 }
 
-
+// A function to convert a UTF-8 string to UTF-16
 static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_size)
 {
   MultiByteToWideChar(CP_UTF8,
@@ -73,6 +75,7 @@ static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_
     buffer_size);
 }
 
+// A function to convert a UTF-16 string to UTF-8
 static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size)
 {
   WideCharToMultiByte(CP_UTF8,
@@ -85,6 +88,7 @@ static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size
     NULL);
 }
 
+// A function to convert a UTF-8 string to UTF-16, and allocate memory for it
 static void convert_utf8_alloc(LPWSTR *buffer, const char *string)
 {
   int length = strlen(string);
@@ -93,7 +97,7 @@ static void convert_utf8_alloc(LPWSTR *buffer, const char *string)
   convert_utf8_string(*buffer, string, buffer_size);
 }
 
-// A function to determine if a file exists in the filesystem
+// A function to determine if a file with wide chars exists on the filesystem
 static bool file_exists_w(LPCWSTR w_path)
 {
   if (_waccess(w_path, 4) == 0) {
@@ -104,6 +108,7 @@ static bool file_exists_w(LPCWSTR w_path)
   }
 }
 
+// A function to determine if a file exists on the filesystem
 bool file_exists(const char *path)
 {
   WCHAR w_path[MAX_PATH_CHARS + 1];
@@ -111,6 +116,8 @@ bool file_exists(const char *path)
   return file_exists_w(w_path);
 }
 
+
+// A function to determine if a directory exists on the filesystem
 bool directory_exists(const char *path)
 {
   WCHAR w_path[MAX_PATH_CHARS + 1];
@@ -129,6 +136,7 @@ bool directory_exists(const char *path)
   }
 }
 
+// A function that parses the command string into a file and parameters
 static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params)
 {
   char *start = NULL;
@@ -198,6 +206,8 @@ static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params)
   }
 }
 
+
+// A function to determine if a process of a given name is running on the system
 static bool process_running_name(LPCWSTR w_target_process)
 {
   static Uint32 ticks = 0;
@@ -240,6 +250,8 @@ static bool process_running_name(LPCWSTR w_target_process)
   }
 }
 
+
+// A function to determine if the launched process is still running
 bool process_running(HANDLE process)
 {
   if (web_browser) {
@@ -256,7 +268,7 @@ bool process_running(HANDLE process)
   }
 }
 
-
+// A function to launch an application
 void launch_application(char *cmd)
 {
   WCHAR w_file[MAX_PATH_CHARS + 1];
@@ -312,7 +324,7 @@ void launch_application(char *cmd)
   free(w_params);
 }
 
-
+// A function to scan the slideshow directory for image files
 int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
 {
   WIN32_FIND_DATAW data;

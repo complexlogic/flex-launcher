@@ -230,6 +230,7 @@ void debug_hotkeys(hotkey_t *hotkeys)
   }
 }
 
+// A function to debug the parsed slideshow files
 void debug_slideshow(slideshow_t *slideshow)
 {
   output_log(LOGLEVEL_DEBUG, "======================== Slideshow ========================\n");
@@ -242,7 +243,7 @@ void debug_slideshow(slideshow_t *slideshow)
   }
 }
 
-
+// A function to debug the video settings
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
 {
   output_log(LOGLEVEL_DEBUG, "===================== Video Information =====================\n");

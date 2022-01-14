@@ -83,7 +83,7 @@ state_t state = {
   .slideshow_background_ready = false,
   .slideshow_paused = false,
   .screensaver_active = false,
-  .screensaver_transition = false
+  .screensaver_transition = false,
 };
 
 // Global variables
@@ -114,9 +114,7 @@ int init_sdl()
 {  
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
-  int img_flags = IMG_INIT_PNG | 
-                  IMG_INIT_JPG | 
-                  IMG_INIT_WEBP;
+  int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
   #ifdef __unix__
   SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
   #endif
@@ -302,7 +300,6 @@ void cleanup()
   }
 
   // Free hotkeys
-
   hotkey_t *tmp_hotkey = NULL;
   for(hotkey_t *i = hotkeys; i != NULL; i = i->next) {
     free(tmp_hotkey);
@@ -873,6 +870,7 @@ void execute_command(const char *command)
     }
 
     // Launch application
+    SDL_Delay(50);
     launch_application(cmd);
 
     // Rebaseline the timing after the program is done
@@ -882,12 +880,18 @@ void execute_command(const char *command)
     if (config.background_mode == MODE_SLIDESHOW) {
       resume_slideshow();
     }
-
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
     }
+  
+  // Prevent any duplicate keypresses that were used to exit the program (Wayland workaround)
+  #ifdef __unix__
+  SDL_Delay(50);
+  SDL_PumpEvents();
+  SDL_FlushEvent(SDL_KEYDOWN);
+  #endif
   }
-  free(cmd);
+free(cmd);
 }
 
 // A function to connect to a gamepad
@@ -1053,6 +1057,7 @@ void update_screensaver()
   }
 }
 
+// A function to quit the launcher
 void quit(int status)
 {
   output_log(LOGLEVEL_DEBUG, "Quitting program\n");
@@ -1187,7 +1192,7 @@ int main(int argc, char *argv[])
 
         case SDL_KEYDOWN:
           ticks.last_input = ticks.main;
-          handle_keypress(&event.key.keysym);         
+          handle_keypress(&event.key.keysym);
           break;
 
         case SDL_CONTROLLERDEVICEADDED:
@@ -1215,6 +1220,7 @@ int main(int argc, char *argv[])
             else {
               state.screen_updates = true;
             }
+          output_log(LOGLEVEL_DEBUG, "Redrawing window\n");
           }
           else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
             output_log(LOGLEVEL_DEBUG, "Lost keyboard focus\n");
@@ -1234,13 +1240,11 @@ int main(int argc, char *argv[])
     }
     if (config.screensaver_enabled) {
       update_screensaver();
-    }
-    
+    }    
     //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
-    
     if (state.screen_updates) {
       draw_screen();
-    }
+    }  
     SDL_Delay(POLLING_PERIOD);
   }
   quit(0);
