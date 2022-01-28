@@ -22,7 +22,9 @@
 #define GAMEPAD_DEADZONE 10000
 #define GAMEPAD_REPEAT_DELAY 500
 #define GAMEPAD_REPEAT_INTERVAL 25
-#define SCROLL_INDICATOR_MARGIN 0.06F // Distance between screen edge and scroll indicators
+#define CLOCK_UPDATE_PERIOD 1000
+#define SCROLL_INDICATOR_HEIGHT 0.1F
+#define SCREEN_MARGIN 0.05F
 #define MAX_SLIDESHOW_IMAGES 250
 #define MIN_SLIDESHOW_IMAGE_DURATION 5000
 #define MAX_SLIDESHOW_IMAGE_DURATION 600000
@@ -63,6 +65,11 @@ typedef int mode;
 #define SCMD_RESTART ":restart"
 #define SCMD_SLEEP ":sleep"
 
+typedef enum {
+  ALIGNMENT_LEFT,
+  ALIGNMENT_RIGHT,
+} launcher_alignment_t;
+
 typedef struct {
   bool screen_updates;
   bool slideshow_transition;
@@ -71,12 +78,15 @@ typedef struct {
   bool slideshow_paused;
   bool screensaver_active;
   bool screensaver_transition;
+  bool clock_rendering;
+  bool clock_ready;
 } state_t;
 
 typedef struct {
   Uint32 main;
   Uint32 slideshow_load;
   Uint32 last_input;
+  Uint32 clock_update;
 } ticks_t;
 
 // Linked list for menu entries
@@ -117,6 +127,7 @@ typedef struct hotkey {
 typedef struct {
   int screen_width;
   int screen_height;
+  int screen_margin;
   int font_height;
   int x_margin; // Distance between left edge of screen and x coordinate of root_entry icon
   int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
@@ -167,6 +178,18 @@ typedef struct {
   SDL_Texture *texture;
 } screensaver_t;
 
+typedef enum {
+  FORMAT_TIME_AUTO,
+  FORMAT_TIME_12HR,
+  FORMAT_TIME_24HR
+} time_format_t;
+
+typedef enum {
+  FORMAT_DATE_AUTO,
+  FORMAT_DATE_LITTLE,
+  FORMAT_DATE_BIG
+} date_format_t;
+
 // Configuration settings
 typedef struct {
   char *default_menu;
@@ -207,36 +230,44 @@ typedef struct {
   menu_t *first_menu;
   gamepad_control_t *gamepad_controls;
   int num_menus;
+  bool clock_enabled;
+  bool clock_show_date;
+  launcher_alignment_t clock_alignment;
+  char *clock_font_path;
+  SDL_Color clock_color;
+  char clock_opacity[PERCENT_MAX_CHARS];
+  unsigned int clock_font_size;
+  time_format_t clock_time_format;
+  date_format_t clock_date_format;
+  bool clock_include_weekday;
   Uint32 slideshow_image_duration;
   Uint32 slideshow_transition_time;
 } config_t;
 
 // Function prototypes
-int init_sdl(void);
-int init_ttf(void);
-int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
-int main(int argv, char *argc[]);
-unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
-void update_slideshow(void);
-void resume_slideshow(void);
-void update_screensaver(void);
-void init_slideshow(void);
-void init_screensaver(void);
+static int init_sdl(void);
+static int init_ttf(void);
+static int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position);
+static void update_slideshow(void);
+static void resume_slideshow(void);
+static void update_screensaver(void);
+static void update_clock(bool block);
+static void init_slideshow(void);
+static void init_screensaver(void);
 void quit_slideshow(void);
 void set_draw_color(void);
-void calculate_geometry(entry_t *entry, int buttons);
-void render_buttons(menu_t *menu);
-void draw_buttons(entry_t *entry);
-void move_left(void);
-void move_right(void);
-void load_submenu(char *submenu);
-void load_back_menu(menu_t *menu);
-void draw_screen(void);
-void handle_keypress(SDL_Keysym *key);
-void execute_command(const char *command);
-void poll_gamepad(void);
-void connect_gamepad(int device_index);
-void render_scroll_indicators();
+static void calculate_geometry(entry_t *entry, int buttons);
+static void render_buttons(menu_t *menu);
+static void draw_buttons(entry_t *entry);
+static void move_left(void);
+static void move_right(void);
+static void load_submenu(char *submenu);
+static void load_back_menu(menu_t *menu);
+static void draw_screen(void);
+static void handle_keypress(SDL_Keysym *key);
+static void execute_command(const char *command);
+static void poll_gamepad(void);
+static void connect_gamepad(int device_index);
+static void render_scroll_indicators();
 void quit(int status);
-void cleanup(void);
-entry_t *advance_entries(entry_t *entry, int spaces, mode direction);
+static void cleanup(void);

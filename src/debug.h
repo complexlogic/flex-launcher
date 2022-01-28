@@ -4,7 +4,7 @@ typedef enum {
 	LOGLEVEL_FATAL
 } log_level_t;
 
-int init_log(void);
+static int init_log(void);
 void output_log(log_level_t log_level, const char *format, ...);
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode);
 void debug_settings(void);

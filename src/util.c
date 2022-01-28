@@ -56,7 +56,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name,SETTING_BACKGROUND_COLOR)) {
-        hex_to_color(value, &pconfig->background_color);
+      hex_to_color(value, &pconfig->background_color);
     }
     else if (!strcmp(name,SETTING_SLIDESHOW_DIRECTORY)) {
       copy_string(&pconfig->slideshow_directory, value);
@@ -180,8 +180,65 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->on_launch = MODE_ON_LAUNCH_HIDE;
       }
     }
-    else if (!strcmp(name,SETTING_RESET_ON_BACK)) {
+    else if (!strcmp(name, SETTING_RESET_ON_BACK)) {
       pconfig->reset_on_back = convert_bool(value, DEFAULT_RESET_ON_BACK);
+    }
+  }
+
+  // Parse clock settings
+  else if (!strcmp(section, "Clock")) {
+    if (!strcmp(name, SETTING_CLOCK_ENABLED)) {
+      pconfig->clock_enabled = convert_bool(value, DEFAULT_CLOCK_ENABLED);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_SHOW_DATE)) {
+      pconfig->clock_show_date = convert_bool(value, DEFAULT_CLOCK_SHOW_DATE);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_ALIGNMENT)) {
+      if(!strcmp(value, "Left")) {
+        pconfig->clock_alignment = ALIGNMENT_LEFT;
+      }
+      else if (!strcmp(value, "Right")) {
+        pconfig->clock_alignment = ALIGNMENT_RIGHT;
+      }
+    }
+    else if (!strcmp(name, SETTING_CLOCK_FONT)) {
+      copy_string(&pconfig->clock_font_path, value);
+      clean_path(pconfig->clock_font_path);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_COLOR)) {
+      hex_to_color(value, &pconfig->clock_color);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_OPACITY)) {
+      if (strstr(value, ".") == NULL && 
+      strstr(value, "%") != NULL && 
+      strlen(value) < PERCENT_MAX_CHARS) {
+        strcpy(pconfig->clock_opacity, value);
+      }
+    }
+    else if (!strcmp(name, SETTING_CLOCK_FONT_SIZE)) {
+      unsigned int font_size = (unsigned int) atoi(value);
+      if (font_size) {
+        pconfig->clock_font_size = font_size;
+      }
+    }
+    else if (!strcmp(name, SETTING_CLOCK_TIME_FORMAT)) {
+      if (!strcmp(value, "12hr")) {
+        pconfig->clock_time_format = FORMAT_TIME_12HR;
+      }
+      else if (!strcmp(value, "24hr")) {
+        pconfig->clock_time_format = FORMAT_TIME_24HR;
+      }
+    }
+    else if (!strcmp(name, SETTING_CLOCK_DATE_FORMAT)) {
+      if (!strcmp(value, "Little")) {
+        pconfig->clock_date_format = FORMAT_DATE_LITTLE;
+      }
+      else if (!strcmp(value, "Big")) {
+        pconfig->clock_date_format = FORMAT_DATE_BIG;
+      }
+    }
+    else if (!strcmp(name, SETTING_CLOCK_INCLUDE_WEEKDAY)) {
+      pconfig->clock_include_weekday = convert_bool(value, DEFAULT_CLOCK_INCLUDE_WEEKDAY);
     }
   }
 
@@ -698,6 +755,12 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
   }
 }
 
+// A function to calculate the total width of all screen objects
+unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_hpadding)
+{
+  return (buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding;
+}
+
 // A function to add a hotkey to the linked list
 void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd)
 {
@@ -812,6 +875,12 @@ void validate_settings(geometry_t *geo)
     int opacity = convert_percent(config.scroll_indicator_opacity,0xFF);
     if (opacity != -1) {
       config.scroll_indicator_color.a = (Uint8) opacity;
+    }
+  }
+  if (strlen(config.clock_opacity)) {
+    int opacity = convert_percent(config.clock_opacity, 0xFF);
+    if (opacity != -1) {
+      config.clock_color.a = (Uint8) opacity;
     }
   }
 
@@ -935,4 +1004,56 @@ menu_t *create_menu(char *menu_name, int *num_menus)
   return menu;
 }
 
+// A function to advance X spaces in the entry linked list (left or right)
+entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
+{
+  if (direction == DIRECTION_LEFT) {
+    for (int i = 0; i < spaces; i++) {
+      entry = entry->previous;
+    }
+  }
+  else if (direction == DIRECTION_RIGHT) {
+    for (int i = 0; i < spaces; i++) {
+      entry = entry->next;
+    }
+  }
+  return entry;
+}
+
+time_format_t get_time_format(const char *region)
+{
+  const char *countries[] = {"US",
+    "CA",
+    "GB",
+    "AU",
+    "NZ",
+    "IN"
+  };
+  time_format_t format = FORMAT_TIME_24HR;
+  for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
+    if (!strcmp(region, countries[i])) {
+      format = FORMAT_TIME_12HR;
+      break;
+    }
+  }
+  return format;
+}
+
+date_format_t get_date_format(const char *region)
+{
+  const char *countries[] = {"US",
+    "JP",
+    "CN",
+    "IN",
+    "NZ"
+  };
+  date_format_t format = FORMAT_DATE_LITTLE;
+  for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
+    if (!strcmp(region, countries[i])) {
+      format = FORMAT_DATE_BIG;
+      break;
+    }
+  }
+  return format;
+}
 

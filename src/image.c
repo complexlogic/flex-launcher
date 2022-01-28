@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -19,7 +20,6 @@ extern config_t config;
 extern state_t state;
 extern SDL_Renderer *renderer;
 extern SDL_Texture *background_texture;
-extern TTF_Font *title_font;
 NSVGrasterizer *rasterizer = NULL;
 
 
@@ -76,7 +76,8 @@ SDL_Surface *load_next_slideshow_background(slideshow_t *slideshow, bool transit
     output_log(LOGLEVEL_ERROR, 
       "Error: Could not load any image from slideshow directory %s\n"
       "Changing background to color mode\n", 
-      config.slideshow_directory);
+      config.slideshow_directory
+    );
     quit_slideshow();
     config.background_mode = MODE_COLOR;
     set_draw_color();
@@ -88,11 +89,11 @@ SDL_Surface *load_next_slideshow_background(slideshow_t *slideshow, bool transit
     output_log(LOGLEVEL_ERROR, 
       "Error: Could only load one image from slideshow directory %s\n"
       "Changing background to single image mode\n",
-      config.slideshow_directory);
+      config.slideshow_directory
+    );
     background_texture = SDL_CreateTextureFromSurface(renderer, surface);
     config.background_mode = MODE_IMAGE;
   }
-
   return surface;
 }
 
@@ -111,36 +112,39 @@ SDL_Texture *load_texture(const char *path, SDL_Surface *surface)
   SDL_Texture *texture = NULL;
   SDL_Surface *loaded_surface = NULL;
 
-    if (surface == NULL) {
-      loaded_surface = IMG_Load(path);
-    }
-    else {
-      loaded_surface = surface;
+  if (surface == NULL) {
+    loaded_surface = IMG_Load(path);
+  }
+  else {
+    loaded_surface = surface;
+  }
+
+  if (loaded_surface == NULL) {
+    output_log(LOGLEVEL_ERROR, 
+     "Error: Could not load image %s\n%s\n", 
+      path, 
+      IMG_GetError()
+    );
+  }
+  else {
+    //Convert surface to screen format
+    texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
+    if (texture == NULL) {
+      output_log(LOGLEVEL_ERROR, 
+        "Error: Could not create texture from %s\n%s", 
+        path, 
+        SDL_GetError()
+      );
     }
 
-    if (loaded_surface == NULL) {
-        output_log(LOGLEVEL_ERROR, 
-                  "Error: Could not load image %s\n%s\n", 
-                  path, 
-                  IMG_GetError());
-    }
-    else {
-        //Convert surface to screen format
-        texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
-        if (texture == NULL) {
-            output_log(LOGLEVEL_ERROR, "Error: Could not create texture from %s\n%s", 
-                       path, 
-                       SDL_GetError());
-        }
-
-        //Get rid of old loaded surface
-        SDL_FreeSurface(loaded_surface);
-    }
-    return texture;
+    //Get rid of old loaded surface
+    SDL_FreeSurface(loaded_surface);
+  }
+  return texture;
 }
 
 // A function to rasterize an SVG from a file OR from xml text buffer
-SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h)
+SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h, SDL_Rect *rect)
 {
   NSVGimage *image = NULL;
   unsigned char *pixel_buffer = NULL;
@@ -159,18 +163,28 @@ SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h)
     return NULL;
   }
 
-  // Calculate scaling
+  // Calculate scaling and dimensions
   if (w == -1 && h == -1) {
+    scale = 1.0f;
     width = (int) image->width;
     height = (int) image->height;
-    scale = 1.0f;
+  }
+  else if (w == -1 && h != -1) {
+    scale = (float) h / (float) image->height;
+    width = (int) ceil((double) image->width * (double) scale);
+    height = h;
+  }
+  else if (w != -1 && h == -1) {
+    scale = (float) w / (float) image->width;
+    width = w;
+    height = (int) ceil((double) image->height * (double) scale);
   }
   else {
+    scale = (float) w / (float) image->width;
     width = w;
     height = h;
-    scale = (float) w / (float) image->width; // Assuming aspect ratio is conserved
   }
-
+  
   // Allocate memory
   pitch = 4*width;
   pixel_buffer = malloc(4*width*height);
@@ -182,12 +196,17 @@ SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h)
   // Rasterize image
   nsvgRasterize(rasterizer, image, 0, 0, scale, pixel_buffer, width, height, pitch);
   SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(pixel_buffer,
-                                                  width,
-                                                  height,
-                                                  32,
-                                                  pitch,
-                                                  COLOR_MASKS);
+                           width,
+                           height,
+                           32,
+                           pitch,
+                           COLOR_MASKS
+                         );
   SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (rect != NULL) {
+    rect->w = width;
+    rect->h = height;
+  }
   free(pixel_buffer);
   SDL_FreeSurface(surface);
   nsvgDelete(image);
@@ -195,14 +214,14 @@ SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h)
 }
 
 // A function to render the highlight for the buttons
-SDL_Texture *render_highlight(int width, int height, unsigned int rx)
+SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
 {
   // Insert user config variables into SVG-formatted text buffer
   char buf[1024];
   sprintf(buf, SVG_HIGHLIGHT, width, height, width, height, rx);
   
   // Rasterize the SVG
-  SDL_Texture *texture = rasterize_svg(NULL, buf, -1, -1);
+  SDL_Texture *texture = rasterize_svg(NULL, buf, -1, -1, rect);
   
   // Set color
   SDL_SetTextureColorMod(texture,
@@ -213,74 +232,115 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx)
   return texture;
 }
 
+SDL_Texture *render_text_texture(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
+{
+  SDL_Surface *surface = render_text(text, info, rect, text_height);
+  return load_texture(NULL, surface);
+}
+
 // A function to render title text for an entry
-SDL_Texture *render_text(entry_t *entry, geometry_t *geo)
+SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
 {
   TTF_Font *output_font = NULL;
   TTF_Font *reduced_font = NULL; // Font for Shrink text oversize mode
-  int max_width = config.icon_size;
   int w, h;
 
-  // Copy entry title to new buffer buffer
-  char *title;
-  copy_string(&title, entry->title);
+  // Copy text into new buffer in case we need to manipulate it
+  char *text_buffer;
+  copy_string(&text_buffer, text);
 
   // Calculate size of the rendered title
-  int title_length = strlen(title);
-  TTF_SizeUTF8(title_font,title,&w,&h);
+  int title_length = strlen(text_buffer);
+  TTF_SizeUTF8(info->font, text_buffer, &w, &h);
 
   // If title is too large to fit
-  if (w > max_width) {
+  if (info->oversize_mode != MODE_TEXT_NONE && w > info->max_width) {
 
     // Truncate mode:
-    if (config.title_oversize_mode == MODE_TEXT_TRUNCATE) {
-      utf8_truncate(title, w, max_width);
-      TTF_SizeUTF8(title_font,title,&w,&h);
+    if (info->oversize_mode == MODE_TEXT_TRUNCATE) {
+      utf8_truncate(text_buffer, w, info->max_width);
+      TTF_SizeUTF8(info->font, text_buffer, &w, &h);
     }
 
     // Shrink mode:
-    else if (config.title_oversize_mode == MODE_TEXT_SHRINK) {
-      int font_size = config.font_size - 1;
-      reduced_font = TTF_OpenFont(config.title_font_path, font_size);
-      TTF_SizeUTF8(reduced_font,title,&w,&h);
+    else if (info->oversize_mode == MODE_TEXT_SHRINK) {
+      int reduced_font_size = info->font_size - 1;
+      reduced_font = TTF_OpenFont(*info->font_path, reduced_font_size);
+      TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
 
       // Keep trying smaller font until it fits
-      while (w > max_width && font_size > 0) {
+      while (w > info->max_width && reduced_font_size > 0) {
         TTF_CloseFont(reduced_font);
         reduced_font = NULL;
-        font_size--;
-        reduced_font = TTF_OpenFont(config.title_font_path, font_size);
-        TTF_SizeUTF8(reduced_font,title,&w,&h);
+        reduced_font_size--;
+        reduced_font = TTF_OpenFont(*info->font_path, reduced_font_size);
+        TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
       }
 
       // Set vertical offset so reduced font title remains vertically centered
       // with other titles
-      if (font_size) {
+      if (reduced_font_size) {
         output_font = reduced_font;
-        entry->title_offset = (geo->font_height - h) / 2;
       }
       else {
         reduced_font = NULL;
       }
     }
   }
-  
+
   // Set geometry
-  entry->text_rect.w = w;
-  entry->text_rect.h = h;
+  rect->w = w;
+  rect->h = h;
+  if (info->oversize_mode == MODE_TEXT_SHRINK && text_height != NULL) {
+    *text_height = h;
+  }
   if (reduced_font == NULL) {
-    output_font = title_font;
+    output_font = info->font;
   }
 
   // Render texture
-  SDL_Surface *text_surface = TTF_RenderUTF8_Blended(output_font,
-                                                    title,
-                                                    config.title_color);
-  SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer,text_surface);
-  SDL_FreeSurface(text_surface);
+  SDL_Surface *surface = TTF_RenderUTF8_Blended(output_font,
+                           text_buffer,
+                           *info->color
+                         );
   if (reduced_font != NULL) {
     TTF_CloseFont(reduced_font);
   }
-  free(title);
-  return text_texture;
+  free(text_buffer);
+  return surface;
+}
+
+int load_font(text_info_t *info, const char *default_font)
+{
+  char *font_path = *info->font_path;
+  // Load user specified font
+  if (font_path != NULL) {
+    info->font = TTF_OpenFont(font_path, info->font_size);
+  }
+
+  // Try to load default font if we failed loading from config file
+  if (info->font == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
+    char *prefixes[2];
+    char fonts_exe_buffer[MAX_PATH_CHARS + 1];
+    prefixes[0] = join_paths(fonts_exe_buffer, 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
+    #ifdef __unix__
+    prefixes[1] = PATH_FONTS_SYSTEM;
+    #else
+    prefixes[1] = PATH_FONTS_RELATIVE;
+    #endif
+    char *default_font_path = find_file(default_font, 2, prefixes);
+
+    // Replace user font with default in config
+    if (default_font_path != NULL) {
+      info->font = TTF_OpenFont(default_font_path, info->font_size);
+      free(font_path);
+      copy_string(info->font_path, default_font_path);
+    }
+    if (info->font == NULL) {
+      output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default font\n");
+      return 1;
+    }
+  }
+  return 0;
 }

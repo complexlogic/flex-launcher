@@ -169,3 +169,16 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   }
   return slideshow->num_images;
 }
+
+void get_region(char *buffer)
+{
+  char *lang = getenv("LANG");
+  char *token = strtok(lang, "_");
+  if (token == NULL) {
+    return;
+  }
+  token = strtok(NULL, ".");
+  if (token != NULL && strlen(token) == 2) {
+    strcpy(buffer, token);
+  }
+}

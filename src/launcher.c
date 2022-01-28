@@ -13,13 +13,13 @@
 #include "image.h"
 #include "util.h"
 #include "debug.h"
+#include "clock.h"
 #ifdef __unix__
 #include "platform/unix.h"
 #endif
 #ifdef _WIN32
 #include "platform/win32.h"
 #endif
-
 
 // Initialize default settings
 config_t config = {
@@ -73,6 +73,19 @@ config_t config = {
   .first_menu = NULL,
   .gamepad_controls = NULL,
   .num_menus = 0,
+  .clock_enabled = DEFAULT_CLOCK_ENABLED,
+  .clock_show_date = DEFAULT_CLOCK_SHOW_DATE,
+  .clock_alignment = DEFAULT_CLOCK_ALIGNMENT,
+  .clock_font_path = NULL,
+  .clock_color.r = DEFAULT_CLOCK_COLOR_R,
+  .clock_color.g = DEFAULT_CLOCK_COLOR_G,
+  .clock_color.b = DEFAULT_CLOCK_COLOR_B,
+  .clock_color.a = DEFAULT_CLOCK_COLOR_A,
+  .clock_opacity[0] = '\0',
+  .clock_font_size = DEFAULT_CLOCK_FONT_SIZE,
+  .clock_time_format = DEFAULT_CLOCK_TIME_FORMAT,
+  .clock_date_format = DEFAULT_CLOCK_DATE_FORMAT,
+  .clock_include_weekday = DEFAULT_CLOCK_INCLUDE_WEEKDAY,
   .slideshow_image_duration = DEFAULT_SLIDESHOW_IMAGE_DURATION,
   .slideshow_transition_time = DEFAULT_SLIDESHOW_TRANSITION_TIME
 };
@@ -84,6 +97,8 @@ state_t state = {
   .slideshow_paused = false,
   .screensaver_active = false,
   .screensaver_transition = false,
+  .clock_rendering = false,
+  .clock_ready = false
 };
 
 // Global variables
@@ -92,7 +107,9 @@ SDL_Renderer *renderer = NULL;
 SDL_SysWMinfo wmInfo;
 SDL_DisplayMode display_mode;
 SDL_RWops *log_file = NULL;
-TTF_Font *title_font = NULL; // Font of the button title text
+text_info_t title_info;
+launcher_clock_t *launcher_clock = NULL;
+TTF_Font *clock_font = NULL;
 menu_t *default_menu = NULL;
 menu_t *current_menu = NULL; // Current selected menu
 entry_t *current_entry = NULL; // Current selected entry
@@ -100,6 +117,7 @@ hotkey_t *hotkeys = NULL;
 ticks_t ticks;
 SDL_GameController *gamepad = NULL;
 SDL_Thread *slideshow_thread = NULL;
+SDL_Thread *clock_thread = NULL;
 int delay_period;
 int repeat_period; 
 scroll_t *scroll = NULL;
@@ -110,7 +128,7 @@ highlight_t *highlight = NULL; // Pointer containing highlight texture and coord
 geometry_t geo; // Struct containing screen geometry for the current page of buttons
 
 // A function to initialize SDL
-int init_sdl()
+static int init_sdl()
 {  
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
@@ -149,12 +167,13 @@ int init_sdl()
   }
   SDL_ShowCursor(SDL_DISABLE);
 
-  // Create HW accelerated renderer, get screen resolution
+  // Create HW accelerated renderer, get screen resolution for geometry calculations
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   SDL_GetCurrentDisplayMode(0, &display_mode);
   geo.screen_width = display_mode.w;
   geo.screen_height = display_mode.h;
-  SDL_SetRenderDrawBlendMode(renderer,SDL_BLENDMODE_BLEND);
+  geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   if (renderer == NULL) {
     output_log(LOGLEVEL_FATAL, 
                "Fatal Error: Could not initialize renderer\n%s\n", 
@@ -183,10 +202,10 @@ void set_draw_color()
 {
   if (config.background_mode == MODE_COLOR) {
     SDL_SetRenderDrawColor(renderer,
-                            config.background_color.r,
-                            config.background_color.g,
-                            config.background_color.b,
-                            config.background_color.a);
+                           config.background_color.r,
+                           config.background_color.g,
+                           config.background_color.b,
+                           config.background_color.a);
   }
   else {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -194,7 +213,7 @@ void set_draw_color()
 }
 
 // A function to initialize SDL's TTF subsystem
-int init_ttf()
+static int init_ttf()
 {
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
@@ -204,43 +223,23 @@ int init_ttf()
     return 1;
    }
 
-  // Load user specified font
-  if (config.title_font_path != NULL) {
-    title_font = TTF_OpenFont(config.title_font_path, config.font_size);
+  title_info.font_size = config.font_size;
+  title_info.font_path = &config.title_font_path;
+  title_info.max_width = config.icon_size,
+  title_info.oversize_mode = config.title_oversize_mode;
+  title_info.color = &config.title_color;
+  
+  int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
+  if (error) {
+    return error;
   }
 
-  // Try to find default font if user specified font is not found
-  if (title_font == NULL){
-    output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
-    char *prefixes[2];
-    char fonts_exe_buffer[MAX_PATH_CHARS + 1];
-    prefixes[0] = join_paths(fonts_exe_buffer, 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
-    #ifdef __unix__
-    prefixes[1] = PATH_FONTS_SYSTEM;
-    #else
-    prefixes[1] = PATH_FONTS_RELATIVE;
-    #endif
-    char *default_font = find_file(FILENAME_DEFAULT_FONT, 2, prefixes);
-
-    // Replace user font with default in config
-    if (default_font != NULL) {
-      title_font = TTF_OpenFont(default_font,config.font_size);
-      free(config.title_font_path);
-      copy_string(&config.title_font_path, default_font);
-    }
-    if(title_font == NULL) {
-      output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default font\n");
-      return 1;
-    }
-  }
-
-  // Get font height for geometry calculations
-  TTF_SizeUTF8(title_font,"TEST STRING",NULL,&geo.font_height);
+  TTF_SizeUTF8(title_info.font, "TEST STRING", NULL, &geo.font_height);
   return 0;
 }
 
 // A function to close subsystems and free memory before quitting
-void cleanup()
+static void cleanup()
 {
   // Destroy renderer and window
   if (renderer != NULL) {
@@ -257,6 +256,9 @@ void cleanup()
   IMG_Quit();
   TTF_Quit();
   quit_svg();
+  if (config.background_mode == MODE_SLIDESHOW) {
+    quit_slideshow();
+  }
 
   // Close log file if open
   if (log_file != NULL) {
@@ -270,13 +272,8 @@ void cleanup()
   free(config.exe_path);
   free(highlight);
   free(scroll);
-
-  if (config.background_mode == MODE_SLIDESHOW) {
-    quit_slideshow();
-  }
-  if (config.screensaver_enabled) {
-    free(screensaver);
-  }
+  free(screensaver);
+  free(launcher_clock);
 
   // Free menu and entry linked lists
   entry_t *entry = NULL;
@@ -299,7 +296,7 @@ void cleanup()
     free(tmp_menu);
   }
 
-  // Free hotkeys
+  // Free hotkey linked list
   hotkey_t *tmp_hotkey = NULL;
   for(hotkey_t *i = hotkeys; i != NULL; i = i->next) {
     free(tmp_hotkey);
@@ -320,7 +317,7 @@ void cleanup()
 }
 
 // A function to handle key presses from keyboard
-void handle_keypress(SDL_Keysym *key)
+static void handle_keypress(SDL_Keysym *key)
 {
   if (config.debug) {
     output_log(LOGLEVEL_DEBUG, 
@@ -363,12 +360,6 @@ void handle_keypress(SDL_Keysym *key)
   }
 }
 
-// A function to calculate the total width of all screen objects
-unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_hpadding)
-{
-  return (buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding;
-}
-
 // A function to quit the slideshow mode in case of error or program exit
 void quit_slideshow()
 {
@@ -380,7 +371,7 @@ void quit_slideshow()
 }
 
 // A function to initialize the slideshow background mode
-void init_slideshow()
+static void init_slideshow()
 {
   if (!directory_exists(config.slideshow_directory)) {
     output_log(LOGLEVEL_ERROR, 
@@ -433,7 +424,7 @@ void init_slideshow()
   }
 }
 
-void init_screensaver()
+static void init_screensaver()
 {
   // Allocate memory for structure
   screensaver = malloc(sizeof(screensaver_t));
@@ -479,37 +470,17 @@ void init_screensaver()
 }
 
 // A function to resume th slideshow after a launched application returns
-void resume_slideshow()
+static void resume_slideshow()
 {
   ticks.slideshow_load = ticks.main;
 }
 
-// A function to advance X spaces in the entry linked list (left or right)
-entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
-{
-  if (direction == DIRECTION_LEFT) {
-    for (int i = 0; i < spaces; i++) {
-      entry = entry->previous;
-    }
-  }
-  else if (direction == DIRECTION_RIGHT) {
-    for (int i = 0; i < spaces; i++) {
-      entry = entry->next;
-    }
-  }
-  return entry;
-}
-
-void render_scroll_indicators()
+static void render_scroll_indicators()
 {
   // Calcuate the geometry
   scroll = malloc(sizeof(scroll_t));
   scroll->texture = NULL;
-  int scroll_indicator_size = geo.screen_height / 10; // ~10% of screen height
-  scroll->rect_right.w = scroll_indicator_size;
-  scroll->rect_right.h = scroll_indicator_size;
-  scroll->rect_left.w = scroll_indicator_size;
-  scroll->rect_left.h = scroll_indicator_size;
+  int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT); // 10% of screen height
 
   // Find scroll indicator file
   char *prefixes[2];
@@ -534,21 +505,22 @@ void render_scroll_indicators()
     // Render the SVG
     scroll->texture = rasterize_svg(scroll_indicator_path,
                                     NULL,
-                                    scroll_indicator_size,
-                                    scroll_indicator_size);
+                                    -1,
+                                    scroll_indicator_height,
+                                    &scroll->rect_right);
+    scroll->rect_left.w = scroll->rect_right.w;
+    scroll->rect_left.h = scroll->rect_right.h;
     free(scroll_indicator_path);
     if (scroll->texture == NULL) {
       output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
       config.scroll_indicators = false;
     }
     else {
-
-      // Calculate screen position based on margin macro
-      scroll->rect_right.y = (int) ((1.0F - SCROLL_INDICATOR_MARGIN)
-                                    *(float) geo.screen_height) - scroll_indicator_size;
-      scroll->rect_right.x = geo.screen_width - (geo.screen_height - scroll->rect_right.y);
+      // Calculate screen position
+      scroll->rect_right.y = geo.screen_height - geo.screen_margin - scroll->rect_right.h;
+      scroll->rect_right.x = geo.screen_width - geo.screen_margin - scroll->rect_right.w;
       scroll->rect_left.y = scroll->rect_right.y;
-      scroll->rect_left.x = geo.screen_width - (scroll->rect_right.x + scroll_indicator_size);
+      scroll->rect_left.x = geo.screen_margin;
 
       // Set color
       SDL_SetTextureColorMod(scroll->texture,
@@ -562,7 +534,7 @@ void render_scroll_indicators()
 }
 
 // A function to load a menu by name OR existing menu struct
-int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position)
+static int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position)
 {
   int buttons;
   menu_t *previous_menu = current_menu;
@@ -635,7 +607,7 @@ int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool rese
 }
 
 // A function to calculate the layout of the buttons
-void calculate_geometry(entry_t *entry, int buttons)
+static void calculate_geometry(entry_t *entry, int buttons)
 {
   // Calculate proper spacing
   int button_height = config.icon_size + config.title_padding + geo.font_height;
@@ -659,18 +631,25 @@ void calculate_geometry(entry_t *entry, int buttons)
 }
 
 // A function to render all buttons (icon and text) for a menu
-void render_buttons(menu_t *menu)
+static void render_buttons(menu_t *menu)
 {
   entry_t *entry;
+  int h;
   for (entry = menu->first_entry; entry != NULL; entry = entry->next) {
     entry->icon = load_texture(entry->icon_path, NULL);
-    entry->title_texture = render_text(entry, &geo);
+    entry->title_texture = render_text_texture(entry->title,
+                             &title_info, 
+                             &entry->text_rect,
+                             &h);
+    if (config.title_oversize_mode == MODE_TEXT_SHRINK && h != geo.font_height) {
+      entry->title_offset = (geo.font_height - h) / 2;
+    }
   }
   menu->rendered = true;
 }
 
 // A function to output all visible buttons to the renderer
-void draw_buttons(entry_t *entry)
+static void draw_buttons(entry_t *entry)
 {
   for (int i = 0; i < geo.num_buttons; i++) {
     SDL_RenderCopy(renderer,entry->icon,NULL,&entry->icon_rect);
@@ -680,7 +659,7 @@ void draw_buttons(entry_t *entry)
 }
 
 // A function to move the selection left when clicked by user
-void move_left()
+static void move_left()
 {
   // If we are not in leftmost position, move highlight left
   if (current_menu->highlight_position > 0) {
@@ -708,7 +687,7 @@ void move_left()
 }
 
 // A function to move the selection right when clicked by the user
-void move_right()
+static void move_right()
 {
   // If we are not in the rightmost position, move highlight right
   if (current_menu->highlight_position < (geo.num_buttons - 1)) {
@@ -740,20 +719,20 @@ void move_right()
 }
 
 // A function to load a submenu
-void load_submenu(char *submenu)
+static void load_submenu(char *submenu)
 {
   current_menu->last_selected_entry = current_entry;
   load_menu(submenu, NULL, true, true);
 }
 
 // A function to load the previous menu
-void load_back_menu(menu_t *menu)
+static void load_back_menu(menu_t *menu)
 {
   load_menu(NULL, menu->back, false, config.reset_on_back);
 }
 
 // A function to update the screen with all visible textures
-void draw_screen()
+static void draw_screen()
 {
   // Draw background
   if (config.background_mode == MODE_COLOR) {
@@ -770,17 +749,26 @@ void draw_screen()
   // Draw scroll indicators
   if (config.scroll_indicators &&
   (current_menu->page*config.max_buttons + geo.num_buttons) <= (current_menu->num_entries - 1)) {
-    SDL_RenderCopy(renderer,scroll->texture,NULL,&scroll->rect_right);
+    SDL_RenderCopy(renderer, scroll->texture, NULL, &scroll->rect_right);
   }
   if (config.scroll_indicators && current_menu->page > 0) {
-    SDL_RenderCopyEx(renderer,scroll->texture,NULL,&scroll->rect_left,0,NULL,SDL_FLIP_HORIZONTAL);
+    SDL_RenderCopyEx(renderer, scroll->texture, NULL, &scroll->rect_left, 0, NULL, SDL_FLIP_HORIZONTAL);
+  }
+
+  // Draw clock
+  if (config.clock_enabled) {
+    SDL_RenderCopy(renderer, launcher_clock->time_texture, NULL, &launcher_clock->time_rect);
+    if (config.clock_show_date) {
+      SDL_RenderCopy(renderer, launcher_clock->date_texture, NULL, &launcher_clock->date_rect);
+    }
   }
 
   // Draw highlight
   SDL_RenderCopy(renderer,
-                 highlight->texture,
-                 NULL,
-                 &highlight->rect);
+    highlight->texture,
+    NULL,
+    &highlight->rect
+  );
 
   // Draw buttons
   draw_buttons(current_menu->root_entry);
@@ -795,7 +783,7 @@ void draw_screen()
 }
 
 // A function to execute the user's command
-void execute_command(const char *command)
+static void execute_command(const char *command)
 {
   if (strlen(command) == 0) {
     return;
@@ -822,9 +810,9 @@ void execute_command(const char *command)
   // Parse special commands
   if (cmd[0] == ':') {
     char *delimiter = " ";
-    char *special_command = strtok(cmd,delimiter);
+    char *special_command = strtok(cmd, delimiter);
     if (!strcmp(special_command, SCMD_SUBMENU)) {
-      char *submenu = strtok(NULL,delimiter);
+      char *submenu = strtok(NULL, delimiter);
       load_submenu(submenu);
     }
     else if (!strcmp(special_command, SCMD_LEFT)) {
@@ -877,6 +865,10 @@ void execute_command(const char *command)
     ticks.main = SDL_GetTicks();
     ticks.last_input = ticks.main;
 
+    // Post-application updates
+    if (config.clock_enabled) {
+      update_clock(true);
+    }
     if (config.background_mode == MODE_SLIDESHOW) {
       resume_slideshow();
     }
@@ -895,26 +887,28 @@ free(cmd);
 }
 
 // A function to connect to a gamepad
-void connect_gamepad(int device_index)
+static void connect_gamepad(int device_index)
 {
   gamepad = SDL_GameControllerOpen(device_index);
   if (gamepad == NULL) {
     output_log(LOGLEVEL_ERROR, 
-               "Error: Could not open gamepad at device index %i\n", 
-               config.gamepad_device);
+      "Error: Could not open gamepad at device index %i\n", 
+      config.gamepad_device
+    );
     return;
   }
   if (config.debug) {
     char *mapping = SDL_GameControllerMapping(gamepad);
     output_log(LOGLEVEL_DEBUG, 
-               "Gamepad Mapping:\n%s\n", 
-               mapping);
+      "Gamepad Mapping:\n%s\n", 
+      mapping
+    );
     SDL_free(mapping);
   }
 }
 
 // A function to poll the connected gamepad for commands
-void poll_gamepad()
+static void poll_gamepad()
 {
   int value_multiplier; // Handles positive or negative axis
   for (gamepad_control_t *i = config.gamepad_controls; i != NULL; i = i->next) {
@@ -960,7 +954,7 @@ void poll_gamepad()
 }
 
 // A function to update the slideshow
-void update_slideshow()
+static void update_slideshow()
 {
   // If image duration time has elapsed, load the next image and start the transition
   if (!state.slideshow_transition && (ticks.main - ticks.slideshow_load > config.slideshow_image_duration) &&
@@ -1014,7 +1008,7 @@ void update_slideshow()
 }
 
 // A function to update the screensaver
-void update_screensaver()
+static void update_screensaver()
 {
   // Activate the screensaver if the launcher has been idle for the required time
   if (!state.screensaver_active && ticks.main - ticks.last_input > config.screensaver_idle_time) {
@@ -1057,6 +1051,49 @@ void update_screensaver()
   }
 }
 
+static void update_clock(bool block)
+{
+  if (ticks.main - ticks.clock_update > CLOCK_UPDATE_PERIOD) {
+    if (!state.clock_rendering) {
+
+      // Check to see if the time has changed
+      get_time(launcher_clock);
+      if (launcher_clock->render_time) {
+        state.clock_rendering = true;
+        if (block) {
+          render_clock(launcher_clock);
+        }
+        else {
+          clock_thread = SDL_CreateThread(render_clock_async, "Clock Thread", (void*) launcher_clock);
+        }  
+      }
+      else {
+        ticks.clock_update = ticks.main;
+      }
+    }
+
+    // Render texture
+    if (state.clock_ready) {
+      SDL_WaitThread(clock_thread, NULL);
+      clock_thread = NULL;
+      SDL_DestroyTexture(launcher_clock->time_texture);
+      launcher_clock->time_texture = load_texture(NULL, launcher_clock->time_surface);
+      launcher_clock->time_surface = NULL;
+      if (launcher_clock->render_date) {
+        SDL_DestroyTexture(launcher_clock->date_texture);
+        launcher_clock->date_texture = load_texture(NULL, launcher_clock->date_surface);
+        launcher_clock->date_surface = NULL;
+      }
+      ticks.clock_update = ticks.main;
+      launcher_clock->render_time = false;
+      launcher_clock->render_date = false;
+      state.clock_rendering = false;
+      state.clock_ready = false;
+      state.screen_updates = true;
+    }
+  }
+}
+
 // A function to quit the launcher
 void quit(int status)
 {
@@ -1064,7 +1101,6 @@ void quit(int status)
   cleanup();
   exit(status);
 }
-
 
 int main(int argc, char *argv[]) 
 {
@@ -1134,6 +1170,13 @@ int main(int argc, char *argv[])
   if (config.screensaver_enabled) {
     init_screensaver();
   }
+
+  // Initialize clock
+  if (config.clock_enabled) {
+    launcher_clock = malloc(sizeof(launcher_clock_t));
+    init_clock(launcher_clock);
+    ticks.clock_update = ticks.main;
+  }
   
   // Render highlight
   int button_height = config.icon_size + config.title_padding + geo.font_height;
@@ -1142,7 +1185,8 @@ int main(int argc, char *argv[])
   highlight->rect.h = button_height + 2*config.highlight_vpadding;
   highlight->texture = render_highlight(highlight->rect.w,
                                         highlight->rect.h,
-                                        config.highlight_rx);
+                                        config.highlight_rx,
+                                        NULL);
 
   
   // Render scroll indicators
@@ -1163,7 +1207,6 @@ int main(int argc, char *argv[])
     output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
     quit(1);
   }
-
   default_menu = get_menu(config.default_menu, config.first_menu);
   if (default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, 
@@ -1220,7 +1263,7 @@ int main(int argc, char *argv[])
             else {
               state.screen_updates = true;
             }
-          output_log(LOGLEVEL_DEBUG, "Redrawing window\n");
+            output_log(LOGLEVEL_DEBUG, "Redrawing window\n");
           }
           else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
             output_log(LOGLEVEL_DEBUG, "Lost keyboard focus\n");
@@ -1241,6 +1284,9 @@ int main(int argc, char *argv[])
     if (config.screensaver_enabled) {
       update_screensaver();
     }    
+    if (config.clock_enabled) {
+      update_clock(false);
+    }
     //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
     if (state.screen_updates) {
       draw_screen();

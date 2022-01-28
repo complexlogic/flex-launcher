@@ -9,6 +9,7 @@
 #include <fileapi.h>
 #include <psapi.h>
 #include <shlwapi.h>
+#include <winnls.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include "../launcher.h"
@@ -115,7 +116,6 @@ bool file_exists(const char *path)
   convert_utf8_string(w_path, path, sizeof(w_path));
   return file_exists_w(w_path);
 }
-
 
 // A function to determine if a directory exists on the filesystem
 bool directory_exists(const char *path)
@@ -356,4 +356,11 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   }
   slideshow->num_images = num_images;
   return num_images;
+}
+
+void get_region(char *buffer)
+{
+  WCHAR w_region[3];
+  GetUserDefaultGeoName(w_region, sizeof(w_region));
+  convert_utf16_string(buffer, w_region, 3);
 }

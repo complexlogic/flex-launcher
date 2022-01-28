@@ -14,7 +14,7 @@ extern SDL_RWops *log_file;
 
 
 // A function to initialize the logging subsystem
-int init_log()
+static int init_log()
 {
   // Determine log path
   char log_file_path[MAX_PATH_CHARS + 1];
@@ -33,14 +33,13 @@ int init_log()
     #ifdef __unix__
     printf("Failed to create log file\n");
     #endif
-    cleanup();
-    exit(1);
+    quit(1);
   }
+  #ifdef __unix__
   if (config.debug) {
-    #ifdef __unix__
     printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
-    #endif
   }
+  #endif
   return 0;
 }
 
@@ -147,6 +146,56 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_RESET_ON_BACK,"false");
   }
+  output_log(LOGLEVEL_DEBUG, "========================== Clock ==========================\n");
+  if (config.clock_enabled) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ENABLED, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ENABLED, "false");
+  }
+  if (config.clock_show_date) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_SHOW_DATE, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_SHOW_DATE, "false");
+  }
+  if (config.clock_alignment == ALIGNMENT_LEFT) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ALIGNMENT, "Left");
+  }
+  else if (config.clock_alignment == ALIGNMENT_RIGHT) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ALIGNMENT, "Right");
+  }
+  output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_FONT, config.clock_font_path);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_COLOR, config.clock_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_COLOR, config.clock_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_COLOR, config.clock_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_COLOR, config.clock_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %u\n", SETTING_CLOCK_FONT_SIZE,config.clock_font_size);
+  if (config.clock_time_format == FORMAT_TIME_12HR) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_TIME_FORMAT, "12hr");
+  }
+  else if (config.clock_time_format == FORMAT_TIME_24HR) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_TIME_FORMAT, "24hr");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_TIME_FORMAT, "Auto");
+  }
+  if (config.clock_date_format == FORMAT_DATE_LITTLE) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_DATE_FORMAT, "Little");
+  }
+  else if (config.clock_date_format == FORMAT_DATE_BIG) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_DATE_FORMAT, "Big");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_DATE_FORMAT, "Auto");
+  }
+  if (config.clock_include_weekday) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_INCLUDE_WEEKDAY, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_INCLUDE_WEEKDAY, "false");
+  }
+
   output_log(LOGLEVEL_DEBUG, "======================= Screensaver =======================\n");
   if (config.screensaver_enabled) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_ENABLED, "true");
