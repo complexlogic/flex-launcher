@@ -14,12 +14,7 @@
 #include "util.h"
 #include "debug.h"
 #include "clock.h"
-#ifdef __unix__
-#include "platform/unix.h"
-#endif
-#ifdef _WIN32
-#include "platform/win32.h"
-#endif
+#include "platform/platform.h"
 
 // Initialize default settings
 config_t config = {
@@ -104,7 +99,7 @@ state_t state = {
 // Global variables
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
-SDL_SysWMinfo wmInfo;
+SDL_SysWMinfo wm_info;
 SDL_DisplayMode display_mode;
 SDL_RWops *log_file = NULL;
 text_info_t title_info;
@@ -153,16 +148,18 @@ static int init_sdl()
   }
 
   // Create window, hide mouse cursor
-  window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED,
-                                          SDL_WINDOWPOS_UNDEFINED,
-                                          0,
-                                          0,
-                                          SDL_WINDOW_FULLSCREEN_DESKTOP | 
-                                          SDL_WINDOW_BORDERLESS);
+  window = SDL_CreateWindow(PROJECT_NAME, 
+             SDL_WINDOWPOS_UNDEFINED,
+             SDL_WINDOWPOS_UNDEFINED,
+             0,
+             0,
+             SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS
+           );
   if (window == NULL) {
     output_log(LOGLEVEL_FATAL, 
-               "Fatal Error: Could not create SDL Window\n%s\n", 
-               SDL_GetError());
+      "Fatal Error: Could not create SDL Window\n%s\n", 
+      SDL_GetError()
+    );
     return 1;
   }
   SDL_ShowCursor(SDL_DISABLE);
@@ -192,8 +189,8 @@ static int init_sdl()
     return 1;
   }
   #ifdef _WIN32
-  SDL_VERSION(&wmInfo.version);
-  SDL_GetWindowWMInfo(window, &wmInfo);
+  SDL_VERSION(&wm_info.version);
+  SDL_GetWindowWMInfo(window, &wm_info);
   #endif
   return 0;
 }
@@ -202,10 +199,11 @@ void set_draw_color()
 {
   if (config.background_mode == MODE_COLOR) {
     SDL_SetRenderDrawColor(renderer,
-                           config.background_color.r,
-                           config.background_color.g,
-                           config.background_color.b,
-                           config.background_color.a);
+      config.background_color.r,
+      config.background_color.g,
+      config.background_color.b,
+      config.background_color.a
+    );
   }
   else {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -218,8 +216,9 @@ static int init_ttf()
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
     output_log(LOGLEVEL_FATAL, 
-               "Fatal Error: Could not initialize SDL_ttf\n%s\n", 
-               TTF_GetError());
+      "Fatal Error: Could not initialize SDL_ttf\n%s\n", 
+      TTF_GetError()
+    );
     return 1;
    }
 

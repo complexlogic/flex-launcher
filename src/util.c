@@ -8,12 +8,7 @@
 #include <launcher_config.h>
 #include "util.h"
 #include "debug.h"
-#ifdef __unix__
-#include "platform/unix.h"
-#endif
-#ifdef _WIN32
-#include "platform/win32.h"
-#endif
+#include "platform/platform.h"
 #include "external/ini.h"
 
 

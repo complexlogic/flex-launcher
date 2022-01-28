@@ -14,24 +14,14 @@
 #include <SDL_syswm.h>
 #include "../launcher.h"
 #include <launcher_config.h>
+#include "platform.h"
 #include "win32.h"
 #include "../util.h"
 #include "../debug.h"
 #include "slideshow.h"
 
-// Internal function prototypes
-static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_size);
-static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size);
-static void convert_utf8_alloc(LPWSTR *buffer, const char *string);
-static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params);
-static LPWSTR path_basename(LPCWSTR w_path);
-static bool process_running_name(LPCWSTR w_target_process);
-static bool file_exists_w(LPCWSTR w_path);
-static bool is_browser(LPCWSTR w_exe_basename);
-bool process_running(HANDLE process);
-
 extern config_t config;
-extern SDL_SysWMinfo wmInfo;
+extern SDL_SysWMinfo wm_info;
 bool web_browser;
 LPWSTR w_process_basename = NULL;
 
@@ -53,11 +43,12 @@ static LPWSTR path_basename(LPCWSTR w_path)
 // A function to determine if a process name is a web browser
 static bool is_browser(LPCWSTR w_exe_basename)
 {
-  LPCWSTR browsers[NUM_BROWSERS] = {
+  LPCWSTR *browsers[] = {
     L"chrome.exe",
     L"msedge.exe",
-    L"firefox.exe"};
-  for (int i = 0; i < NUM_BROWSERS; i++) {
+    L"firefox.exe"
+  };
+  for (int i = 0; i < sizeof(browsers) / sizeof(browsers[0]); i++) {
     if (!wcscmp(w_exe_basename, browsers[i])) {
       return true;
     }
@@ -73,7 +64,8 @@ static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_
     string,
     -1,
     w_string,
-    buffer_size);
+    buffer_size
+  );
 }
 
 // A function to convert a UTF-16 string to UTF-8
@@ -86,7 +78,8 @@ static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size
     string,
     buffer_size,
     NULL,
-    NULL);
+    NULL
+  );
 }
 
 // A function to convert a UTF-8 string to UTF-16, and allocate memory for it
@@ -99,7 +92,7 @@ static void convert_utf8_alloc(LPWSTR *buffer, const char *string)
 }
 
 // A function to determine if a file with wide chars exists on the filesystem
-static bool file_exists_w(LPCWSTR w_path)
+static bool w_file_exists(LPCWSTR w_path)
 {
   if (_waccess(w_path, 4) == 0) {
     return true;
@@ -114,7 +107,7 @@ bool file_exists(const char *path)
 {
   WCHAR w_path[MAX_PATH_CHARS + 1];
   convert_utf8_string(w_path, path, sizeof(w_path));
-  return file_exists_w(w_path);
+  return w_file_exists(w_path);
 }
 
 // A function to determine if a directory exists on the filesystem
@@ -122,7 +115,7 @@ bool directory_exists(const char *path)
 {
   WCHAR w_path[MAX_PATH_CHARS + 1];
   convert_utf8_string(w_path, path, sizeof(w_path));
-  if (!file_exists_w(w_path)) {
+  if (!w_file_exists(w_path)) {
     return false;
   }
   else {
@@ -206,7 +199,6 @@ static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params)
   }
 }
 
-
 // A function to determine if a process of a given name is running on the system
 static bool process_running_name(LPCWSTR w_target_process)
 {
@@ -249,7 +241,6 @@ static bool process_running_name(LPCWSTR w_target_process)
   return false;
   }
 }
-
 
 // A function to determine if the launched process is still running
 bool process_running(HANDLE process)
@@ -310,7 +301,7 @@ void launch_application(char *cmd)
 
     // Non-blocking, run event pump so we don't lose communication with window manager
     else {
-        HWND hwnd = wmInfo.info.win.window;
+        HWND hwnd = wm_info.info.win.window;
         SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
       do {
         SDL_PumpEvents();

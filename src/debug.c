@@ -8,6 +8,9 @@
 #include <launcher_config.h>
 #include "util.h"
 #include "debug.h"
+#ifdef __unix__
+#include "platform/unix.h"
+#endif
 
 extern config_t config;
 extern SDL_RWops *log_file;

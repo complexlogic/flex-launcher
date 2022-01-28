@@ -17,6 +17,7 @@ int utf8_length(const char *string);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
 bool hex_to_color(const char *string, SDL_Color *color);
 bool convert_bool(const char *string, bool default_setting);
+static bool ends_with(const char *string, const char *phrase);
 char *join_paths(char *buffer, int num_paths, ...);
 char *find_file(const char *file, int num_prefixes, const char **prefixes);
 void copy_string(char **dest, const char *string);

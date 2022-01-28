@@ -1,11 +1,13 @@
-bool file_exists(const char *path);
-bool directory_exists(const char *path);
-void launch_application(char *cmd);
-int scan_slideshow_directory(slideshow_t *slideshow, const char *directory);
-
 #define MAX_PATH_UTF8_CONVERT 2*sizeof(WCHAR)*MAX_PATH_CHARS
-#define NUM_BROWSERS 3
 #define BROWSER_CHECK_PERIOD 1000
-#define CMD_SHUTDOWN "\"shutdown /s /f /t 0 \""
-#define CMD_RESTART "\"shutdown /r /f /t 0 \""
-#define CMD_SLEEP "\"rundll32 powrprof.dll,SetSuspendState 0,1,0 \""
+
+//Function prototypes
+static void convert_utf8_string(LPWSTR w_string, const char *string, int buffer_size);
+static void convert_utf16_string(char *string, LPCWSTR w_string, int buffer_size);
+static void convert_utf8_alloc(LPWSTR *buffer, const char *string);
+static void parse_command(char *cmd, LPWSTR w_file, LPWSTR *w_params);
+static LPWSTR path_basename(LPCWSTR w_path);
+static bool process_running_name(LPCWSTR w_target_process);
+static bool w_file_exists(LPCWSTR w_path);
+static bool is_browser(LPCWSTR w_exe_basename);
+bool process_running(HANDLE process);
