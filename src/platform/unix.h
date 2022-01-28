@@ -6,16 +6,17 @@
 #define DESKTOP_NOT_FOUND 2
 #define EXT_DESKTOP ".desktop"
 #define EXT_DESKTOP_LENGTH 8
-#define DELIMITER_ACTION "|"
+#define MAX_INI_SECTION 100
+#define DELIMITER_ACTION ";"
 #define DESKTOP_SECTION_HEADER "Desktop Entry"
 #define DESKTOP_SECTION_HEADER_LENGTH 13
 #define DESKTOP_SECTION_HEADER_ACTION "Desktop Action %s"
 #define DESKTOP_SECTION_HEADER_ACTION_LENGTH 15
-#define EXEC "Exec"
+#define KEY_EXEC "Exec"
 
 typedef struct {
-  char *section;
-  char **exec;
+  char section[MAX_INI_SECTION + 1];
+  char *exec;
 } desktop_t;
 
 bool file_exists(const char *path);

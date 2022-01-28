@@ -16,9 +16,8 @@
 static int desktop_handler(void *user, const char *section, const char *name, const char *value)
 {
   desktop_t *pdesktop = (desktop_t*) user;
-  if (!strcmp(pdesktop->section, section) && !strcmp(name, EXEC)) {
-    *pdesktop->exec = malloc(sizeof(char)*(strlen(value) + 1));
-    strcpy(*pdesktop->exec, value);
+  if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC)) {
+    copy_string(&pdesktop->exec, value);
   }
 }
 
@@ -63,50 +62,6 @@ static void strip_field_codes(char *cmd)
   }
 }
 
-// A function to determine if the command is the path to a .desktop file
-// and retrieve the Exec command if so
-int parse_desktop_file(char *command, char **exec)
-{
-  char *cmd = malloc(sizeof(char)*(strlen(command) + 1));
-  strcpy(cmd, command);
-  char *desktop_file = strtok(cmd, DELIMITER_ACTION);
-  if (strlen(desktop_file) > EXT_DESKTOP_LENGTH) {
-    char *extension = cmd + (strlen(desktop_file) - 8);
-    if (!strcmp(extension, EXT_DESKTOP)) {
-      desktop_t desktop;
-      char *action = strtok(NULL,DELIMITER_ACTION);
-      if (action == NULL) {
-        desktop.section = malloc(sizeof(char)*(DESKTOP_SECTION_HEADER_LENGTH + 1));
-        strcpy(desktop.section,DESKTOP_SECTION_HEADER);
-      }
-      else {
-        desktop.section = malloc(sizeof(char)*(DESKTOP_SECTION_HEADER_ACTION_LENGTH
-        + strlen(action) + 1));
-        sprintf(desktop.section, DESKTOP_SECTION_HEADER_ACTION, action);
-      }
-      desktop.exec = exec;
-      char *file = desktop_file;
-      int error = ini_parse(file, desktop_handler, &desktop);
-      free(desktop.section);
-      if (error < 0) {
-        printf("Error: Desktop file \"%s\" not found\n", cmd);
-        free(cmd);
-        return DESKTOP_ERROR;
-      }
-      else if (*exec == NULL) {
-        printf("No Exec line found in desktop file \"%s\"\n", cmd);
-        free(cmd);
-        return DESKTOP_ERROR;
-      }
-      strip_field_codes(exec);
-      free(cmd);
-      return DESKTOP_SUCCESS;
-    }
-  }
-  free(cmd);
-  return DESKTOP_NOT_FOUND;
-}
-
 // A function to make a directory, including any intermediate
 // directories if necessary
 void make_directory(const char *directory) 
@@ -129,9 +84,65 @@ void make_directory(const char *directory)
   mkdir(buffer, S_IRWXU);
 }
 
+// A function to determine if a string ends with a phrase
+static bool ends_with(const char *string, const char *phrase)
+{
+  int len_string = strlen(string);
+  int len_phrase = strlen(phrase);
+  if (len_phrase > len_string) {
+    return false;
+  }
+  char *p = string + len_string - len_phrase;
+  if (!strcmp(p, phrase)) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+// A function to launch an external application
 void launch_application(char *cmd)
 {
+  // Check if the command is an XDG .desktop file
+  char *tmp = NULL;
+  char *exec = NULL;
+  copy_string(&tmp, cmd);
+  char *file = strtok(tmp, DELIMITER_ACTION);
+  if (ends_with(file, EXT_DESKTOP)) {
+    desktop_t desktop;
+    desktop.exec = NULL;
+
+    // Parse the desktop action from the command (if any)
+    char *action = strtok(NULL, DELIMITER_ACTION);
+    if (action == NULL) {
+      strncpy(desktop.section, DESKTOP_SECTION_HEADER, sizeof(desktop.section));
+    }
+    else {
+      snprintf(desktop.section, sizeof(desktop.section), DESKTOP_SECTION_HEADER_ACTION, action);
+    }
+
+    // Parse the .desktop file for the Exec line value
+    int error = ini_parse(file, desktop_handler, &desktop);
+    if (error < 0) {
+      output_log(LOGLEVEL_ERROR, "Error: Desktop file \"%s\" not found\n", file);
+      free(tmp);
+      return;
+    }
+    if (desktop.exec == NULL) {
+      output_log(LOGLEVEL_DEBUG, "No Exec line found in desktop file \"%s\"\n", cmd);
+      free(tmp);
+      return;
+    }
+    exec = desktop.exec;
+    strip_field_codes(exec);
+    cmd = exec;
+  }
+  free(tmp);
+
+  // Launch application in system shell
   system(cmd);
+  free(exec);
 }
 
 int image_filter(struct dirent *file)

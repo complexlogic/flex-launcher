@@ -785,27 +785,9 @@ static void draw_screen()
 // A function to execute the user's command
 static void execute_command(const char *command)
 {
-  if (strlen(command) == 0) {
-    return;
-  }
-
   // Copy command into separate buffer
   char *cmd;
   copy_string(&cmd, command);
-
-  // Parse .desktop file (Linux only)
-  #ifdef __unix__
-    char *desktop_exec = NULL;
-    int desktop = parse_desktop_file(cmd, &desktop_exec);
-    if (desktop == DESKTOP_SUCCESS) {
-      free(cmd);
-      cmd = desktop_exec;
-    }
-    else if (desktop == DESKTOP_ERROR) {
-      free(cmd);
-      return;
-    }
-  #endif
 
   // Parse special commands
   if (cmd[0] == ':') {

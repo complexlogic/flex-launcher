@@ -398,8 +398,8 @@ int config_handler(void *user, const char *section, const char *name, const char
     // Parse entry line for title, icon path, command
     char *string = (char*) value;
     char *token;
-    char *delimitor = ";";
-    token = strtok(string, delimitor);
+    char *delimiter = ";";
+    token = strtok(string, delimiter);
     if (token != NULL) {
 
       // Create first entry in the menu if none exists
@@ -429,12 +429,12 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (i == 1) {
           copy_string(&entry->icon_path, token);
           clean_path(entry->icon_path);
-          delimitor = "";
+          delimiter = "";
         }
         else if (i == 2){
           copy_string(&entry->cmd, token);
         }
-        token = strtok(NULL, delimitor);
+        token = strtok(NULL, delimiter);
     }
 
     // Delete entry if parse failed to find 3 valid tokens
