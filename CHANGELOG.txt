@@ -1,5 +1,6 @@
 Unreleased
 - Added clock widget for current time and date
+- Windows: Full Unicode support implemented
 
 v1.3 (2022-1-13)
 - Added hotkeys feature

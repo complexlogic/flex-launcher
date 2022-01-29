@@ -10,7 +10,6 @@
 #define PATH_SEPARATOR "/"
 #endif
 
-int handle_arguments(int argc, char *argv[], char **config_file_path);
 int config_handler(void *user, const char *section, const char *name, const char *value);
 int convert_percent(const char *string, int max_value);
 int utf8_length(const char *string);
@@ -20,6 +19,7 @@ bool convert_bool(const char *string, bool default_setting);
 static bool ends_with(const char *string, const char *phrase);
 char *join_paths(char *buffer, int num_paths, ...);
 char *find_file(const char *file, int num_prefixes, const char **prefixes);
+void handle_arguments(int argc, char *argv[], FILE **config_file);
 void copy_string(char **dest, const char *string);
 void utf8_truncate(char *string, int width, int max_width);
 void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd);

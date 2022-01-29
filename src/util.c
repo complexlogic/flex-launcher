@@ -11,7 +11,6 @@
 #include "platform/platform.h"
 #include "external/ini.h"
 
-
 extern config_t config;
 extern hotkey_t *hotkeys;
 menu_t *menu = NULL;
@@ -21,7 +20,7 @@ gamepad_control_t *current_gamepad_control = NULL;
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
 {
-  config_t* pconfig = (config_t*) user;
+  config_t *pconfig = (config_t*) user;
 
   // Parse settings
   if (!strcmp(section,"Settings")) {
@@ -667,8 +666,14 @@ void random_array(int *array, int array_size)
 }
 
 // A function to handle the arguments from the command line
-int handle_arguments(int argc, char *argv[], char **config_file_path)
+void handle_arguments(int argc, char *argv[], FILE **config_file)
 {
+  char *config_file_path = NULL;
+
+  // Convert Windows UTF-16 arguments to UTF-8
+  #ifdef _WIN32
+  convert_args(&argc, &argv);
+  #endif
 
   // Parse command line arguments
   if (argc > 1) {
@@ -678,8 +683,19 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
     for (int i = 1; i < argc; i++) {
 
       // Current argument is config file path if -c or --config was previous argument
-      if (*config_file_path == NULL && i == config_file_index) {
-        copy_string(config_file_path, argv[i]);
+      if (*config_file == NULL && i == config_file_index) {
+        copy_string(&config_file_path, argv[i]);
+        if (file_exists(config_file_path)) {
+          *config_file = open_file(config_file_path);
+          if (*config_file == NULL) {
+            output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file \"%s\"", config_file_path);
+            quit(1);
+          }
+        }
+        else {
+          output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", config_file_path);
+          quit(1);
+        }
       }
       if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
         config_file_index = i + 1;
@@ -700,7 +716,7 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
         printf("Unrecognized option %s\n",argv[i]);
         print_usage();
         #endif
-        return ERROR_QUIT;
+        quit(1);
       }
     }
 
@@ -708,46 +724,53 @@ int handle_arguments(int argc, char *argv[], char **config_file_path)
     #ifdef __unix__
     if (version) {
       print_version();
-      if (*config_file_path == NULL) {
-        return NO_ERROR_QUIT;
-      }
+      quit(0);
     }
     if (help) {
       print_usage();
-      if (*config_file_path == NULL) {
-        return NO_ERROR_QUIT;
-      }
+      quit(0);
     }
     #endif
-    if (*config_file_path != NULL) {
-      return NO_ERROR;
-    } 
   }
 
   // Try to find config file if none is specified on the command line
-  #ifdef __unix__
-  char *prefixes[4];
-  char home_config_buffer[MAX_PATH_CHARS + 1];
-  prefixes[0] = CURRENT_DIRECTORY;
-  prefixes[1] = config.exe_path;
-  prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
-  prefixes[3] = PATH_CONFIG_SYSTEM;
-  *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 4, prefixes);
-  #else
-  char *prefixes[2];
-  prefixes[0] = CURRENT_DIRECTORY;
-  prefixes[1] = config.exe_path;
-  *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 2, prefixes);
-  #endif
+  if (config_file_path == NULL) {
+    #ifdef __unix__
+    char *prefixes[4];
+    char home_config_buffer[MAX_PATH_CHARS + 1];
+    prefixes[0] = CURRENT_DIRECTORY;
+    prefixes[1] = config.exe_path;
+    prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
+    prefixes[3] = PATH_CONFIG_SYSTEM;
+    config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 4, prefixes);
+    #else
+    char *prefixes[2];
+    prefixes[0] = CURRENT_DIRECTORY;
+    prefixes[1] = config.exe_path;
+    config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 2, prefixes);
+    #endif
 
-  if (*config_file_path == NULL) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
-    print_usage();
-    return ERROR_QUIT;
+    if (config_file_path == NULL) {
+      output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
+      #ifdef __unix__
+      print_usage();
+      #endif
+      quit(1);
+    }
+    *config_file = open_file(config_file_path);
+    if (*config_file == NULL) {
+      output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file \"%s\"", config_file_path);
+      quit(1);
+    }
   }
-  else {
-    return NO_ERROR;
-  }
+
+  output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", config_file_path);
+  free(config_file_path);
+
+  // Cleanup heap-allocated arguments
+  #ifdef _WIN32
+  cleanup_args(argc, argv);
+  #endif
 }
 
 // A function to calculate the total width of all screen objects

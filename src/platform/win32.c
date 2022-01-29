@@ -7,6 +7,8 @@
 #include <stringapiset.h>
 #include <processthreadsapi.h>
 #include <fileapi.h>
+#include <shellapi.h>
+#include <processenv.h>
 #include <psapi.h>
 #include <shlwapi.h>
 #include <winnls.h>
@@ -91,7 +93,15 @@ static void convert_utf8_alloc(LPWSTR *buffer, const char *string)
   convert_utf8_string(*buffer, string, buffer_size);
 }
 
-// A function to determine if a file with wide chars exists on the filesystem
+static void convert_utf16_alloc(const char **buffer, LPCWSTR w_string)
+{
+  size_t length = wcslen(w_string);
+  int buffer_size = 2*sizeof(WCHAR)*(length + 1);
+  *buffer = malloc(buffer_size);
+  convert_utf16_string(*buffer, w_string, buffer_size);
+}
+
+// A function to determine if a file with wide char path exists on the filesystem
 static bool w_file_exists(LPCWSTR w_path)
 {
   if (_waccess(w_path, 4) == 0) {
@@ -354,4 +364,32 @@ void get_region(char *buffer)
   WCHAR w_region[3];
   GetUserDefaultGeoName(w_region, sizeof(w_region));
   convert_utf16_string(buffer, w_region, 3);
+}
+
+void convert_args(int *argc, char **argv[])
+{
+  LPWSTR command_line = GetCommandLineW();
+  LPWSTR  *w_argv = CommandLineToArgvW(command_line, argc);
+  int array_length = *argc;
+  char **arg_list = malloc(sizeof(char*)*array_length);
+  for (int i = 0; i < array_length; i++) {
+    convert_utf16_alloc(arg_list + i, w_argv[i]);
+  }
+  LocalFree(w_argv);
+  *argv = arg_list;
+}
+
+void cleanup_args(int argc, char *argv[])
+{
+  for (int i = 0; i < argc; i++) {
+    free(argv[i]);
+  }
+  free(argv);
+}
+
+FILE *open_file(const char *path)
+{
+  WCHAR w_path[MAX_PATH_CHARS + 1];
+  convert_utf8_string(w_path, path, sizeof(w_path));
+  return _wfopen(w_path, L"rb,ccs=UTF-8");
 }

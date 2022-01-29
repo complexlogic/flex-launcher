@@ -15,7 +15,6 @@
 extern config_t config;
 extern SDL_RWops *log_file;
 
-
 // A function to initialize the logging subsystem
 static int init_log()
 {

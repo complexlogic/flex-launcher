@@ -142,8 +142,9 @@ static int init_sdl()
   if (SDL_Init(sdl_flags) < 0)
   {
     output_log(LOGLEVEL_FATAL, 
-               "Fatal Error: Could not initialize SDL\n%s\n", 
-               SDL_GetError());
+      "Fatal Error: Could not initialize SDL\n%s\n", 
+      SDL_GetError()
+    );
     return 1;
   }
 
@@ -173,8 +174,9 @@ static int init_sdl()
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   if (renderer == NULL) {
     output_log(LOGLEVEL_FATAL, 
-               "Fatal Error: Could not initialize renderer\n%s\n", 
-               SDL_GetError());
+      "Fatal Error: Could not initialize renderer\n%s\n", 
+      SDL_GetError()
+    );
     return 1;
   }
 
@@ -184,8 +186,9 @@ static int init_sdl()
   // Initialize SDL_image
   if (!(IMG_Init(img_flags) & img_flags)) {
     output_log(LOGLEVEL_FATAL, 
-               "Fatal Error: Could not initialize SDL_image\n%s\n", 
-               IMG_GetError());
+      "Fatal Error: Could not initialize SDL_image\n%s\n", 
+      IMG_GetError()
+    );
     return 1;
   }
   #ifdef _WIN32
@@ -320,9 +323,10 @@ static void handle_keypress(SDL_Keysym *key)
 {
   if (config.debug) {
     output_log(LOGLEVEL_DEBUG, 
-               "Key %s (%X) detected\n", 
-               SDL_GetKeyName(key->sym),
-               key->sym);
+      "Key %s (%X) detected\n", 
+      SDL_GetKeyName(key->sym),
+      key->sym
+    );
   }
 
   // Check default keys
@@ -334,13 +338,14 @@ static void handle_keypress(SDL_Keysym *key)
   }
   else if (key->sym == SDLK_RETURN) {
     output_log(LOGLEVEL_DEBUG, 
-               "Selected Entry:\n"
-               "Title: %s\n"
-               "Icon Path: %s\n"
-               "Command: %s\n", 
-               current_entry->title, 
-               current_entry->icon_path, 
-               current_entry->cmd);
+      "Selected Entry:\n"
+      "Title: %s\n"
+      "Icon Path: %s\n"
+      "Command: %s\n", 
+      current_entry->title, 
+      current_entry->icon_path, 
+      current_entry->cmd
+    );
     
     execute_command(current_entry->cmd);
   }
@@ -374,9 +379,10 @@ static void init_slideshow()
 {
   if (!directory_exists(config.slideshow_directory)) {
     output_log(LOGLEVEL_ERROR, 
-               "Error: Slideshow directory %s does not exist\n"
-               "Switching to color background mode\n",
-               config.slideshow_directory);
+      "Error: Slideshow directory %s does not exist\n"
+      "Switching to color background mode\n",
+      config.slideshow_directory
+    );
     config.background_mode = MODE_COLOR;
     set_draw_color();
     return;
@@ -395,18 +401,20 @@ static void init_slideshow()
   // Handle errors
   if (num_images == 0) {
     output_log(LOGLEVEL_ERROR, 
-               "Error: No images found in slideshow directory %s\n"
-               "Changing background mode to color\n", 
-               config.slideshow_directory);
+      "Error: No images found in slideshow directory %s\n"
+      "Changing background mode to color\n", 
+      config.slideshow_directory
+    );
     quit_slideshow();
     config.background_mode = MODE_COLOR;
     set_draw_color();
   } 
   else if (num_images == 1) {
     output_log(LOGLEVEL_ERROR, 
-               "Error: Only one image found in slideshow directory %s\n"
-               "Changing background mode to single image\n", 
-               config.slideshow_directory);
+      "Error: Only one image found in slideshow directory %s\n"
+      "Changing background mode to single image\n", 
+      config.slideshow_directory
+    );
     background_texture = load_texture(slideshow->images[0], NULL);
     quit_slideshow();
     config.background_mode = MODE_IMAGE;
@@ -772,6 +780,7 @@ static void draw_screen()
   // Draw buttons
   draw_buttons(current_menu->root_entry);
 
+  // Draw screensaver
   if (state.screensaver_active) {
     SDL_RenderCopy(renderer, screensaver->texture, NULL, NULL);
   }
@@ -1032,6 +1041,7 @@ static void update_screensaver()
   }
 }
 
+// A function to update the clock display
 static void update_clock(bool block)
 {
   if (ticks.main - ticks.clock_update > CLOCK_UPDATE_PERIOD) {
@@ -1078,7 +1088,9 @@ static void update_clock(bool block)
 // A function to quit the launcher
 void quit(int status)
 {
-  output_log(LOGLEVEL_DEBUG, "Quitting program\n");
+  if (status == 0) {
+    output_log(LOGLEVEL_DEBUG, "Quitting program\n");
+  }
   cleanup();
   exit(status);
 }
@@ -1087,31 +1099,26 @@ int main(int argc, char *argv[])
 {
   SDL_Event event;
   int error;
-  char *config_file_path = NULL;
   config.exe_path = SDL_GetBasePath();
+  FILE *config_file = NULL;
 
-  error = handle_arguments(argc, argv, &config_file_path);
-  if (error == NO_ERROR_QUIT) {
-    quit(0);
-  }
-  else if (error == ERROR_QUIT) {
-    quit(1);
-  }
-  output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", config_file_path);
+  // Handle command line arguments, find config file
+  handle_arguments(argc, argv, &config_file);
 
   // Parse config file for settings and menu entries
-  error = ini_parse(config_file_path, config_handler, &config);
+  error = ini_parse_file(config_file, config_handler, &config);
   if (error < 0) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", config_file_path);
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
     quit(1);
   }
-  free(config_file_path);
+  fclose(config_file);
 
   // Initialize libraries
   if (init_sdl() || init_ttf() || init_svg()) {
     quit(1);
   }
 
+  // Initialize timing
   ticks.main = SDL_GetTicks();
   ticks.last_input = ticks.main;
 
@@ -1124,13 +1131,14 @@ int main(int argc, char *argv[])
       error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
       if (error) {
         output_log(LOGLEVEL_ERROR, 
-                   "Error: Could not load gamepad mappings from %s\n", 
-                   config.gamepad_mappings_file);
+          "Error: Could not load gamepad mappings from %s\n", 
+          config.gamepad_mappings_file
+        );
       }
     }
   }
 
-  // Render background image
+  // Render background
   if (config.background_mode == MODE_IMAGE) {
     background_texture = load_texture(config.background_image,NULL);
 
@@ -1165,9 +1173,10 @@ int main(int argc, char *argv[])
   highlight->rect.w = config.icon_size + 2*config.highlight_hpadding;
   highlight->rect.h = button_height + 2*config.highlight_vpadding;
   highlight->texture = render_highlight(highlight->rect.w,
-                                        highlight->rect.h,
-                                        config.highlight_rx,
-                                        NULL);
+                         highlight->rect.h,
+                         config.highlight_rx,
+                         NULL
+                       );
 
   
   // Render scroll indicators
@@ -1175,7 +1184,7 @@ int main(int argc, char *argv[])
     render_scroll_indicators();
   }
   
-  // Debug info
+  // Print debug info
   if (config.debug) {
     debug_video(renderer, &display_mode);
     debug_settings();
@@ -1191,10 +1200,10 @@ int main(int argc, char *argv[])
   default_menu = get_menu(config.default_menu, config.first_menu);
   if (default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, 
-               "Fatal Error: Default Menu \"%s\" not found in config file\n", 
-               config.default_menu);
+      "Fatal Error: Default Menu \"%s\" not found in config file\n", 
+      config.default_menu
+    );
     quit(1);
-
   }
   error = load_menu(NULL, default_menu, false, true);
   if (error) {
@@ -1268,7 +1277,6 @@ int main(int argc, char *argv[])
     if (config.clock_enabled) {
       update_clock(false);
     }
-    //output_log(LOGLEVEL_DEBUG, "Loop time: %i ms\n", SDL_GetTicks() - ticks.main);
     if (state.screen_updates) {
       draw_screen();
     }  

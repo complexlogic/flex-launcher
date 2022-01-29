@@ -193,3 +193,8 @@ void get_region(char *buffer)
     strcpy(buffer, token);
   }
 }
+
+FILE *open_file(const char *path)
+{
+  return fopen(path, "r");
+}
