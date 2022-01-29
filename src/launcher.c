@@ -243,6 +243,10 @@ static int init_ttf()
 // A function to close subsystems and free memory before quitting
 static void cleanup()
 {
+  // Wait until all threads have completed
+  SDL_WaitThread(slideshow_thread, NULL);
+  SDL_WaitThread(clock_thread, NULL);
+  
   // Destroy renderer and window
   if (renderer != NULL) {
     SDL_DestroyRenderer(renderer);
@@ -272,6 +276,9 @@ static void cleanup()
   free(config.background_image);
   free(config.title_font_path);
   free(config.exe_path);
+  free(config.slideshow_directory);
+  free(config.clock_font_path);
+  free(config.gamepad_mappings_file);
   free(highlight);
   free(scroll);
   free(screensaver);
@@ -487,7 +494,7 @@ static void render_scroll_indicators()
   // Calcuate the geometry
   scroll = malloc(sizeof(scroll_t));
   scroll->texture = NULL;
-  int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT); // 10% of screen height
+  int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT);
 
   // Find scroll indicator file
   char *prefixes[2];
