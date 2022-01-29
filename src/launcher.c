@@ -66,7 +66,6 @@ config_t config = {
   .debug = false,
   .exe_path = NULL,
   .first_menu = NULL,
-  .gamepad_controls = NULL,
   .num_menus = 0,
   .clock_enabled = DEFAULT_CLOCK_ENABLED,
   .clock_show_date = DEFAULT_CLOCK_SHOW_DATE,
@@ -108,6 +107,7 @@ TTF_Font *clock_font = NULL;
 menu_t *default_menu = NULL;
 menu_t *current_menu = NULL; // Current selected menu
 entry_t *current_entry = NULL; // Current selected entry
+gamepad_control_t *gamepad_controls = NULL;
 hotkey_t *hotkeys = NULL;
 ticks_t ticks;
 SDL_GameController *gamepad = NULL;
@@ -309,7 +309,7 @@ static void cleanup()
 
   // Free gamepad control linked list
   gamepad_control_t *tmp_gamepad = NULL;
-  for (gamepad_control_t *i = config.gamepad_controls; i != NULL; i = i->next) {
+  for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
     free(tmp_gamepad);
     free(i->label);
     free(i->cmd);
@@ -901,7 +901,7 @@ static void connect_gamepad(int device_index)
 static void poll_gamepad()
 {
   int value_multiplier; // Handles positive or negative axis
-  for (gamepad_control_t *i = config.gamepad_controls; i != NULL; i = i->next) {
+  for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
     
     // Check if axis value exceeds dead zone
     if (i->type == TYPE_AXIS_POS || i->type == TYPE_AXIS_NEG) {
@@ -1178,7 +1178,6 @@ int main(int argc, char *argv[])
                          NULL
                        );
 
-  
   // Render scroll indicators
   if (config.scroll_indicators) {
     render_scroll_indicators();
@@ -1188,6 +1187,7 @@ int main(int argc, char *argv[])
   if (config.debug) {
     debug_video(renderer, &display_mode);
     debug_settings();
+    debug_gamepad(gamepad_controls);
     debug_hotkeys(hotkeys);  
     debug_menu_entries(config.first_menu, config.num_menus);
   }

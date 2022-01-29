@@ -1,2 +1,2 @@
-#define NUM_EXTENSIONS 4
-const char *extensions[NUM_EXTENSIONS] = {".jpg", ".jpeg", ".png", ".webp"};
+const char *extensions[] = {".jpg", ".jpeg", ".png", ".webp"};
+#define NUM_IMAGE_EXTENSIONS sizeof(extensions) / sizeof(extensions[0])

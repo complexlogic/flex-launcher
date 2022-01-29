@@ -228,7 +228,6 @@ typedef struct {
   bool debug;
   char *exe_path;
   menu_t *first_menu;
-  gamepad_control_t *gamepad_controls;
   int num_menus;
   bool clock_enabled;
   bool clock_show_date;

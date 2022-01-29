@@ -22,7 +22,7 @@ char *find_file(const char *file, int num_prefixes, const char **prefixes);
 void handle_arguments(int argc, char *argv[], FILE **config_file);
 void copy_string(char **dest, const char *string);
 void utf8_truncate(char *string, int width, int max_width);
-void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd);
+void add_hotkey(const char *keycode, const char *cmd);
 void add_gamepad_control(int type, int index, const char *label, const char *cmd);
 void random_array(int *array, int array_size);
 void print_usage(void);

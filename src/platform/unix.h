@@ -13,4 +13,5 @@ typedef struct {
 static int desktop_handler(void *user, const char *section, const char *name, const char *value);
 void make_directory(const char *directory);
 static void strip_field_codes(char *cmd);
+static bool ends_with(const char *string, const char *phrase);
 static int image_filter(struct dirent *file);

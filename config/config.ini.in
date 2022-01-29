@@ -81,7 +81,7 @@ Hotkey1=1B;:quit
 @SETTING_GAMEPAD_BUTTON_DPAD_LEFT@=:left
 @SETTING_GAMEPAD_BUTTON_DPAD_RIGHT@=:right
 
-# Begin menu sections
+# Menu configurations
 [@DEFAULT_MENU@]
 Entry1=Kodi;@ICONS_PREFIX@kodi.png;@CMD_KODI@
 Entry2=Plex;@ICONS_PREFIX@plex.png;@CMD_PLEX@

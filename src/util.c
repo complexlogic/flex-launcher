@@ -12,10 +12,10 @@
 #include "external/ini.h"
 
 extern config_t config;
+extern gamepad_control_t *gamepad_controls;
 extern hotkey_t *hotkeys;
 menu_t *menu = NULL;
 entry_t *entry = NULL;
-gamepad_control_t *current_gamepad_control = NULL;
 
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
@@ -266,7 +266,7 @@ int config_handler(void *user, const char *section, const char *name, const char
     if (keycode != NULL) {
       char *cmd = strtok(NULL, "");
       if (cmd != NULL) {
-        add_hotkey(&hotkeys, keycode, cmd);
+        add_hotkey(keycode, cmd);
       }
     }
   }
@@ -767,7 +767,7 @@ void handle_arguments(int argc, char *argv[], FILE **config_file)
   output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", config_file_path);
   free(config_file_path);
 
-  // Cleanup heap-allocated arguments
+  // Clean up heap-allocated arguments for Windows
   #ifdef _WIN32
   cleanup_args(argc, argv);
   #endif
@@ -780,7 +780,7 @@ unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int h
 }
 
 // A function to add a hotkey to the linked list
-void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd)
+void add_hotkey(const char *keycode, const char *cmd)
 {
   // Convert hex string to binary
   static hotkey_t *current_hotkey = NULL;
@@ -788,8 +788,8 @@ void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd)
 
   // Create first node if not initialized, else add to end of linked list
   if (current_hotkey == NULL) {
-    *first_hotkey = malloc(sizeof(hotkey_t));
-    current_hotkey = *first_hotkey;
+    hotkeys = malloc(sizeof(hotkey_t));
+    current_hotkey = hotkeys;
   }
   else {
     current_hotkey->next = malloc(sizeof(hotkey_t));
@@ -803,14 +803,15 @@ void add_hotkey(hotkey_t **first_hotkey, const char *keycode, const char *cmd)
 // A function to add a gamepad control to the linked list
 void add_gamepad_control(int type, int index, const char *label, const char *cmd)
 {
-  if (!strlen(cmd)) {
+  static gamepad_control_t *current_gamepad_control = NULL;
+  if (cmd[0] == '\0') {
     return;
   }
 
   // Begin the linked list if none exists
-  if (config.gamepad_controls == NULL) {
-    config.gamepad_controls = malloc(sizeof(gamepad_control_t));
-    current_gamepad_control = config.gamepad_controls;
+  if (current_gamepad_control == NULL) {
+    gamepad_controls = malloc(sizeof(gamepad_control_t));
+    current_gamepad_control = gamepad_controls;
   }
 
   // Add another node to the linked list
@@ -1062,8 +1063,6 @@ date_format_t get_date_format(const char *region)
   const char *countries[] = {"US",
     "JP",
     "CN",
-    "IN",
-    "NZ"
   };
   date_format_t format = FORMAT_DATE_LITTLE;
   for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {

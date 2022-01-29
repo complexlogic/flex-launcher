@@ -149,7 +149,7 @@ int image_filter(struct dirent *file)
 {
   int len_file = strlen(file->d_name);
   int len_extension;
-  for (int i = 0; i < NUM_EXTENSIONS; i++) {
+  for (int i = 0; i < NUM_IMAGE_EXTENSIONS; i++) {
     len_extension = strlen(extensions[i]);
     if (len_file > len_extension && 
     !strcmp(file->d_name + len_file - len_extension, extensions[i])) {

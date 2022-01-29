@@ -338,7 +338,7 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   int num_images = 0;
 
   // Generate a UTF-16 wildcard file search string for all supported image file extensions
-  for (int i = 0; i < NUM_EXTENSIONS && num_images < MAX_SLIDESHOW_IMAGES; i++) {
+  for (int i = 0; i < NUM_IMAGE_EXTENSIONS && num_images < MAX_SLIDESHOW_IMAGES; i++) {
     strcpy(extension, "*");
     strcat(extension, extensions[i]);
     join_paths(file_search, 2, directory, extension);

@@ -45,7 +45,7 @@ static int init_log()
   return 0;
 }
 
-// A function to output a log with a printf-style format
+// A function to output a printf-style formatted line to the log
 void output_log(log_level_t log_level, const char *format, ...)
 {
   // Don't output a debug message if we aren't in debug mode
@@ -218,21 +218,6 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCREENSAVER_PAUSE_SLIDESHOW, "false");
   }
-
-  output_log(LOGLEVEL_DEBUG, "======================== Gamepad ========================\n");
-  if (config.gamepad_enabled) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_GAMEPAD_ENABLED, "true");
-  }
-  else {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_GAMEPAD_ENABLED, "false");
-  }
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_GAMEPAD_DEVICE, config.gamepad_device);
-  if (config.gamepad_mappings_file != NULL) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_GAMEPAD_MAPPINGS_FILE, config.gamepad_mappings_file);
-  }
-  for (gamepad_control_t *i = config.gamepad_controls; i != NULL; i = i->next) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", i->label, i->cmd);
-  }
 }
 
 // A function to print the parsed menu entries to the command line
@@ -264,6 +249,24 @@ void debug_menu_entries(menu_t *first_menu, int num_menus)
     menu = menu->next;
   }
   output_log(LOGLEVEL_DEBUG, "\n");
+}
+
+void debug_gamepad(gamepad_control_t *gamepad_controls)
+{
+  output_log(LOGLEVEL_DEBUG, "======================== Gamepad ========================\n");
+  if (config.gamepad_enabled) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_GAMEPAD_ENABLED, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_GAMEPAD_ENABLED, "false");
+  }
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_GAMEPAD_DEVICE, config.gamepad_device);
+  if (config.gamepad_mappings_file != NULL) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_GAMEPAD_MAPPINGS_FILE, config.gamepad_mappings_file);
+  }
+  for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", i->label, i->cmd);
+  }
 }
 
 void debug_hotkeys(hotkey_t *hotkeys)
