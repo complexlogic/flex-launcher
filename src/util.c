@@ -17,6 +17,119 @@ extern hotkey_t *hotkeys;
 menu_t *menu = NULL;
 entry_t *entry = NULL;
 
+// A function to handle the arguments from the command line
+void handle_arguments(int argc, char *argv[], char **config_file_path)
+{
+  // Convert Windows UTF-16 arguments to UTF-8
+  #ifdef _WIN32
+  convert_args(&argc, &argv);
+  #endif
+
+  // Parse command line arguments
+  if (argc > 1) {
+    bool version = false;
+    bool help = false;
+    int config_file_index = -1;
+    for (int i = 1; i < argc; i++) {
+
+      // Current argument is config file path if -c or --config was previous argument
+      if (i == config_file_index && *config_file_path == NULL) {
+        if (file_exists(argv[i])) {
+          copy_string(config_file_path, argv[i]);
+        }
+        else {
+          output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", argv[i]);
+          quit(1);
+        }
+      }
+      if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
+        config_file_index = i + 1;
+      }
+      else if (!strcmp(argv[i],"-d") || !strcmp(argv[i],"--debug")) {
+        config.debug = true;
+      }
+      #ifdef __unix__
+      else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"--help")) {
+        help = true;
+      }
+      else if (!strcmp(argv[i],"-v") || !strcmp(argv[i],"--version")) {
+        version = true;
+      }
+      #endif
+      else if (i != config_file_index) {
+        #ifdef __unix__
+        printf("Unrecognized option %s\n",argv[i]);
+        print_usage();
+        #endif
+        quit(1);
+      }
+    }
+
+    // Check version, help flags
+    #ifdef __unix__
+    if (version) {
+      print_version();
+      quit(0);
+    }
+    if (help) {
+      print_usage();
+      quit(0);
+    }
+    #endif
+  }
+
+  // Try to find config file if none is specified on the command line
+  if (*config_file_path == NULL) {
+    #ifdef __unix__
+    char *prefixes[4];
+    char home_config_buffer[MAX_PATH_CHARS + 1];
+    prefixes[0] = CURRENT_DIRECTORY;
+    prefixes[1] = config.exe_path;
+    prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
+    prefixes[3] = PATH_CONFIG_SYSTEM;
+    *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 4, prefixes);
+    #else
+    char *prefixes[2];
+    prefixes[0] = CURRENT_DIRECTORY;
+    prefixes[1] = config.exe_path;
+    *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 2, prefixes);
+    #endif
+
+    if (*config_file_path == NULL) {
+      output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
+      #ifdef __unix__
+      print_usage();
+      #endif
+      quit(1);
+    }
+  }
+  output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", *config_file_path);
+
+  // Clean up heap-allocated arguments for Windows
+  #ifdef _WIN32
+  cleanup_args(argc, argv);
+  #endif
+}
+
+// A function to parse the config file and store the settings into the config struct
+void parse_config_file(const char *config_file_path)
+{
+  char *buffer = NULL;
+  read_file(config_file_path, &buffer);
+  if (buffer == NULL) {
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not read config file\n");
+    exit(1);
+  }
+  
+  int error = ini_parse_string(buffer, config_handler, &config);
+  free(buffer);
+  
+  if (error < 0) {
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
+    quit(1);
+  }
+}
+
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
 {
@@ -665,114 +778,6 @@ void random_array(int *array, int array_size)
   }
 }
 
-// A function to handle the arguments from the command line
-void handle_arguments(int argc, char *argv[], FILE **config_file)
-{
-  char *config_file_path = NULL;
-
-  // Convert Windows UTF-16 arguments to UTF-8
-  #ifdef _WIN32
-  convert_args(&argc, &argv);
-  #endif
-
-  // Parse command line arguments
-  if (argc > 1) {
-    bool version = false;
-    bool help = false;
-    int config_file_index = -1;
-    for (int i = 1; i < argc; i++) {
-
-      // Current argument is config file path if -c or --config was previous argument
-      if (*config_file == NULL && i == config_file_index) {
-        copy_string(&config_file_path, argv[i]);
-        if (file_exists(config_file_path)) {
-          *config_file = open_file(config_file_path);
-          if (*config_file == NULL) {
-            output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file \"%s\"", config_file_path);
-            quit(1);
-          }
-        }
-        else {
-          output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", config_file_path);
-          quit(1);
-        }
-      }
-      if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
-        config_file_index = i + 1;
-      }
-      else if (!strcmp(argv[i],"-d") || !strcmp(argv[i],"--debug")) {
-        config.debug = true;
-      }
-      #ifdef __unix__
-      else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"--help")) {
-        help = true;
-      }
-      else if (!strcmp(argv[i],"-v") || !strcmp(argv[i],"--version")) {
-        version = true;
-      }
-      #endif
-      else if (i != config_file_index) {
-        #ifdef __unix__
-        printf("Unrecognized option %s\n",argv[i]);
-        print_usage();
-        #endif
-        quit(1);
-      }
-    }
-
-    // Check version, help flags
-    #ifdef __unix__
-    if (version) {
-      print_version();
-      quit(0);
-    }
-    if (help) {
-      print_usage();
-      quit(0);
-    }
-    #endif
-  }
-
-  // Try to find config file if none is specified on the command line
-  if (config_file_path == NULL) {
-    #ifdef __unix__
-    char *prefixes[4];
-    char home_config_buffer[MAX_PATH_CHARS + 1];
-    prefixes[0] = CURRENT_DIRECTORY;
-    prefixes[1] = config.exe_path;
-    prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
-    prefixes[3] = PATH_CONFIG_SYSTEM;
-    config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 4, prefixes);
-    #else
-    char *prefixes[2];
-    prefixes[0] = CURRENT_DIRECTORY;
-    prefixes[1] = config.exe_path;
-    config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 2, prefixes);
-    #endif
-
-    if (config_file_path == NULL) {
-      output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
-      #ifdef __unix__
-      print_usage();
-      #endif
-      quit(1);
-    }
-    *config_file = open_file(config_file_path);
-    if (*config_file == NULL) {
-      output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file \"%s\"", config_file_path);
-      quit(1);
-    }
-  }
-
-  output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", config_file_path);
-  free(config_file_path);
-
-  // Clean up heap-allocated arguments for Windows
-  #ifdef _WIN32
-  cleanup_args(argc, argv);
-  #endif
-}
-
 // A function to calculate the total width of all screen objects
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_hpadding)
 {
@@ -996,13 +1001,17 @@ void validate_settings(geometry_t *geo)
 }
 
 // A function to retreive menu struct from the linked list via the menu name
-menu_t *get_menu(char *menu_name, menu_t *first_menu)
+menu_t *get_menu(char *menu_name)
 {
-  for (menu_t *menu = first_menu; menu != NULL; menu = menu->next) {
+  for (menu_t *menu = config.first_menu; menu != NULL; menu = menu->next) {
     if (!strcmp(menu_name, menu->name)) {
       return menu;
     }
   }
+  output_log(LOGLEVEL_ERROR, 
+    "Error: Menu \"%s\" not found in config file\n", 
+    menu_name
+  );
   return NULL;
 }
 
@@ -1039,38 +1048,36 @@ entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
   return entry;
 }
 
-time_format_t get_time_format(const char *region)
+// A function to read a file into a buffer
+void read_file(const char *path, char **buffer)
 {
-  const char *countries[] = {"US",
-    "CA",
-    "GB",
-    "AU",
-    "NZ",
-    "IN"
-  };
-  time_format_t format = FORMAT_TIME_24HR;
-  for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
-    if (!strcmp(region, countries[i])) {
-      format = FORMAT_TIME_12HR;
-      break;
-    }
+  SDL_RWops *file = SDL_RWFromFile(path, "rb");
+  if (file == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not open file\n%s\n", SDL_GetError());
+    return;
   }
-  return format;
-}
 
-date_format_t get_date_format(const char *region)
-{
-  const char *countries[] = {"US",
-    "JP",
-    "CN",
-  };
-  date_format_t format = FORMAT_DATE_LITTLE;
-  for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
-    if (!strcmp(region, countries[i])) {
-      format = FORMAT_DATE_BIG;
-      break;
-    }
+  // Allocate buffer
+  Sint64 file_size = SDL_RWsize(file);
+  *buffer = malloc(file_size + 1);
+  if (*buffer == NULL) {
+    return;
   }
-  return format;
-}
 
+  // Read contents of file into buffer
+  Sint64 total_bytes_read = 0;
+  Sint64 current_bytes_read;
+  char *p = *buffer;
+  do {
+    current_bytes_read = SDL_RWread(file, p, 1, file_size - total_bytes_read);
+    total_bytes_read += current_bytes_read;
+    p += current_bytes_read;
+  } while (total_bytes_read < file_size && total_bytes_read > 0);
+  SDL_RWclose(file);
+
+  if (total_bytes_read != file_size) {
+    free(*buffer);
+    *buffer = NULL;
+  }
+  *(*buffer + total_bytes_read) = '\0';
+}

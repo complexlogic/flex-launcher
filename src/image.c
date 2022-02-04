@@ -22,7 +22,6 @@ extern SDL_Renderer *renderer;
 extern SDL_Texture *background_texture;
 NSVGrasterizer *rasterizer = NULL;
 
-
 // A function to initalize SVG rasterization
 int init_svg()
 {
@@ -106,20 +105,13 @@ int load_next_slideshow_background_async(void *data)
   return 0;
 }
 
-// A function to load a texture from a file OR existing SDL surface
-SDL_Texture *load_texture(const char *path, SDL_Surface *surface)
+SDL_Texture *load_texture_from_file(const char *path)
 {
+  SDL_Surface *surface = NULL;
   SDL_Texture *texture = NULL;
-  SDL_Surface *loaded_surface = NULL;
 
+  surface = IMG_Load(path);
   if (surface == NULL) {
-    loaded_surface = IMG_Load(path);
-  }
-  else {
-    loaded_surface = surface;
-  }
-
-  if (loaded_surface == NULL) {
     output_log(LOGLEVEL_ERROR, 
      "Error: Could not load image %s\n%s\n", 
       path, 
@@ -127,24 +119,30 @@ SDL_Texture *load_texture(const char *path, SDL_Surface *surface)
     );
   }
   else {
-    //Convert surface to screen format
-    texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
-    if (texture == NULL) {
-      output_log(LOGLEVEL_ERROR, 
-        "Error: Could not create texture from %s\n%s", 
-        path, 
-        SDL_GetError()
-      );
-    }
-
-    //Get rid of old loaded surface
-    SDL_FreeSurface(loaded_surface);
+    texture = load_texture(surface);
   }
   return texture;
 }
 
-// A function to rasterize an SVG from a file OR from xml text buffer
-SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h, SDL_Rect *rect)
+// A function to load a texture from a  SDL surface
+SDL_Texture *load_texture(SDL_Surface *surface)
+{
+  SDL_Texture *texture = NULL;
+  if (surface == NULL) {
+    return;
+  }
+
+  //Convert surface to screen format
+  texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (texture == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not create texture %s\n", SDL_GetError());
+  }
+  SDL_FreeSurface(surface);
+  return texture;
+}
+
+// A function to rasterize an SVG from an existing text buffer
+SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
 {
   NSVGimage *image = NULL;
   unsigned char *pixel_buffer = NULL;
@@ -152,12 +150,7 @@ SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h, 
   float scale;
 
   // Parse SVG to NSVGimage struct
-  if (filename == NULL) {
-    image = nsvgParse(xml, "px", 96.0f);
-  }
-  else {
-    image = nsvgParseFromFile(filename, "px", 96.0f);
-  }
+  image = nsvgParse(buffer, "px", 96.0f);
   if (image == NULL) {
     output_log(LOGLEVEL_ERROR, "Error: could not open SVG image.\n");
     return NULL;
@@ -213,15 +206,31 @@ SDL_Texture *rasterize_svg(const char *filename, const char *xml, int w, int h, 
   return texture;
 }
 
+// A function to rasterize an SVG from a file
+SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *rect)
+{
+  SDL_Texture *texture = NULL;
+  char *buffer = NULL;
+  read_file(path, &buffer);
+  if (buffer == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not read file \"%s\"\n", path);
+  }
+  else {
+    texture = rasterize_svg(buffer, w, h, rect);
+    free(buffer);
+  }
+  return texture;
+}
+
 // A function to render the highlight for the buttons
 SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
 {
   // Insert user config variables into SVG-formatted text buffer
-  char buf[1024];
-  sprintf(buf, SVG_HIGHLIGHT, width, height, width, height, rx);
+  char buffer[500];
+  sprintf(buffer, SVG_HIGHLIGHT, width, height, width, height, rx);
   
   // Rasterize the SVG
-  SDL_Texture *texture = rasterize_svg(NULL, buf, -1, -1, rect);
+  SDL_Texture *texture = rasterize_svg(buffer, -1, -1, rect);
   
   // Set color
   SDL_SetTextureColorMod(texture,
@@ -235,7 +244,7 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
 SDL_Texture *render_text_texture(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
 {
   SDL_Surface *surface = render_text(text, info, rect, text_height);
-  return load_texture(NULL, surface);
+  return load_texture(surface);
 }
 
 // A function to render title text for an entry
@@ -336,6 +345,7 @@ int load_font(text_info_t *info, const char *default_font)
       info->font = TTF_OpenFont(default_font_path, info->font_size);
       free(font_path);
       copy_string(info->font_path, default_font_path);
+      free(default_font_path);
     }
     if (info->font == NULL) {
       output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default font\n");

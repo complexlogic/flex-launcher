@@ -422,7 +422,7 @@ static void init_slideshow()
       "Changing background mode to single image\n", 
       config.slideshow_directory
     );
-    background_texture = load_texture(slideshow->images[0], NULL);
+    background_texture = load_texture_from_file(slideshow->images[0]);
     quit_slideshow();
     config.background_mode = MODE_IMAGE;
   }
@@ -431,7 +431,7 @@ static void init_slideshow()
   else {
     random_array(slideshow->order, slideshow->num_images);
     SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
-    background_texture = load_texture(NULL, surface);
+    background_texture = load_texture(surface);
     if (config.debug) {
       debug_slideshow(slideshow);
     }
@@ -475,10 +475,11 @@ static void init_screensaver()
               geo.screen_width, 
               geo.screen_height, 
               32,
-              SDL_PIXELFORMAT_ARGB8888);
+              SDL_PIXELFORMAT_ARGB8888
+            );
   Uint32 color = SDL_MapRGBA(surface->format, 0, 0, 0, 0xFF);
   SDL_FillRect(surface, NULL, color);
-  screensaver->texture = load_texture(NULL, surface);
+  screensaver->texture = load_texture(surface);
   screensaver->alpha = 0.0f;
   SDL_SetTextureAlphaMod(screensaver->texture, 0.0f);
 }
@@ -510,75 +511,61 @@ static void render_scroll_indicators()
   if (scroll_indicator_path == NULL) {
     output_log(LOGLEVEL_ERROR, 
                "Error: Could not find scroll indicator SVG, disabling feature\n");
+    free(scroll);
     config.scroll_indicators = false;
+    return;
   }
-  else {
-    output_log(LOGLEVEL_DEBUG, "Scroll indicator found: %s\n", 
-               scroll_indicator_path);
+  output_log(LOGLEVEL_DEBUG, "Scroll indicator found: %s\n", 
+              scroll_indicator_path);
 
-    // Render the SVG
-    scroll->texture = rasterize_svg(scroll_indicator_path,
-                                    NULL,
-                                    -1,
-                                    scroll_indicator_height,
-                                    &scroll->rect_right);
-    scroll->rect_left.w = scroll->rect_right.w;
-    scroll->rect_left.h = scroll->rect_right.h;
-    free(scroll_indicator_path);
-    if (scroll->texture == NULL) {
-      output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
-      config.scroll_indicators = false;
-    }
-    else {
-      // Calculate screen position
-      scroll->rect_right.y = geo.screen_height - geo.screen_margin - scroll->rect_right.h;
-      scroll->rect_right.x = geo.screen_width - geo.screen_margin - scroll->rect_right.w;
-      scroll->rect_left.y = scroll->rect_right.y;
-      scroll->rect_left.x = geo.screen_margin;
-
-      // Set color
-      SDL_SetTextureColorMod(scroll->texture,
-                              config.scroll_indicator_color.r,
-                              config.scroll_indicator_color.g,
-                              config.scroll_indicator_color.b);
-      SDL_SetTextureAlphaMod(scroll->texture,
-                              config.scroll_indicator_color.a);
-    }
+  // Render the SVG
+  scroll->texture = rasterize_svg_from_file(scroll_indicator_path,
+                      -1,
+                      scroll_indicator_height,
+                      &scroll->rect_right
+                    );
+  scroll->rect_left.w = scroll->rect_right.w;
+  scroll->rect_left.h = scroll->rect_right.h;
+  free(scroll_indicator_path);
+  if (scroll->texture == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
+    free(scroll);
+    config.scroll_indicators = false;
+    return;
   }
+  // Calculate screen position
+  scroll->rect_right.y = geo.screen_height - geo.screen_margin - scroll->rect_right.h;
+  scroll->rect_right.x = geo.screen_width - geo.screen_margin - scroll->rect_right.w;
+  scroll->rect_left.y = scroll->rect_right.y;
+  scroll->rect_left.x = geo.screen_margin;
+
+  // Set color
+  SDL_SetTextureColorMod(scroll->texture,
+                          config.scroll_indicator_color.r,
+                          config.scroll_indicator_color.g,
+                          config.scroll_indicator_color.b);
+  SDL_SetTextureAlphaMod(scroll->texture,
+                          config.scroll_indicator_color.a);
 }
 
-// A function to load a menu by name OR existing menu struct
-static int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bool reset_position)
+// A function to load a menu
+static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position)
 {
+  if (menu == NULL) {
+    return 1;
+  }
   int buttons;
   menu_t *previous_menu = current_menu;
 
-  // Get the menu struct from menu name
-  if (menu_name != NULL) {
-    current_menu = get_menu(menu_name, config.first_menu);
-  }
-  else {
-    current_menu = menu;
-  }
-
-  // Return error if the menu doesn't exist in the config file
-  if (current_menu == NULL) {
-    current_menu = previous_menu;
-    if (menu_name != NULL) {
-      output_log(LOGLEVEL_ERROR, 
-                 "Error: Menu \"%s\" not found in config file\n", 
-                 menu_name);
-    }
-    return 1;
-  }
-
+  current_menu = menu;
   output_log(LOGLEVEL_DEBUG, "Loading menu \"%s\"\n", current_menu->name);
 
   // Return error if the menu doesn't contain entires
   if (current_menu->num_entries == 0) {
     output_log(LOGLEVEL_ERROR, 
-               "Error: No valid entries found for Menu \"%s\"", 
-               current_menu->name);
+      "Error: No valid entries found for Menu \"%s\"", 
+      current_menu->name
+    );
     return 1;
   }
 
@@ -608,7 +595,7 @@ static int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bo
   }
   
   // Recalculate the screen geometry
-  calculate_geometry(current_menu->root_entry, buttons);
+  calculate_button_geometry(current_menu->root_entry, buttons);
   //if (config.debug) {
   //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
   //}
@@ -620,8 +607,15 @@ static int load_menu(const char *menu_name, menu_t *menu, bool set_back_menu, bo
   return 0;
 }
 
+// A function to load a menu by its name
+static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position)
+{
+  menu_t *menu = get_menu(menu_name);
+  return load_menu(menu, set_back_menu, reset_position);
+}
+
 // A function to calculate the layout of the buttons
-static void calculate_geometry(entry_t *entry, int buttons)
+static void calculate_button_geometry(entry_t *entry, int buttons)
 {
   // Calculate proper spacing
   int button_height = config.icon_size + config.title_padding + geo.font_height;
@@ -650,7 +644,7 @@ static void render_buttons(menu_t *menu)
   entry_t *entry;
   int h;
   for (entry = menu->first_entry; entry != NULL; entry = entry->next) {
-    entry->icon = load_texture(entry->icon_path, NULL);
+    entry->icon = load_texture_from_file(entry->icon_path);
     entry->title_texture = render_text_texture(entry->title,
                              &title_info, 
                              &entry->text_rect,
@@ -688,7 +682,7 @@ static void move_left()
     int buttons = config.max_buttons;
     current_entry = current_entry->previous;
     current_menu->root_entry = advance_entries(current_menu->root_entry,buttons,DIRECTION_LEFT);
-    calculate_geometry(current_menu->root_entry, buttons);
+    calculate_button_geometry(current_menu->root_entry, buttons);
     highlight->rect.x = current_entry->icon_rect.x
                         - config.highlight_hpadding;
     current_menu->page--;
@@ -721,7 +715,7 @@ static void move_right()
     }
     current_entry = current_entry->next;
     current_menu->root_entry = current_entry;
-    calculate_geometry(current_menu->root_entry, buttons);
+    calculate_button_geometry(current_menu->root_entry, buttons);
     highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
     current_menu->page++;
     current_menu->highlight_position = 0;
@@ -733,16 +727,16 @@ static void move_right()
 }
 
 // A function to load a submenu
-static void load_submenu(char *submenu)
+static void load_submenu(const char *submenu)
 {
   current_menu->last_selected_entry = current_entry;
-  load_menu(submenu, NULL, true, true);
+  load_menu_by_name(submenu, true, true);
 }
 
 // A function to load the previous menu
 static void load_back_menu(menu_t *menu)
 {
-  load_menu(NULL, menu->back, false, config.reset_on_back);
+  load_menu(menu->back, false, config.reset_on_back);
 }
 
 // A function to update the screen with all visible textures
@@ -822,7 +816,7 @@ static void execute_command(const char *command)
       execute_command(current_entry->cmd);
     }
     else if (!strcmp(special_command, SCMD_HOME)) {
-      load_menu(NULL, default_menu, false, true);
+      load_menu(default_menu, false, true);
     }
     else if (!strcmp(special_command, SCMD_BACK)) {
       load_back_menu(current_menu);
@@ -968,13 +962,13 @@ static void update_slideshow()
       SDL_WaitThread(slideshow_thread, NULL);
       slideshow_thread = NULL;
       if (config.slideshow_transition_time > 0) {
-        slideshow->transition_texture = load_texture(NULL, slideshow->transition_surface);
+        slideshow->transition_texture = load_texture(slideshow->transition_surface);
         SDL_SetTextureAlphaMod(slideshow->transition_texture, 0);
         state.slideshow_transition = true;
       }
       else {
         SDL_DestroyTexture(background_texture);
-        background_texture = load_texture(NULL, slideshow->transition_surface);
+        background_texture = load_texture(slideshow->transition_surface);
         ticks.slideshow_load = ticks.main;
       }
     slideshow->transition_surface = NULL;
@@ -1075,11 +1069,11 @@ static void update_clock(bool block)
       SDL_WaitThread(clock_thread, NULL);
       clock_thread = NULL;
       SDL_DestroyTexture(launcher_clock->time_texture);
-      launcher_clock->time_texture = load_texture(NULL, launcher_clock->time_surface);
+      launcher_clock->time_texture = load_texture(launcher_clock->time_surface);
       launcher_clock->time_surface = NULL;
       if (launcher_clock->render_date) {
         SDL_DestroyTexture(launcher_clock->date_texture);
-        launcher_clock->date_texture = load_texture(NULL, launcher_clock->date_surface);
+        launcher_clock->date_texture = load_texture(launcher_clock->date_surface);
         launcher_clock->date_surface = NULL;
       }
       ticks.clock_update = ticks.main;
@@ -1106,19 +1100,15 @@ int main(int argc, char *argv[])
 {
   SDL_Event event;
   int error;
+  char *config_file_path = NULL;
   config.exe_path = SDL_GetBasePath();
-  FILE *config_file = NULL;
 
   // Handle command line arguments, find config file
-  handle_arguments(argc, argv, &config_file);
+  handle_arguments(argc, argv, &config_file_path);
 
   // Parse config file for settings and menu entries
-  error = ini_parse_file(config_file, config_handler, &config);
-  if (error < 0) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
-    quit(1);
-  }
-  fclose(config_file);
+  parse_config_file(config_file_path);
+  free(config_file_path);
 
   // Initialize libraries
   if (init_sdl() || init_ttf() || init_svg()) {
@@ -1147,7 +1137,7 @@ int main(int argc, char *argv[])
 
   // Render background
   if (config.background_mode == MODE_IMAGE) {
-    background_texture = load_texture(config.background_image,NULL);
+    background_texture = load_texture_from_file(config.background_image);
 
     // Switch to color mode if loading background image failed
     if (background_texture == NULL) {
@@ -1190,7 +1180,7 @@ int main(int argc, char *argv[])
     render_scroll_indicators();
   }
   
-  // Print debug info
+  // Print debug info to log
   if (config.debug) {
     debug_video(renderer, &display_mode);
     debug_settings();
@@ -1204,15 +1194,12 @@ int main(int argc, char *argv[])
     output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
     quit(1);
   }
-  default_menu = get_menu(config.default_menu, config.first_menu);
+  default_menu = get_menu(config.default_menu);
   if (default_menu == NULL) {
-    output_log(LOGLEVEL_FATAL, 
-      "Fatal Error: Default Menu \"%s\" not found in config file\n", 
-      config.default_menu
-    );
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu\n");
     quit(1);
   }
-  error = load_menu(NULL, default_menu, false, true);
+  error = load_menu(default_menu, false, true);
   if (error) {
     quit(1);
   }

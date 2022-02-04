@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="520"
-   height="520"
-   viewBox="0 0 520 520"
+   width="288.9429"
+   height="485.96194"
+   viewBox="0 0 288.9429 485.96194"
    version="1.1"
    id="SVGRoot"
+   sodipodi:docname="scroll_indicator.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <defs id="defs2065" />
-  <g id="layer1">
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="1.5942308"
+     inkscape:cx="132.97949"
+     inkscape:cy="241.18215"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="SVGRoot" />
+  <defs
+     id="defs2065" />
+  <g
+     id="layer1"
+     transform="translate(-127.01903,-19.01903)">
     <path
        style="fill:none;stroke:#ffffff;stroke-width:65;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 150,482 370,262 150,42"

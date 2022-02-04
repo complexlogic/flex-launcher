@@ -1,6 +1,3 @@
-#define NO_ERROR 0
-#define NO_ERROR_QUIT 1
-#define ERROR_QUIT 2 
 #define MAX_LOG_LINE_BYTES 501
 #define MAX_PATH_CHARS 1001 //250 wide characters
 
@@ -19,7 +16,7 @@ bool convert_bool(const char *string, bool default_setting);
 static bool ends_with(const char *string, const char *phrase);
 char *join_paths(char *buffer, int num_paths, ...);
 char *find_file(const char *file, int num_prefixes, const char **prefixes);
-void handle_arguments(int argc, char *argv[], FILE **config_file);
+void handle_arguments(int argc, char *argv[], char **config_file_path);
 void copy_string(char **dest, const char *string);
 void utf8_truncate(char *string, int width, int max_width);
 void add_hotkey(const char *keycode, const char *cmd);
@@ -29,7 +26,8 @@ void print_usage(void);
 void print_version(void);
 void clean_path(char *path);
 void validate_settings(geometry_t *geo);
-menu_t *get_menu(char *menu_name, menu_t *first_menu);
+void parse_config_file(const char *config_file_path);
+void read_file(const char *path, char **buffer);
+menu_t *get_menu(char *menu_name);
 menu_t *create_menu(char *menu_name, int *num_menus);
 entry_t *advance_entries(entry_t *entry, int spaces, mode direction);
-time_format_t get_time_format(const char *region);
