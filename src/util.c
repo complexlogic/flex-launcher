@@ -199,9 +199,9 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->max_buttons = (unsigned int) max_buttons;
       }
     }
-    else if (!strcmp(name,SETTING_ICON_SPACING)) {
-      if (strstr(value,"%") != NULL && strlen(value) < 6) {
-        strcpy(pconfig->icon_spacing_str,value);
+    else if (!strcmp(name, SETTING_ICON_SPACING)) {
+      if (is_percent(value)) {
+        strcpy(pconfig->icon_spacing_str, value);
       }
       else {
         int icon_spacing = atoi(value);
@@ -236,23 +236,19 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->slideshow_transition_time = slideshow_transition_time;
       }
     }
-    else if (!strcmp(name,SETTING_TITLE_OPACITY)) {
-      if (strstr(value,".") == NULL && 
-      strstr(value,"%") != NULL && 
-      strlen(value) < PERCENT_MAX_CHARS) {
-        strcpy(pconfig->title_opacity,value);
+    else if (!strcmp(name, SETTING_TITLE_OPACITY)) {
+      if (is_percent(value)) {
+        strcpy(pconfig->title_opacity, value);
       }
     }
-    else if (!strcmp(name,SETTING_HIGHLIGHT_OPACITY)) {
-      if (strstr(value,".") == NULL && 
-      strstr(value,"%") != NULL && 
-      strlen(value) < PERCENT_MAX_CHARS) {
-        strcpy(pconfig->highlight_opacity,value);
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OPACITY)) {
+      if (is_percent(value)) {
+        strcpy(pconfig->highlight_opacity, value);
       }
     }
-    else if (!strcmp(name,SETTING_BUTTON_CENTERLINE)) {
-      if (strlen(value) < PERCENT_MAX_CHARS) {
-        strcpy(pconfig->button_centerline,value);
+    else if (!strcmp(name, SETTING_BUTTON_CENTERLINE)) {
+      if (is_percent(value)) {
+        strcpy(pconfig->button_centerline, value);
       }
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATORS)) {
@@ -262,9 +258,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       hex_to_color(value, &pconfig->scroll_indicator_color);
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OPACITY)) {
-      if (strstr(value,".") == NULL && 
-      strstr(value,"%") != NULL && 
-      strlen(value) < PERCENT_MAX_CHARS) {
+      if (is_percent(value)) {
         strcpy(pconfig->scroll_indicator_opacity,value);
       }
     }
@@ -362,9 +356,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name, SETTING_SCREENSAVER_INTENSITY)) {
-      if (strstr(value,".") == NULL && 
-      strstr(value,"%") != NULL && 
-      strlen(value) < PERCENT_MAX_CHARS) {
+      if (is_percent(value)) {
         strcpy(pconfig->screensaver_intensity_str, value);
       }
     }
@@ -569,6 +561,18 @@ int config_handler(void *user, const char *section, const char *name, const char
   return 0;
 }
 
+// A function to determine if a string is a percent value
+bool is_percent(const char *string)
+{
+  int length = strlen(string);
+  if (length > 0 && length < PERCENT_MAX_CHARS && strchr(string, '%') == string + length - 1) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
 // A function to remove quotation marks that enclose a path
 // because SDL cannot handle them
 void clean_path(char *path)
@@ -759,6 +763,36 @@ void utf8_truncate(char *string, int width, int max_width)
   }
 }
 
+// A function to extract the Unicode code point from the first character in a UTF-8 string
+Uint16 get_unicode_code_point(const char *p, int *bytes)
+{
+  Uint16 result;
+
+  // ASCII char
+  if ((*p & 0x80) == 0) {
+    result = (Uint16) *p;
+    *bytes = 1;
+  }
+
+  // If byte is 110xxxxx, then it's a 2 byte char
+  else if ((*p & 0xE0) == 0xC0) {
+    Uint8 byte1 = *p & 0x1F;
+    Uint8 byte2 = (*(p + 1) & 0x3F);
+    result = (Uint16) ((byte1 << 6) + byte2);
+    *bytes = 2;
+  }
+
+  // If byte is 1110xxxx, then it's a 3 byte char
+  else if ((*p & 0xF0) == 0xE0) {
+    Uint8 byte1 = *p & 0x0F;
+    Uint8 byte2 = *(p + 1) & 0x3F;
+    Uint8 byte3 = *(p + 2) & 0x3F;
+    result = (Uint16) ((byte1 << 12) + (byte2 << 6) + byte3);
+    *bytes = 3;
+  }
+  return result;
+}
+
 void random_array(int *array, int array_size)
 {
   // Fill array with initial indices
@@ -857,15 +891,16 @@ void print_version()
   #endif
 }
 
-// A function to convert a percentage string to a integer value
-int convert_percent(const char *string, int max_value)
+// A function to convert a string percent setting to an int value
+void convert_percent_to_int(char *string, int *result, int max_value)
 {
-  float percent = atof(strtok(string,"%"));
-  if (percent < 0 || percent > 100) {
-    return -1;
-  }
-  else {
-    return (int)((float) max_value*percent*0.01F);
+  int length = strlen(string);
+  char tmp[PERCENT_MAX_CHARS];
+  strcpy(tmp, string);
+  tmp[length - 1] = '\0';
+  float percent = atof(tmp);
+  if (percent >= 0.0F && percent <= 100.0F) {
+    *result = (int) ((percent / 100.0F) * (float) max_value);
   }
 }
 
@@ -883,45 +918,45 @@ void validate_settings(geometry_t *geo)
   }
 
   // Convert % opacity settings to 0-255
-  if (strlen(config.title_opacity)) {
-    int opacity = convert_percent(config.title_opacity,0xFF);
-    if (opacity != -1) {
-      config.title_color.a = (Uint8) opacity;
+  if (config.title_opacity[0] != '\0') {
+    int title_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.title_opacity, &title_opacity, 255);
+    if (title_opacity != INVALID_PERCENT_VALUE) {
+      config.title_color.a = (Uint8) title_opacity;
     }
   }
-  if (strlen(config.highlight_opacity)) {
-    int opacity = convert_percent(config.highlight_opacity,0xFF);
-    if (opacity != -1) {
-      config.highlight_color.a = (Uint8) opacity;
+  if (config.highlight_opacity[0] != '\0') {
+    int highlight_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.highlight_opacity, &highlight_opacity, 255);
+    if (highlight_opacity != INVALID_PERCENT_VALUE) {
+      config.highlight_color.a = (Uint8) highlight_opacity;
     }
   }
-  if (strlen(config.scroll_indicator_opacity)) {
-    int opacity = convert_percent(config.scroll_indicator_opacity,0xFF);
-    if (opacity != -1) {
-      config.scroll_indicator_color.a = (Uint8) opacity;
+  if (config.scroll_indicator_opacity[0] != '\0') {
+    int scroll_indicator_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.scroll_indicator_opacity, &scroll_indicator_opacity, 255);
+    if (scroll_indicator_opacity != INVALID_PERCENT_VALUE) {
+      config.scroll_indicator_color.a = (Uint8) scroll_indicator_opacity;
     }
   }
-  if (strlen(config.clock_opacity)) {
-    int opacity = convert_percent(config.clock_opacity, 0xFF);
-    if (opacity != -1) {
-      config.clock_color.a = (Uint8) opacity;
+  if (config.clock_opacity[0] != '\0') {
+    int clock_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.clock_opacity, &clock_opacity, 255);
+    if (clock_opacity != INVALID_PERCENT_VALUE) {
+      config.clock_color.a = (Uint8) clock_opacity;
     }
   }
 
   // Set default IconSpacing if none is in the config file
   if (config.icon_spacing < 0) {
-    config.icon_spacing = geo->screen_width / 20;
-  }
-
-  // Convert % for IconSpacing setting
-  if (strlen(config.icon_spacing_str)) {
-    int icon_spacing = convert_percent(config.icon_spacing_str,geo->screen_width);
-    if (icon_spacing < 0) {
-      config.icon_spacing = 0;
+    int icon_spacing = INVALID_PERCENT_VALUE;
+    if (config.icon_spacing_str[0] != '\0') {
+      convert_percent_to_int(config.icon_spacing_str, &icon_spacing, geo->screen_width);
     }
-    else {
-      config.icon_spacing = icon_spacing;
+    if (icon_spacing == INVALID_PERCENT_VALUE) {
+      convert_percent_to_int(DEFAULT_ICON_SPACING, &icon_spacing, geo->screen_width);
     }
+    config.icon_spacing = icon_spacing;
   }
   
   // Reduce highlight hpadding to prevent overlaps
@@ -970,34 +1005,29 @@ void validate_settings(geometry_t *geo)
     config.title_padding = title_padding;
   }
 
-  // Calculate y coordinates for buttons from centerline setting
-  if (strlen(config.button_centerline)) {
-    int button_centerline;
-    int button_height = config.icon_size + config.title_padding + geo->font_height;
-    if (strstr(config.button_centerline,"%") != NULL) {
-      button_centerline = convert_percent(config.button_centerline,geo->screen_height);
-      if (button_centerline == -1) {
-        button_centerline = geo->screen_height / 2;
-      }
-    }
-    else {
-      button_centerline = atoi(config.button_centerline);
-      if (button_centerline == 0 && strcmp(config.button_centerline,"0")) {
-          button_centerline = geo->screen_height / 2;
-        }
-    }
-    if (button_centerline < geo->screen_height / 4) {
-      button_centerline = geo->screen_height / 4;
-    }
-    else if (button_centerline > 3*geo->screen_height / 4) {
-      button_centerline = 3*geo->screen_height / 4;
-    }
-    geo->y_margin = button_centerline - button_height / 2;
+  // Calculate y margin for buttons from centerline setting
+  int button_centerline = INVALID_PERCENT_VALUE;
+  int button_height = config.icon_size + config.title_padding + geo->font_height;
+  float f_screen_height = (float) geo->screen_height;
+  int lower_limit = (int) (MIN_BUTTON_CENTERLINE*f_screen_height);
+  int upper_limit = (int) (MAX_BUTTON_CENTERLINE*f_screen_height);
+
+  // Convert percent to int
+  if (config.button_centerline[0] != '\0') {
+    convert_percent_to_int(config.button_centerline, &button_centerline, geo->screen_height);
   }
-  else {
-    int button_height = config.icon_size + config.title_padding + geo->font_height;
-    geo->y_margin = geo->screen_height / 2 - button_height / 2;
+  if (button_centerline == INVALID_PERCENT_VALUE) {
+    convert_percent_to_int(DEFAULT_BUTTON_CENTERLINE, &button_centerline, geo->screen_height);
   }
+
+  // Check limits, calculate margin
+  if (button_centerline < lower_limit) {
+    button_centerline = lower_limit;
+  }
+  else if (button_centerline > upper_limit) {
+    button_centerline = upper_limit;
+  }
+  geo->y_margin = button_centerline - button_height / 2;
 }
 
 // A function to retreive menu struct from the linked list via the menu name

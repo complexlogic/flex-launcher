@@ -438,6 +438,7 @@ static void init_slideshow()
   }
 }
 
+// A function to initialize the screensaver feature
 static void init_screensaver()
 {
   // Allocate memory for structure
@@ -445,14 +446,13 @@ static void init_screensaver()
   
   // Convert intensity string to float
   char intensity[PERCENT_MAX_CHARS];
-  int length = strlen(config.screensaver_intensity_str);
-  if (length && 
-  strchr(config.screensaver_intensity_str, (int) '%') == config.screensaver_intensity_str + length - 1) {
+  if (config.screensaver_intensity_str[0] != '\0') {
     strcpy(intensity, config.screensaver_intensity_str);
   }
   else {
     strcpy(intensity, DEFAULT_SCREENSAVER_INTENSITY);
   }
+  int length = strlen(intensity);
   intensity[length - 1] = '\0';
   float percent = atof(intensity);
 
@@ -462,6 +462,7 @@ static void init_screensaver()
     output_log(LOGLEVEL_ERROR, "Invalid screensaver intensity value, disabling feature\n");
     config.screensaver_enabled = false;
     free(screensaver);
+    screensaver = NULL;
     return;
   }
   else if (screensaver->alpha_end_value >= 255.0f) {
