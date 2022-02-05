@@ -1240,6 +1240,7 @@ int main(int argc, char *argv[])
             SDL_GameControllerClose(gamepad);
             gamepad = NULL;
           }
+          break;
 
         case SDL_WINDOWEVENT:
           if (event.window.event == SDL_WINDOWEVENT_SHOWN || 
@@ -1260,6 +1261,7 @@ int main(int argc, char *argv[])
           else if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
             output_log(LOGLEVEL_DEBUG, "Lost mouse focus\n");
           }
+        break;
       }
     }
 
