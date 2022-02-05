@@ -1,7 +1,7 @@
-Unreleased
-- Added clock widget for current time and date
+v1.4 (2022-2-5)
+- Added clock widget to show the current time and date
 - Windows: Full Unicode support implemented
-- Linux: Changed .desktop file action delimiting character from pipe (|) to semicolon (;)
+- Linux: Changed .desktop file action delimiting character from pipe | to semicolon ;
 
 v1.3 (2022-1-13)
 - Added hotkeys feature
