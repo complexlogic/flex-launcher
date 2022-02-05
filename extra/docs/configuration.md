@@ -141,7 +141,7 @@ Every config file must have a section titled "Settings". Within this section, th
 This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the [Creating Menus](#creating-menus) section for more information.
 
 #### MaxButtons
-The maximum number of buttons that can be displayed on the screen. If your menu has more entries than this value, they will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
+The maximum number of buttons that can be displayed on the screen. If a menu has more entries than this value, it will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
 
 Default: 4
 #### BackgroundMode
@@ -283,7 +283,7 @@ Entry=title;icon_path;command
 The command is typically one of the following:
 1. The path to the program executable that you want to launch 
 2. Windows: the path to a program shortcut (.lnk file)
-3. Linux: the path to a [.desktop file](desktop-files-linux-only)
+3. Linux: the path to a [.desktop file](#desktop-files-linux-only)
 4. A [special command](#special-commands)
 5. The path to an executable script, in the case that you want to perform multiple actions upon program launch.
 
