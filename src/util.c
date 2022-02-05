@@ -1111,7 +1111,7 @@ void read_file(const char *path, char **buffer)
     current_bytes_read = SDL_RWread(file, p, 1, file_size - total_bytes_read);
     total_bytes_read += current_bytes_read;
     p += current_bytes_read;
-  } while (total_bytes_read < file_size && total_bytes_read > 0);
+  } while (total_bytes_read < file_size && current_bytes_read > 0);
   SDL_RWclose(file);
 
   if (total_bytes_read != file_size) {
