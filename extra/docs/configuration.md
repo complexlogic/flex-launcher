@@ -10,19 +10,23 @@
       <a href="#settings">Settings</a>
     </li>
     <li>
-      <a href="#screensaver">Screensaver</a>
-    </li>
-    <li>
       <a href="#creating-menus">Creating Menus</a>
       <ul>
         <li><a href="#special-commands">Special Commands</a></li>
         <li><a href="#desktop-files-linux-only">Desktop Files (Linux Only)</a></li>
       </ul>
-     <li>
+    <li>
+      <a href="#clock">Clock</a>
+    </li>
+    <li>
+      <a href="#screensaver">Screensaver</a>
+    </li>
+    <li>
       <a href="#hotkeys">Hotkeys</a>
     </li>
+    <li>
+      <a href="#gamepad-controls">Gamepad Controls</a>
     </li>
-    <li><a href="#gamepad-controls">Gamepad Controls</a></li>
   </ol>
 </details>
  
@@ -134,7 +138,7 @@ Every config file must have a section titled "Settings". Within this section, th
 </details>
 
 #### DefaultMenu
-This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the creating menus section for more information
+This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the [Creating Menus](#creating-menus) section for more information.
 
 #### MaxButtons
 The maximum number of buttons that can be displayed on the screen. If your menu has more entries than this value, they will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
@@ -159,7 +163,7 @@ When ```BackgroundMode``` is set to "Image", this setting defines the image to b
 When ```BackgroundMode``` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem. The number of images that may be scanned from the directory is limited to 250.
 
 #### SlideshowImageDuration
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds to display each image. Must be an integer value
+When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds to display each image. Must be an integer value.
 
 Default: 30
 
@@ -174,7 +178,7 @@ The width and height of icons on the screen in pixels. If an icon is not the sam
 Default: 256
 
 #### IconSpacing
-Distance between the menu entry icons, in pixels or percent of the screen width
+Distance between the menu entry icons, in pixels or percent of the screen width.
 
 Default: 5%
 
@@ -200,9 +204,9 @@ Default: 100%
 
 #### TitleOversizeMode
 Defines the behavior when the width of a menu entry title exceeds the width of its icon (which is defined in ```IconSize```). Possible values: "Truncate", "Shrink", and "None"
-- Truncate: Truncates the title at the maximum width and adds "..." to the end
-- Shrink: Shrinks oversized titles to a smaller font size than ```TitleFontSize``` so that the entire title fits within the maximum width
-- None: No action is taken to limit the width of titles. Overlaps with other titles may occur, and it is the user's responsibility to manually handle any such case
+- Truncate: Truncates the title at the maximum width and adds "..." to the end.
+- Shrink: Shrinks oversized titles to a smaller font size than ```TitleFontSize``` so that the entire title fits within the maximum width.
+- None: No action is taken to limit the width of titles. Overlaps with other titles may occur, and it is the user's responsibility to manually handle any such case.
 
 Default: Truncate
 
@@ -258,9 +262,9 @@ Default: 100%
 
 #### OnLaunch
 Defines the action that Flex Launcher will take upon the launch of an application. Possible values: "Hide", "None", and "Blank"
-- Hide: Flex Launcher will hide its window while the application is running, and then show itself again after the application has closed. This avoids window focus conflicts between the launcher and the application, but will cause the desktop to be briefly visible when an application is launched
+- Hide: Flex Launcher will hide its window while the application is running, and then show itself again after the application has closed. This avoids window focus conflicts between the launcher and the application, but will cause the desktop to be briefly visible when an application is launched.
 - None: Flex Launcher will maintain its window, and the launched application will have to draw itself over Flex Launcher. The desktop will never be visible, but this mode could cause window focusing conflicts depending on your configuration. This setting should only be used if all your applications launch in a fullscreen mode.
-- Blank: Same as "None", except Flex Launcher will change to a blank, black screen
+- Blank: Same as "None", except Flex Launcher will change to a blank, black screen.
 
 Default: Hide
 
@@ -268,6 +272,135 @@ Default: Hide
 Defines whether Flex Launcher will remember the previous entry position when going back to a previous menu. If set to true, the highlight will be reset to the first entry in the menu when going back. This setting is a boolean "true" or "false".
 
 Default: false
+
+## Creating Menus
+At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
+
+Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons:
+```
+Entry=title;icon_path;command
+```
+The command is typically one of the following:
+1. The path to the program executable that you want to launch 
+2. Windows: the path to a program shortcut (.lnk file)
+3. Linux: the path to a [.desktop file](desktop-files-linux-only)
+4. A [special command](#special-commands)
+5. The path to an executable script, in the case that you want to perform multiple actions upon program launch.
+
+ A simple example menu titled ```Media``` is shown below:
+```
+[Media]
+Entry1=Kodi;C:\Pictures\Icons\kodi.png;"C:\Program Shortcuts\kodi.lnk"
+Entry2=Netflix;C:\Pictures\Icons\netflix.png;"C:\Program Shortcuts\netflix.lnk"
+Entry3=Plex;C:\Pictures\Icons\plex.png;"C:\Program Shortcuts\plex.lnk"
+Entry4=Back;C:\Pictures\Icons\back.png;:back
+```
+
+### Special Commands
+Special commands are commands that are internal to Flex Launcher and begin with a colon. The following is a list of special commands:
+
+#### :submenu
+Change to a different menu. Requires a menu title as an argument. For example, the command ```:submenu Games``` will change to the menu ```Games```. The argument must be a valid menu title that is defined elsewhere in the config file.
+
+#### :back
+Go back to the previous menu.
+
+#### :home
+Change to the menu defined in the ```DefaultMenu``` setting.
+
+#### :quit
+Quit Flex Launcher.
+
+#### :left
+Move the highlight cursor left.
+
+#### :right
+Move the highlight cursor right.
+
+#### :select
+Press enter on the current selection. This special command is only available as a gamepad command, it is forbidden for menu entries.
+
+#### :shutdown
+Shut down the computer.<sup>1</sup>
+
+#### :restart
+Restart the computer.<sup>1</sup>
+
+#### :sleep
+Put the computer to sleep.<sup>1</sup>
+
+<sup>1</sup> *Linux: Only works in systemd-based distros. Non-systemd distro users need to implement the command manually for their init system.*
+
+### Desktop Files (Linux Only)
+If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be the path to its .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
+
+#### Desktop Actions
+Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with a semicolon. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch Steam in Big Picture mode is shown below:
+```
+Entry1=Steam;/path/to/steamicon.png;/usr/share/applications/steam.desktop;BigPicture
+```
+
+## Clock
+Flex Launcher contains a clock widget, which displays the current time, and, optionally, the current date. The following settings may be used to control the behavior of the clock.
+
+#### Enabled
+Defines whether or not the clock is enabled. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### ShowDate
+Defines whether or not the current date should be shown in addition to the current time. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### Alignment
+Defines which side of the screen the clock text should align to. Possible values: "Left" and "Right"
+
+Default: Left
+
+#### Font
+Defines the font to use for the clock text. The value should be the path to a TrueType (TTF) font file.
+
+Default: SourceSansPro
+
+#### FontSize
+Defines the font size of the clock text
+
+Default: 50
+
+#### Margin
+Defines the distance of the clock text from the top and side of the screen, in pixels or percent of the screen height.
+
+Default: 5%
+
+#### Color
+Defines the color of the clock text.
+
+Default: FFFFFF (White)
+
+#### Opacity
+Defines the opacity of the clock text. Must be a percent value.
+
+Default: 100%
+
+#### TimeFormat
+Defines the format of the current time. Possible values: "24hr", "12hr", and "Auto"
+- 24hr: The clock will be a 24 hour format.
+- 12hr: The clock will be a 12 hour format, including AM/PM designation in your locale.
+- Auto: Automatically determine the time format based on your system locale.
+
+Default: Auto
+
+#### DateFormat
+Defines the order of the month and day in the date. Possible values: "Little", "Big", "Auto"
+- Little: The day will come before the month.
+- Big: The month will come before the day.
+- Auto: Automatically determine the date format based on your system locale.
+
+#### IncludeWeekday
+Defines whether the date format should include the abbreviated weekday in your system locale. This setting is a boolean "true" or "false"
+
+Default: true
 
 ## Screensaver
 Flex Launcher contains a screensaver feature, which will dim the screen after the input has been idle for the specified amount of time. Here are the settings that control the behavior of the screensaver
@@ -291,64 +424,6 @@ Default: 70%
 When ```BackgroundMode``` is set to "Slideshow", this setting defines whether or not the slideshow should be paused while the screensaver is active. This setting is a boolean "true" or "false".
 
 Default: true
-
-
-## Creating Menus
-At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
-
-Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons:
-```
-Entry=title;icon_path;command
-```
-The command is typically the path to the program executable that you want to launch, or a [special command](#special-commands). Windows users may also use a path to a program shortcut (.lnk file). A simple example menu titled ```Media``` is shown below:
-```
-[Media]
-Entry1=Kodi;C:\Pictures\Icons\kodi.png;C:\Program Shortcuts\kodi.lnk
-Entry2=Netflix;C:\Pictures\Icons\netflix.png;C:\Program Shortcuts\netflix.lnk
-Entry3=Plex;C:\Pictures\Icons\plex.png;C:\Program Shortcuts\plex.lnk
-```
-
-### Special Commands
-Special commands are commands that are internal to Flex Launcher and begin with a colon. Here is a list of special commands:
-
-#### :submenu
-Change to a different menu. Requires a menu title as an argument. For example, the command ```:submenu Games``` will change to the menu ```Games```. The argument be a valid menu title that is defined elsewhere in the config file.
-
-#### :back
-Go back to the previous menu.
-
-#### :home
-Change to the menu defined in the ```DefaultMenu``` setting.
-
-#### :quit
-Quit Flex Launcher.
-
-#### :left
-Move the highlight cursor left.
-
-#### :right
-Move the highlight cursor right.
-
-#### :select
-Press enter on the current selection. This special command is only available as a gamepad command, it is forbidden for menu entries.
-
-#### :shutdown
-Shut down the computer. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
-
-#### :restart
-Restart the computer. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
-
-#### :sleep
-Put the computer to sleep. For Linux: only works in systemd distros. Non-systemd distro users need to implement the command manually for their init system
-
-### Desktop Files (Linux Only)
-If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be the path to its .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
-
-#### Desktop Actions
-Some .desktop files contain "Actions", which affect how the program is launched. An action may be specified by delimiting it from the path to the .desktop file with the pipe character |. For example, Steam has a mode called "Big Picture Mode", which provides an interface similar to a game console and is ideal for a living room PC. The action in the .desktop file is called "BigPicture". A sample menu entry to launch Steam in Big Picture mode is shown below:
-```
-Entry1=Steam;/path/to/steamicon.png;/usr/share/applications/steam.desktop|BigPicture
-```
 
 ## Hotkeys
 Flex Launch supports configurable hotkeys, which executes a command when a specified key is pressed. Each hotkey consists of a key=value pair, where the key is an arbitrary name, and the value contains the SDL keycode of the hotkey and the command to run when it is pressed, delimited by a semicolon:

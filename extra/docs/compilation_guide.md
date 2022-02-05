@@ -83,7 +83,7 @@ git clone https://github.com/microsoft/vcpkg
 ```
 Generate the Visual Studio project files:
 ```
-cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=".\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-windows-static" ..
+cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=".\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-windows-static" ..
 ```
 If you're using a different version of Visual Studio than above, then change the generator output.
 
