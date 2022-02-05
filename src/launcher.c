@@ -1142,7 +1142,12 @@ int main(int argc, char *argv[])
 
   // Render background
   if (config.background_mode == MODE_IMAGE) {
-    background_texture = load_texture_from_file(config.background_image);
+    if (config.background_image == NULL) {
+      output_log(LOGLEVEL_ERROR, "Error: BackgroundImage not specified in config file\n");
+    }
+    else {
+      background_texture = load_texture_from_file(config.background_image);
+    }
 
     // Switch to color mode if loading background image failed
     if (background_texture == NULL) {
@@ -1261,7 +1266,7 @@ int main(int argc, char *argv[])
           else if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
             output_log(LOGLEVEL_DEBUG, "Lost mouse focus\n");
           }
-        break;
+          break;
       }
     }
 

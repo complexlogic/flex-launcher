@@ -111,17 +111,18 @@ SDL_Texture *load_texture_from_file(const char *path)
 {
   SDL_Surface *surface = NULL;
   SDL_Texture *texture = NULL;
-
-  surface = IMG_Load(path);
-  if (surface == NULL) {
-    output_log(LOGLEVEL_ERROR, 
-     "Error: Could not load image %s\n%s\n", 
-      path, 
-      IMG_GetError()
-    );
-  }
-  else {
-    texture = load_texture(surface);
+  if (path != NULL) {
+    surface = IMG_Load(path);
+    if (surface == NULL) {
+      output_log(LOGLEVEL_ERROR, 
+      "Error: Could not load image %s\n%s\n", 
+        path, 
+        IMG_GetError()
+      );
+    }
+    else {
+      texture = load_texture(surface);
+    }
   }
   return texture;
 }
