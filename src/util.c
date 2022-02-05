@@ -306,6 +306,17 @@ int config_handler(void *user, const char *section, const char *name, const char
       copy_string(&pconfig->clock_font_path, value);
       clean_path(pconfig->clock_font_path);
     }
+    else if (!strcmp(name, SETTING_CLOCK_MARGIN)) {
+      if (is_percent(value)) {
+        strcpy(pconfig->clock_margin_str, value);
+      }
+      else {
+        int clock_margin = atoi(value);
+        if (clock_margin > 0 || !strcmp(value,"0")) {
+          pconfig->clock_margin = clock_margin;
+        }
+      }
+    }
     else if (!strcmp(name, SETTING_CLOCK_COLOR)) {
       hex_to_color(value, &pconfig->clock_color);
     }
@@ -730,7 +741,7 @@ int utf8_length(const char *string)
   return length;
 }
 
-// A function to truncate a utf-8 encoding string to max number of pixels
+// A function to truncate a utf-8 encoded string to max number of pixels
 void utf8_truncate(char *string, int width, int max_width)
 {
   int string_length = utf8_length(string);
@@ -768,7 +779,7 @@ Uint16 get_unicode_code_point(const char *p, int *bytes)
 {
   Uint16 result;
 
-  // ASCII char
+  // 1 byte ASCII char
   if ((*p & 0x80) == 0) {
     result = (Uint16) *p;
     *bytes = 1;
@@ -777,7 +788,7 @@ Uint16 get_unicode_code_point(const char *p, int *bytes)
   // If byte is 110xxxxx, then it's a 2 byte char
   else if ((*p & 0xE0) == 0xC0) {
     Uint8 byte1 = *p & 0x1F;
-    Uint8 byte2 = (*(p + 1) & 0x3F);
+    Uint8 byte2 = *(p + 1) & 0x3F;
     result = (Uint16) ((byte1 << 6) + byte2);
     *bytes = 2;
   }
@@ -790,9 +801,14 @@ Uint16 get_unicode_code_point(const char *p, int *bytes)
     result = (Uint16) ((byte1 << 12) + (byte2 << 6) + byte3);
     *bytes = 3;
   }
+  else {
+    result = 0;
+    *bytes = 1;
+  }
   return result;
 }
 
+// A function to generate an array of random indices
 void random_array(int *array, int array_size)
 {
   // Fill array with initial indices
@@ -868,29 +884,6 @@ void add_gamepad_control(int type, int index, const char *label, const char *cmd
   current_gamepad_control->next = NULL;
 }
 
-// A function to print usage to the command line
-void print_usage()
-{
-  printf("Usage: %s [OPTIONS]\n",EXECUTABLE_TITLE);
-  printf("-c, --config             Path to config file.\n");
-  printf("-d, --debug              Enable debug messages.\n");
-  printf("-h, --help               Show this help message.\n");
-  printf("-v, --version            Print version information.\n");
-}
-
-// A function to print the version and other info to command line
-void print_version()
-{
-  #if (PROJECT_VERSION_PATCH + 0)
-  printf("%s version %i.%i.%i\n", PROJECT_NAME,
-                                  PROJECT_VERSION_MAJOR,
-                                  PROJECT_VERSION_MINOR,
-                                  PROJECT_VERSION_PATCH);
-  #else
-  printf("%s version %i.%i\n", PROJECT_NAME, PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR);
-  #endif
-}
-
 // A function to convert a string percent setting to an int value
 void convert_percent_to_int(char *string, int *result, int max_value)
 {
@@ -959,6 +952,22 @@ void validate_settings(geometry_t *geo)
     config.icon_spacing = icon_spacing;
   }
   
+  // Convert clock margin setting and check limits
+  if (config.clock_margin < 0) {
+    int clock_margin = INVALID_PERCENT_VALUE;
+    if (config.clock_margin_str[0] != '\0') {
+      convert_percent_to_int(config.clock_margin_str, &clock_margin, geo->screen_height);
+    }
+    if (clock_margin == INVALID_PERCENT_VALUE) {
+      convert_percent_to_int(DEFAULT_CLOCK_MARGIN, &clock_margin, geo->screen_height);
+    }
+    config.clock_margin = clock_margin;
+  }
+  int clock_margin_limit = (int) ((float) geo->screen_height*MAX_CLOCK_MARGIN);
+  if (config.clock_margin > clock_margin_limit) {
+    config.clock_margin = clock_margin_limit;
+  }
+
   // Reduce highlight hpadding to prevent overlaps
   if (config.highlight_hpadding > (config.icon_spacing / 2)) {
     config.highlight_hpadding = config.icon_spacing / 2;
@@ -1005,7 +1014,7 @@ void validate_settings(geometry_t *geo)
     config.title_padding = title_padding;
   }
 
-  // Calculate y margin for buttons from centerline setting
+  // Calculate y margin for buttons from centerline setting string, check limits
   int button_centerline = INVALID_PERCENT_VALUE;
   int button_height = config.icon_size + config.title_padding + geo->font_height;
   float f_screen_height = (float) geo->screen_height;

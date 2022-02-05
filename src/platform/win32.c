@@ -359,6 +359,7 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   return num_images;
 }
 
+// A function to get the 2 letter region code
 void get_region(char *buffer)
 {
   WCHAR w_region[3];
@@ -366,6 +367,7 @@ void get_region(char *buffer)
   convert_utf16_string(buffer, w_region, 3);
 }
 
+// A function to convert command line arguments from UTF-16 to UTF-8
 void convert_args(int *argc, char **argv[])
 {
   LPWSTR command_line = GetCommandLineW();
@@ -379,17 +381,11 @@ void convert_args(int *argc, char **argv[])
   *argv = arg_list;
 }
 
+// A function to free the heap-allocated command line arguments
 void cleanup_args(int argc, char *argv[])
 {
   for (int i = 0; i < argc; i++) {
     free(argv[i]);
   }
   free(argv);
-}
-
-FILE *open_file(const char *path)
-{
-  WCHAR w_path[MAX_PATH_CHARS + 1];
-  convert_utf8_string(w_path, path, sizeof(w_path));
-  return _wfopen(w_path, L"rb,ccs=UTF-8");
 }

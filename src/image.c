@@ -96,6 +96,7 @@ SDL_Surface *load_next_slideshow_background(slideshow_t *slideshow, bool transit
   return surface;
 }
 
+// A function to load a new slideshow background in a separate thread
 int load_next_slideshow_background_async(void *data)
 {
   slideshow_t *slideshow = (slideshow_t*) data;
@@ -105,6 +106,7 @@ int load_next_slideshow_background_async(void *data)
   return 0;
 }
 
+// A function to load a texture from a file
 SDL_Texture *load_texture_from_file(const char *path)
 {
   SDL_Surface *surface = NULL;
@@ -241,12 +243,6 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
   return texture;
 }
 
-SDL_Texture *render_text_texture(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
-{
-  SDL_Surface *surface = render_text(text, info, rect, text_height);
-  return load_texture(surface);
-}
-
 // A function to render title text for an entry
 SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
 {
@@ -319,6 +315,14 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
   return surface;
 }
 
+// A function to render text into a texture
+SDL_Texture *render_text_texture(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
+{
+  SDL_Surface *surface = render_text(text, info, rect, text_height);
+  return load_texture(surface);
+}
+
+// A function to load a font from a file
 int load_font(text_info_t *info, const char *default_font)
 {
   char *font_path = *info->font_path;

@@ -1,9 +1,9 @@
 #define EXT_DESKTOP ".desktop"
-#define MAX_INI_SECTION 100
 #define DELIMITER_ACTION ";"
 #define DESKTOP_SECTION_HEADER "Desktop Entry"
 #define DESKTOP_SECTION_HEADER_ACTION "Desktop Action %s"
 #define KEY_EXEC "Exec"
+#define MAX_INI_SECTION 100
 
 typedef struct {
   char section[MAX_INI_SECTION + 1];

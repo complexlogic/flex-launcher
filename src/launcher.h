@@ -25,6 +25,7 @@
 #define CLOCK_UPDATE_PERIOD 1000
 #define SCROLL_INDICATOR_HEIGHT 0.1F
 #define SCREEN_MARGIN 0.06F
+#define MAX_CLOCK_MARGIN 0.1F
 #define MIN_BUTTON_CENTERLINE 0.25F
 #define MAX_BUTTON_CENTERLINE 0.75F
 #define MAX_SLIDESHOW_IMAGES 250
@@ -235,6 +236,8 @@ typedef struct {
   bool clock_show_date;
   launcher_alignment_t clock_alignment;
   char *clock_font_path;
+  char clock_margin_str[PERCENT_MAX_CHARS];
+  int clock_margin;
   SDL_Color clock_color;
   char clock_opacity[PERCENT_MAX_CHARS];
   unsigned int clock_font_size;

@@ -71,6 +71,8 @@ config_t config = {
   .clock_show_date = DEFAULT_CLOCK_SHOW_DATE,
   .clock_alignment = DEFAULT_CLOCK_ALIGNMENT,
   .clock_font_path = NULL,
+  .clock_margin_str[0] = '\0',
+  .clock_margin = -1,
   .clock_color.r = DEFAULT_CLOCK_COLOR_R,
   .clock_color.g = DEFAULT_CLOCK_COLOR_G,
   .clock_color.b = DEFAULT_CLOCK_COLOR_B,
@@ -198,6 +200,7 @@ static int init_sdl()
   return 0;
 }
 
+// A function to set the color of the renderer
 void set_draw_color()
 {
   if (config.background_mode == MODE_COLOR) {
@@ -491,6 +494,7 @@ static void resume_slideshow()
   ticks.slideshow_load = ticks.main;
 }
 
+// A function to render the scroll indicators
 static void render_scroll_indicators()
 {
   // Calcuate the geometry

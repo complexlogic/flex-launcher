@@ -168,11 +168,12 @@ void debug_settings()
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ALIGNMENT, "Right");
   }
   output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_FONT, config.clock_font_path);
+  output_log(LOGLEVEL_DEBUG, "%s: %u\n", SETTING_CLOCK_FONT_SIZE,config.clock_font_size);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_CLOCK_MARGIN, config.clock_margin);  
   output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_COLOR, config.clock_color.r);
   output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_COLOR, config.clock_color.g);
   output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_COLOR, config.clock_color.b);
   output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_COLOR, config.clock_color.a);
-  output_log(LOGLEVEL_DEBUG, "%s: %u\n", SETTING_CLOCK_FONT_SIZE,config.clock_font_size);
   if (config.clock_time_format == FORMAT_TIME_12HR) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_TIME_FORMAT, "12hr");
   }
