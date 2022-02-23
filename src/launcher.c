@@ -798,7 +798,7 @@ static void draw_screen()
 
 static void launch_application(char *cmd)
 {
-  bool successful = start_process(cmd);
+  bool successful = start_process(cmd, true);
   if (!successful) return;
   SDL_Event event;  
 
@@ -828,7 +828,15 @@ static void execute_command(const char *command)
     char *special_command = strtok(cmd, delimiter);
     if (!strcmp(special_command, SCMD_SUBMENU)) {
       char *submenu = strtok(NULL, delimiter);
-      load_submenu(submenu);
+      if (submenu != NULL) {
+        load_submenu(submenu);
+      }
+    }
+    else if (!strcmp(special_command, SCMD_FORK)) {
+      char *fork_command = strtok(NULL, delimiter);
+      if (fork_command != NULL) {
+        start_process(fork_command, false);
+      }
     }
     else if (!strcmp(special_command, SCMD_LEFT)) {
       move_left();
@@ -1308,7 +1316,7 @@ int main(int argc, char *argv[])
     if (config.clock_enabled) {
       update_clock(false);
     }
-    if (state.application_exited && ticks.main - ticks.application_exited > MAX_SCREEN_REDRAW_PERIOD) {
+    if (state.application_exited && (ticks.main - ticks.application_exited > MAX_SCREEN_REDRAW_PERIOD)) {
       draw_screen();
       state.application_exited = false;
     }

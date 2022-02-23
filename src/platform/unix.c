@@ -107,7 +107,7 @@ static bool ends_with(const char *string, const char *phrase)
 }
 
 // A function to launch an external application
-bool start_process(char *cmd)
+bool start_process(char *cmd, bool check_result)
 {
   // Check if the command is an XDG .desktop file
   char *tmp = NULL;
@@ -168,6 +168,7 @@ bool start_process(char *cmd)
 
     // Parent process
     default:
+      if (!check_result) return true;
       int status;
 
       // Check to see if the shell successfully launched

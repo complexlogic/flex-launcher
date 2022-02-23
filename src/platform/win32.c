@@ -264,7 +264,7 @@ bool process_running()
 }
 
 // A function to launch an application
-bool start_process(char *cmd)
+bool start_process(char *cmd, bool check_result)
 {
   WCHAR w_file[MAX_PATH_CHARS + 1];
   LPWSTR w_params = NULL;
@@ -287,6 +287,8 @@ bool start_process(char *cmd)
   };
 
   BOOL successful = ShellExecuteExW(&info);
+  if (!check_result) return true;
+  
   if (successful) {
     child_process = info.hProcess;
 
