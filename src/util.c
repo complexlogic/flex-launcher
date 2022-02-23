@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <SDL.h>
+#include <SDL_syswm.h>
 #include "launcher.h"
 #include <launcher_config.h>
 #include "util.h"

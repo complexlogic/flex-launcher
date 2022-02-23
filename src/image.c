@@ -244,7 +244,7 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
   return texture;
 }
 
-// A function to render title text for an entry
+// A function to render text
 SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
 {
   TTF_Font *output_font = NULL;
@@ -304,7 +304,7 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
     output_font = info->font;
   }
 
-  // Render texture
+  // Render surface
   SDL_Surface *surface = TTF_RenderUTF8_Blended(output_font,
                            text_buffer,
                            *info->color

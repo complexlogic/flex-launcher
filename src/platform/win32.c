@@ -4,14 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <windows.h>
-#include <stringapiset.h>
-#include <processthreadsapi.h>
-#include <fileapi.h>
-#include <shellapi.h>
-#include <processenv.h>
 #include <psapi.h>
-#include <shlwapi.h>
-#include <winnls.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include "../launcher.h"
@@ -25,7 +18,8 @@
 extern config_t config;
 extern SDL_SysWMinfo wm_info;
 bool web_browser;
-LPWSTR w_process_basename = NULL;
+LPWSTR w_process_basename     = NULL;
+HANDLE child_process          = NULL;
 
 // A function to get the basename of a file
 static LPWSTR path_basename(LPCWSTR w_path)
@@ -252,14 +246,14 @@ static bool process_running_name(LPCWSTR w_target_process)
   }
 }
 
-// A function to determine if the launched process is still running
-bool process_running(HANDLE process)
+// A function to determine if the previously launched process is still running
+bool process_running()
 {
   if (web_browser) {
     return process_running_name(w_process_basename);
   }
   else {
-    DWORD status = WaitForSingleObject(process, 0);
+    DWORD status = WaitForSingleObject(child_process, 0);
     if (status == WAIT_OBJECT_0) {
       return false;
     }
@@ -270,7 +264,7 @@ bool process_running(HANDLE process)
 }
 
 // A function to launch an application
-void launch_application(char *cmd)
+bool start_process(char *cmd)
 {
   WCHAR w_file[MAX_PATH_CHARS + 1];
   LPWSTR w_params = NULL;
@@ -294,7 +288,7 @@ void launch_application(char *cmd)
 
   BOOL successful = ShellExecuteExW(&info);
   if (successful) {
-    HANDLE child_process = info.hProcess;
+    child_process = info.hProcess;
 
     // Check if launched application is a web browser
     WCHAR w_process_name[MAX_PATH_CHARS + 1];
@@ -303,26 +297,20 @@ void launch_application(char *cmd)
       w_process_basename = path_basename(w_process_name);
       web_browser = is_browser(w_process_basename);
     }
-    
-    // Block until application has closed
-    if (config.on_launch == MODE_ON_LAUNCH_HIDE && !web_browser) {
-      WaitForSingleObject(child_process, INFINITE);
-    }
 
-    // Non-blocking, run event pump so we don't lose communication with window manager
-    else {
-        HWND hwnd = wm_info.info.win.window;
-        SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
-      do {
-        SDL_PumpEvents();
-        SDL_Delay(100);
-      } while (process_running(child_process));
+    // Go down in the window stack so the launched application can take focus
+    if (config.on_launch == MODE_ON_LAUNCH_NONE || config.on_launch == MODE_ON_LAUNCH_BLANK) {
+      HWND hwnd = wm_info.info.win.window;
+      SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
     }
   }
   else {
     output_log(LOGLEVEL_DEBUG, "Failed to launch command\n");
+    free(w_params);
+    return false;
   }
   free(w_params);
+  return true;
 }
 
 // A function to scan the slideshow directory for image files

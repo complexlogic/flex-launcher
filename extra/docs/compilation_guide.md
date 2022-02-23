@@ -20,7 +20,7 @@
  - SDL_ttf >= 2.0.15
 
 ## Linux
-Flex Launcher on Linux builds with GCC. This guide assumes you already have the tools Git, CMake, and GCC installed on your system. If not, consult your distro's documentation. 
+Flex Launcher on Linux builds with GCC. This guide assumes you already have the tools Git, CMake, pkg-config, and GCC installed on your system. If not, consult your distro's documentation. 
 
 First, install the dependencies. The steps to do so are dependent on your distro:
 
@@ -43,7 +43,7 @@ mkdir build && cd build
 ```
 Generate the Makefile:
 ```
-cmake -Wno-dev .. 
+cmake .. 
 ```
 If you're building on Raspberry Pi, it's recommended to pass -DRPI=1 to cmake, which tweaks the default configuration to be more Pi-centric.
 

@@ -1,42 +1,23 @@
-#Build instructions
+#Build main launcher executable file
 if (UNIX)
-  add_executable(${EXECUTABLE_TITLE} "launcher.c")
+  add_executable(${EXECUTABLE_TITLE} "launcher.c" "util.c" "image.c" "debug.c" "clock.c")
 endif ()
 if (WIN32)
   set(APP_ICON_RESOURCE_WINDOWS "${PROJECT_SOURCE_DIR}/config/${EXECUTABLE_TITLE}.rc")
-  add_executable(${EXECUTABLE_TITLE} "launcher.c" ${APP_ICON_RESOURCE_WINDOWS})
-  set_target_properties(${EXECUTABLE_TITLE} PROPERTIES WIN32_EXECUTABLE TRUE)
+  add_executable(${EXECUTABLE_TITLE} WIN32 "launcher.c" "util.c" "image.c" "debug.c" "clock.c" ${APP_ICON_RESOURCE_WINDOWS})
 endif()
-set (EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
-target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${PROJECT_BINARY_DIR}")
-add_library(util "util.c")
-target_include_directories(util PUBLIC "${PROJECT_BINARY_DIR}")
-add_library(image "image.c")
-target_include_directories(image PUBLIC "${PROJECT_BINARY_DIR}")
-add_library(ldebug "debug.c")
-target_include_directories(ldebug PUBLIC "${PROJECT_BINARY_DIR}")
-add_library(clock "clock.c")
-target_include_directories(clock PUBLIC "${PROJECT_BINARY_DIR}")
 
 # Configure main header file  
-configure_file("${PROJECT_SOURCE_DIR}/src/launcher_config.h.in" "${PROJECT_BINARY_DIR}/launcher_config.h")
+configure_file("launcher_config.h.in" "${PROJECT_BINARY_DIR}/launcher_config.h")
 
-#SDL includes and libs
-if (UNIX)
-  target_include_directories(util PUBLIC "${SDL2_INCLUDE_DIRS}")
-  target_include_directories(image PUBLIC "${SDL2_INCLUDE_DIRS}")
-  target_include_directories(ldebug PUBLIC "${SDL2_INCLUDE_DIRS}")
-  target_include_directories(clock PUBLIC "${SDL2_INCLUDE_DIRS}" "${SDL2_TTF_INCLUDE_DIRS}")
-  target_include_directories(${EXECUTABLE_TITLE} PUBLIC "${SDL2_INCLUDE_DIRS}" "${SDL2_IMAGE_INCLUDE_DIRS}" "${SDL2_TTF_INCLUDE_DIRS}")
-  target_link_libraries(${EXECUTABLE_TITLE} image util ldebug clock platform inih SDL2::Main SDL2::Image SDL2::TTF m)
-endif ()
-if (WIN32)
-  target_link_libraries(util SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static)
-  target_link_libraries(image SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static)
-  target_link_libraries(ldebug SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static)
-  target_link_libraries(clock SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static SDL2::SDL2_ttf)
-  target_link_libraries(${EXECUTABLE_TITLE} image ldebug clock platform inih util SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static SDL2::SDL2_image SDL2::SDL2_ttf)
-endif ()
-
+# Build libraries
 add_subdirectory("external")
 add_subdirectory("platform")
+
+# Link libraries together 
+target_link_libraries(${EXECUTABLE_TITLE} platform inih)
+if (WIN32)
+  target_link_libraries(${EXECUTABLE_TITLE} SDL2::SDL2main SDL2::SDL2_image SDL2::SDL2_ttf)
+endif ()
+
+

@@ -6,8 +6,15 @@ project("Flex Launcher"
         DESCRIPTION "Customizable HTPC Application Launcher"
         HOMEPAGE_URL "https://github.com/complexlogic/flex-launcher")
 set(EXECUTABLE_TITLE "flex-launcher")
+set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
+include_directories(${PROJECT_BINARY_DIR})
 
-#Generate PKGBUILD for Arch packages
+# Minimum library versions for Linux
+set(MIN_SDL_VERSION "2.0.14")
+set(MIN_SDL_IMAGE_VERSION "2.0.5")
+set(MIN_SDL_TTF_VERSION "2.0.15")
+
+#Generate PKGBUILD script for Arch packages
 if (PACKAGE STREQUAL "ARCH")
   configure_file("${PROJECT_SOURCE_DIR}/config/PKGBUILD.in" "${PROJECT_BINARY_DIR}/PKGBUILD")
   return()
@@ -145,33 +152,37 @@ set(DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW "true")
 set(DEFAULT_GAMEPAD_ENABLED "false")
 set(DEFAULT_GAMEPAD_DEVICE 0)
 
-# Linux configuration
+# Find dependencies - Linux
+if (UNIX)
+  find_package(PkgConfig MODULE REQUIRED)
+  pkg_check_modules(SDL2 REQUIRED sdl2>=${MIN_SDL_VERSION})
+  pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image>=${MIN_SDL_IMAGE_VERSION})
+  pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf>=${MIN_SDL_TTF_VERSION})
+  include_directories(${SDL2_INCLUDE_DIRS} 
+    ${SDL2_IMAGE_INCLUDE_DIRS} 
+    ${SDL2_TTF_INCLUDE_DIRS}
+  )
+  link_libraries(${SDL2_LIBRARIES} 
+    ${SDL2_IMAGE_LIBRARIES} 
+    ${SDL2_TTF_LIBRARIES}
+    m
+  )
+endif ()
+
+# Find dependencies - Windows
+if (WIN32)
+  find_package(SDL2 CONFIG REQUIRED)
+  find_package(sdl2-image CONFIG REQUIRED)
+  find_package(sdl2-ttf CONFIG REQUIRED)
+endif () 
+
+# Build configuration - Linux
 if (UNIX)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
   set(CMAKE_SHARED_LINKER_FLAGS "--as-needed")
-  
-  #Find SDL
-  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-  find_package(SDL2 MODULE REQUIRED)
-  find_package(SDL2_image MODULE REQUIRED)
-  find_package(SDL2_ttf MODULE REQUIRED)
-      
-  #Set Default application commands
-  set(DESKTOP_PATH "/usr/share/applications/")
-  set(CMD_KODI "${DESKTOP_PATH}kodi.desktop")
-  set(CMD_PLEX "${DESKTOP_PATH}plexmediaplayer.desktop;TVF")
-  if (RPI)
-    set(TITLE_GAMES "RetroArch")
-    set(ICON_GAMES "retroarch.png")
-    set(CMD_GAMES "${DESKTOP_PATH}retroarch.desktop")
-  else ()
-    set(TITLE_GAMES "Steam")
-    set(ICON_GAMES "steam.png")
-    set(CMD_GAMES "${DESKTOP_PATH}steam.desktop;BigPicture")
-  endif ()
 endif ()
 
-# Windows configuration
+# Build configuration - Windows
 if (WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") # Workaround for Nanosvg and SDL_image header conflicts
   
@@ -186,25 +197,34 @@ if (WIN32)
     string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
   endforeach()
+ endif ()
+ 
+ # Configure default applications - Linux
+ if (UNIX)
+  set(DESKTOP_PATH "/usr/share/applications")
+  set(CMD_KODI "${DESKTOP_PATH}/kodi.desktop")
+  set(CMD_PLEX "${DESKTOP_PATH}/plexmediaplayer.desktop;TVF")
+  if (RPI)
+    set(TITLE_GAMES "RetroArch")
+    set(ICON_GAMES "retroarch.png")
+    set(CMD_GAMES "${DESKTOP_PATH}/retroarch.desktop")
+  else ()
+    set(TITLE_GAMES "Steam")
+    set(ICON_GAMES "steam.png")
+    set(CMD_GAMES "${DESKTOP_PATH}/steam.desktop;BigPicture")
+  endif ()
+endif ()
 
-  #Find SDL
-  find_package(SDL2 CONFIG REQUIRED)
-  find_package(sdl2-image CONFIG REQUIRED)
-  find_package(sdl2-ttf CONFIG REQUIRED)
-    
-  # Application commands
+# Configure default applications - Windows
+if (WIN32)
   set(CMD_KODI "\"C:\\Program Files\\Kodi\\kodi.exe\"")
   set(CMD_PLEX "\"C:\\Program Files\\Plex\\Plex Media Player\\PlexMediaPlayer.exe\"")
   set(TITLE_GAMES "Steam")
   set(ICON_GAMES "steam.png")
   set(CMD_GAMES "\"C:\\Program Files (x86)\\Steam\\steam.exe\" steam://open/bigpicture")
-  
-  if (NOT PACKAGE)
-    set(PACKAGE "ZIP")
-  endif ()
-endif () 
+endif ()
 
-# Time formats
+# Set time format strings
 if (WIN32)
   set(REMOVE_ZERO "#")
 else()
@@ -215,26 +235,62 @@ set(TIME_STRING_24HR "%H:%M")
 set(DATE_STRING_LITTLE "%d %b")
 set(DATE_STRING_BIG "%b %${REMOVE_ZERO}d")
 
-#Build src
+#Build source files
 add_subdirectory("src")
 
-# Install
+# Installation - Linux
 if (UNIX)
   set(INSTALL_DIR_BIN "${CMAKE_INSTALL_PREFIX}/bin")
   set(INSTALL_DIR_SHARE "${CMAKE_INSTALL_PREFIX}/share/${EXECUTABLE_TITLE}")
   set(INSTALL_DIR_DESKTOP "${CMAKE_INSTALL_PREFIX}/share/applications")
   set(INSTALL_DIR_CONFIGFILE "${INSTALL_DIR_SHARE}")
   set(INSTALL_DIR_ASSETS "${INSTALL_DIR_SHARE}")
-else ()
+  
+  # Configure Debian packages
+  if (PACKAGE STREQUAL "DEB")
+    set(CPACK_DEBIAN_PACKAGE_NAME ${EXECUTABLE_TITLE})
+    set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+    set(CPACK_DEBIAN_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
+    if (NOT DEB_ARCH)
+      if (RPI)
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "armhf")
+      else ()
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+      endif ()
+    else ()
+      set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${DEB_ARCH}")
+    endif ()
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0 (>= ${MIN_SDL_VERSION}), libsdl2-image-2.0-0 (>= ${MIN_SDL_IMAGE_VERSION}), libsdl2-ttf-2.0-0 (>= ${MIN_SDL_TTF_VERSION})")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "complexlogic")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "video")
+    set(CPACK_DEBIAN_ARCHIVE_TYPE "gnutar")
+    set(CPACK_DEBIAN_COMPRESSION_TYPE "gzip")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+  endif ()
+endif ()
+
+# Installation - Windows
+if (WIN32)
   set(INSTALL_DIR_BIN "./")
   set(INSTALL_DIR_CONFIGFILE "./")
   set(INSTALL_DIR_ASSETS "./")
+  install(FILES "${PROJECT_SOURCE_DIR}/CHANGELOG.txt" DESTINATION "${INSTALL_DIR_BIN}")
+  if (NOT PACKAGE)
+    set(PACKAGE "ZIP")
+  endif ()
 endif ()
+
+# Installation - Common
 install(TARGETS ${EXECUTABLE_TITLE} DESTINATION "${INSTALL_DIR_BIN}")
 install(FILES "${PROJECT_BINARY_DIR}/install/config.ini" DESTINATION "${INSTALL_DIR_CONFIGFILE}")
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/assets" DESTINATION "${INSTALL_DIR_ASSETS}")
+if (PACKAGE)
+  set(CPACK_PACKAGE_NAME ${EXECUTABLE_TITLE})
+  set(CPACK_GENERATOR ${PACKAGE})
+  include(CPack)
+endif ()
 
-#Configure icons and desktop file
+#Configure Linux icons and .desktop file
 if (UNIX)
   configure_file("${PROJECT_SOURCE_DIR}/config/launcher.desktop.in" "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop")
   install(FILES "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop" DESTINATION "${INSTALL_DIR_DESKTOP}")
@@ -242,47 +298,10 @@ if (UNIX)
   install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.png" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/48x48/apps")
   install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.svg" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/scalable/apps")
 endif ()
-
-if (WIN32)
-  install(FILES "${PROJECT_SOURCE_DIR}/CHANGELOG.txt" DESTINATION "${INSTALL_DIR_BIN}")
-endif ()
-
-# Configure CPack for packages
-if (PACKAGE STREQUAL "DEB")
-  set(CPACK_DEBIAN_PACKAGE_NAME ${EXECUTABLE_TITLE})
-  set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-  set(CPACK_DEBIAN_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
-  if (NOT DEB_ARCH)
-    if (RPI)
-      set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "armhf")
-    else ()
-      set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-    endif ()
-  else ()
-    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${DEB_ARCH}")
-  endif ()
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0 (>= 2.0.14), libsdl2-image-2.0-0 (>= 2.0.5), libsdl2-ttf-2.0-0 (>= 2.0.15)")
-  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "complexlogic")
-  set(CPACK_DEBIAN_PACKAGE_SECTION "video")
-  set(CPACK_DEBIAN_ARCHIVE_TYPE "gnutar")
-  set(CPACK_DEBIAN_COMPRESSION_TYPE "gzip")
-  set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-endif ()
-
-if (PACKAGE)
-  set(CPACK_PACKAGE_NAME ${EXECUTABLE_TITLE})
-  set(CPACK_GENERATOR ${PACKAGE})
-  include(CPack)
-endif ()
   
 # Set paths for config files
 set(FONT_PREFIX "${PROJECT_BINARY_DIR}/assets/fonts/")
 set(ICONS_PREFIX "${PROJECT_BINARY_DIR}/assets/icons/")
-if("${PROJECT_SOURCE_DIR}/build" STREQUAL "${PROJECT_BINARY_DIR}")
-  set(SVG_RELATIVE "../assets/")
-else()
-  set(SVG_RELATIVE "../${EXECUTABLE_TITLE}/assets/")
-endif()
 file(COPY "${PROJECT_SOURCE_DIR}/assets" DESTINATION ${PROJECT_BINARY_DIR})
 
 # Generate build config file
@@ -294,9 +313,9 @@ configure_file("${PROJECT_SOURCE_DIR}/config/config.ini.in" "${PROJECT_BINARY_DI
 
 # Generate install config file
 if (WIN32)
-  set(PATH_ASSETS_RELATIVE "./assets/")
-  set(FONT_PREFIX "${PATH_ASSETS_RELATIVE}fonts/")
-  set(ICONS_PREFIX "${PATH_ASSETS_RELATIVE}icons/")
+  set(PATH_ASSETS_RELATIVE "./assets")
+  set(FONT_PREFIX "${PATH_ASSETS_RELATIVE}/fonts/")
+  set(ICONS_PREFIX "${PATH_ASSETS_RELATIVE}/icons/")
 else ()
   set(FONT_PREFIX "${INSTALL_DIR_ASSETS}/assets/fonts/")
   set(ICONS_PREFIX "${INSTALL_DIR_ASSETS}/assets/icons/")

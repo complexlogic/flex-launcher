@@ -3,6 +3,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 #include <SDL.h>
 #include "../external/ini.h"
 #include "../launcher.h"
@@ -11,6 +14,8 @@
 #include "../util.h"
 #include "../debug.h"
 #include "slideshow.h"
+
+pid_t child_pid;
 
 // A function to handle .desktop lines
 static int desktop_handler(void *user, const char *section, const char *name, const char *value)
@@ -102,7 +107,7 @@ static bool ends_with(const char *string, const char *phrase)
 }
 
 // A function to launch an external application
-void launch_application(char *cmd)
+bool start_process(char *cmd)
 {
   // Check if the command is an XDG .desktop file
   char *tmp = NULL;
@@ -127,12 +132,12 @@ void launch_application(char *cmd)
     if (error < 0) {
       output_log(LOGLEVEL_ERROR, "Error: Desktop file \"%s\" not found\n", file);
       free(tmp);
-      return;
+      return false;
     }
     if (desktop.exec == NULL) {
       output_log(LOGLEVEL_DEBUG, "No Exec line found in desktop file \"%s\"\n", cmd);
       free(tmp);
-      return;
+      return false;
     }
     exec = desktop.exec;
     strip_field_codes(exec);
@@ -141,10 +146,60 @@ void launch_application(char *cmd)
   free(tmp);
 
   // Launch application in system shell
-  system(cmd);
+  child_pid = fork();
+  switch(child_pid) {
+    case -1:
+      output_log(LOGLEVEL_ERROR, "Error: Could not fork new process for application\n");
+      free(exec);
+      return false;
+
+    // Child process
+    case 0:
+      setpgid(0, 0);
+      const char *file = "/bin/sh";
+      const char *args[] = {
+        "sh",
+        "-c", 
+        cmd, 
+        NULL
+      };
+      execvp(file, args);
+      break;
+
+    // Parent process
+    default:
+      int status;
+
+      // Check to see if the shell successfully launched
+      SDL_Delay(10);
+      pid_t pid = waitpid(child_pid, &status, WNOHANG);
+      if (WIFEXITED(status) && WEXITSTATUS(status) > 126) {
+        output_log(LOGLEVEL_ERROR, "Error: Application failed to launch\n");
+        return false;
+      }
+      output_log(LOGLEVEL_DEBUG, "Application launched successfully\n");
+      break;
+  }
   free(exec);
+  return true;
 }
 
+// A function to check if a child process is still running
+bool process_running()
+{
+  pid_t pid = waitpid(-1*child_pid, NULL, WNOHANG);
+  if (pid > 0) {
+    if (waitpid(-1*child_pid, NULL, WNOHANG) == -1) {
+      return false;
+    }
+  } 
+  else if (pid == -1) {
+    return false;
+  }
+  return true;
+}
+
+// A function to determine if a file is an image file
 int image_filter(struct dirent *file)
 {
   int len_file = strlen(file->d_name);
@@ -159,6 +214,7 @@ int image_filter(struct dirent *file)
   return 0;
 }
 
+// A function to scan a directory for images
 int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
 {
   struct dirent **files;

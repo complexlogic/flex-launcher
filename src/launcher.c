@@ -796,6 +796,25 @@ static void draw_screen()
   state.screen_updates = false;
 }
 
+static void launch_application(char *cmd)
+{
+  bool successful = start_process(cmd);
+  if (!successful) return;
+  SDL_Event event;  
+
+  // Wait until application has closed
+  do {
+    while (SDL_PollEvent(&event)) {
+      switch(event.type) {
+        case SDL_QUIT:
+          quit(0);
+          break;
+      }
+    }
+    SDL_Delay(APPLICATION_WAIT_PERIOD);
+  } while(process_running());
+}
+
 // A function to execute the user's command
 static void execute_command(const char *command)
 {
@@ -860,7 +879,13 @@ static void execute_command(const char *command)
     // Rebaseline the timing after the program is done
     ticks.main = SDL_GetTicks();
     ticks.last_input = ticks.main;
-
+    
+    // Track the screen re-draw
+    if (config.on_launch == MODE_ON_LAUNCH_NONE || MODE_ON_LAUNCH_BLANK) {
+      state.application_exited = true;
+      ticks.application_exited = ticks.main;
+    }
+    
     // Post-application updates
     if (config.clock_enabled) {
       update_clock(true);
@@ -879,7 +904,7 @@ static void execute_command(const char *command)
   SDL_FlushEvent(SDL_KEYDOWN);
   #endif
   }
-free(cmd);
+  free(cmd);
 }
 
 // A function to connect to a gamepad
@@ -1282,6 +1307,10 @@ int main(int argc, char *argv[])
     }    
     if (config.clock_enabled) {
       update_clock(false);
+    }
+    if (state.application_exited && ticks.main - ticks.application_exited > MAX_SCREEN_REDRAW_PERIOD) {
+      draw_screen();
+      state.application_exited = false;
     }
     if (state.screen_updates) {
       draw_screen();

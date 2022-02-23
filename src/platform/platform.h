@@ -11,9 +11,11 @@
 // Abstracted platform function prototypes
 bool file_exists(const char *path);
 bool directory_exists(const char *path);
-void launch_application(char *cmd);
 void get_region(char *buffer);
 int scan_slideshow_directory(slideshow_t *slideshow, const char *directory);
+bool start_process(char *cmd);
+bool process_running();
+
 
 // Windows-specfic function prototypes
 #ifdef _WIN32

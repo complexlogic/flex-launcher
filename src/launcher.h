@@ -36,6 +36,8 @@
 #define MIN_SCREENSAVER_IDLE_TIME 3
 #define MAX_SCREENSAVER_IDLE_TIME 900
 #define SCREENSAVER_TRANSITION_TIME 1500
+#define APPLICATION_WAIT_PERIOD 100
+#define MAX_SCREEN_REDRAW_PERIOD 100
 
 // Modes
 typedef int mode;
@@ -75,6 +77,7 @@ typedef enum {
 
 typedef struct {
   bool screen_updates;
+  bool application_exited;
   bool slideshow_transition;
   bool slideshow_background_rendering;
   bool slideshow_background_ready;
@@ -90,6 +93,7 @@ typedef struct {
   Uint32 slideshow_load;
   Uint32 last_input;
   Uint32 clock_update;
+  Uint32 application_exited;
 } ticks_t;
 
 // Linked list for menu entries
@@ -271,6 +275,7 @@ static void load_back_menu(menu_t *menu);
 static void draw_screen(void);
 static void handle_keypress(SDL_Keysym *key);
 static void execute_command(const char *command);
+static void launch_application(char *cmd);
 static void poll_gamepad(void);
 static void connect_gamepad(int device_index);
 static void render_scroll_indicators(void);
