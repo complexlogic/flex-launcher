@@ -19,6 +19,7 @@ static bool ends_with(const char *string, const char *phrase);
 char *join_paths(char *buffer, size_t bytes, int num_paths, ...);
 char *find_file(const char *file, int num_prefixes, const char **prefixes);
 void handle_arguments(int argc, char *argv[], char **config_file_path);
+void copy_string(char* dest, const char* string, size_t size);
 void copy_string_alloc(char **dest, const char *string);
 void utf8_truncate(char *string, int width, int max_width);
 void convert_percent_to_int(char *string, int *result, int max_value);

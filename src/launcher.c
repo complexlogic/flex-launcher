@@ -827,13 +827,13 @@ static void execute_command(const char *command)
     char *delimiter = " ";
     char *special_command = strtok(cmd, delimiter);
     if (!strcmp(special_command, SCMD_SUBMENU)) {
-      char *submenu = strtok(NULL, delimiter);
+      char *submenu = strtok(NULL, "");
       if (submenu != NULL) {
         load_submenu(submenu);
       }
     }
     else if (!strcmp(special_command, SCMD_FORK)) {
-      char *fork_command = strtok(NULL, delimiter);
+      char *fork_command = strtok(NULL, "");
       if (fork_command != NULL) {
         start_process(fork_command, false);
       }

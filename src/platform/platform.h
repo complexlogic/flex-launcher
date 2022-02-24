@@ -13,15 +13,8 @@ bool file_exists(const char *path);
 bool directory_exists(const char *path);
 void get_region(char *buffer);
 int scan_slideshow_directory(slideshow_t *slideshow, const char *directory);
-bool start_process(char *cmd, bool check_result);
+bool start_process(char *cmd, bool application);
 bool process_running();
-
-
-// Windows-specfic function prototypes
-#ifdef _WIN32
-void convert_args(int *argc, char **argv[]);
-void cleanup_args(int argc, char *argv[]);
-#endif
 
 // Linux-specific function prototypes
 #ifdef __unix__

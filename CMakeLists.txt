@@ -224,6 +224,30 @@ if (WIN32)
   set(CMD_GAMES "\"C:\\Program Files (x86)\\Steam\\steam.exe\" steam://open/bigpicture")
 endif ()
 
+# Generate Windows application manifest
+if (WIN32)
+  set(VERSION_M ${PROJECT_VERSION_MAJOR})
+  if (PROJECT_VERSION_MINOR)
+    set(VERSION_N ${PROJECT_VERSION_MINOR})
+  else ()
+    set(VERSION_N 0)
+  endif()
+  if (PROJECT_VERSION_PATCH)
+    set(VERSION_O ${PROJECT_VERSION_PATCH})
+  else ()
+    set(VERSION_O 0)
+  endif()
+  if (PROJECT_VERSION_TWEAK)
+    set(VERSION_P ${PROJECT_VERSION_TWEAK})
+  else ()
+    set(VERSION_P 0)
+  endif()
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/config/${EXECUTABLE_TITLE}.manifest.in 
+	${PROJECT_BINARY_DIR}/${EXECUTABLE_TITLE}.manifest
+  )
+endif()
+
 # Set time format strings
 if (WIN32)
   set(REMOVE_ZERO "#")

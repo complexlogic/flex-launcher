@@ -107,7 +107,7 @@ static bool ends_with(const char *string, const char *phrase)
 }
 
 // A function to launch an external application
-bool start_process(char *cmd, bool check_result)
+bool start_process(char *cmd, bool application)
 {
   // Check if the command is an XDG .desktop file
   char *tmp = NULL;
@@ -145,7 +145,7 @@ bool start_process(char *cmd, bool check_result)
   }
   free(tmp);
 
-  // Launch application in system shell
+  // Fork new system shell process
   child_pid = fork();
   switch(child_pid) {
     case -1:
@@ -168,7 +168,7 @@ bool start_process(char *cmd, bool check_result)
 
     // Parent process
     default:
-      if (!check_result) return true;
+      if (!application) return true;
       int status;
 
       // Check to see if the shell successfully launched

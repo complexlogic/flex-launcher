@@ -21,11 +21,6 @@ entry_t *entry = NULL;
 // A function to handle the arguments from the command line
 void handle_arguments(int argc, char *argv[], char **config_file_path)
 {
-  // Convert Windows UTF-16 arguments to UTF-8
-  #ifdef _WIN32
-  convert_args(&argc, &argv);
-  #endif
-
   // Parse command line arguments
   if (argc > 1) {
     bool version = false;
@@ -105,11 +100,6 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
     }
   }
   output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", *config_file_path);
-
-  // Clean up heap-allocated arguments for Windows
-  #ifdef _WIN32
-  cleanup_args(argc, argv);
-  #endif
 }
 
 // A function to parse the config file and store the settings into the config struct

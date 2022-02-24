@@ -4,7 +4,8 @@ if (UNIX)
 endif ()
 if (WIN32)
   set(APP_ICON_RESOURCE_WINDOWS "${PROJECT_SOURCE_DIR}/config/${EXECUTABLE_TITLE}.rc")
-  add_executable(${EXECUTABLE_TITLE} WIN32 "launcher.c" "util.c" "image.c" "debug.c" "clock.c" ${APP_ICON_RESOURCE_WINDOWS})
+  set(MANIFEST_FILE "${PROJECT_BINARY_DIR}/${EXECUTABLE_TITLE}.manifest")
+  add_executable(${EXECUTABLE_TITLE} WIN32 "launcher.c" "util.c" "image.c" "debug.c" "clock.c" ${MANIFEST_FILE} ${APP_ICON_RESOURCE_WINDOWS})
 endif()
 
 # Configure main header file  
