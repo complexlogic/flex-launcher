@@ -36,7 +36,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
       // Current argument is config file path if -c or --config was previous argument
       if (i == config_file_index && *config_file_path == NULL) {
         if (file_exists(argv[i])) {
-          copy_string(config_file_path, argv[i]);
+          copy_string_alloc(config_file_path, argv[i]);
         }
         else {
           output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", argv[i]);
@@ -86,7 +86,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
     char home_config_buffer[MAX_PATH_CHARS + 1];
     prefixes[0] = CURRENT_DIRECTORY;
     prefixes[1] = config.exe_path;
-    prefixes[2] = join_paths(home_config_buffer, 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
+    prefixes[2] = join_paths(home_config_buffer, sizeof(home_config_buffer), 3, getenv("HOME"), ".config", EXECUTABLE_TITLE);
     prefixes[3] = PATH_CONFIG_SYSTEM;
     *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 4, prefixes);
     #else
@@ -139,11 +139,11 @@ int config_handler(void *user, const char *section, const char *name, const char
   // Parse settings
   if (!strcmp(section,"Settings")) {
     if (!strcmp(name,SETTING_BACKGROUND_IMAGE)) {
-      copy_string(&pconfig->background_image, value);
+      copy_string_alloc(&pconfig->background_image, value);
       clean_path(pconfig->background_image);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT)) {
-      copy_string(&pconfig->title_font_path, value);
+      copy_string_alloc(&pconfig->title_font_path, value);
       clean_path(pconfig->title_font_path);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT_SIZE)) {
@@ -167,7 +167,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       hex_to_color(value, &pconfig->background_color);
     }
     else if (!strcmp(name,SETTING_SLIDESHOW_DIRECTORY)) {
-      copy_string(&pconfig->slideshow_directory, value);
+      copy_string_alloc(&pconfig->slideshow_directory, value);
       clean_path(pconfig->slideshow_directory);
     }
     else if (!strcmp(name,SETTING_ICON_SIZE)) {
@@ -177,7 +177,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name,SETTING_DEFAULT_MENU)) {
-      copy_string(&pconfig->default_menu, value);
+      copy_string_alloc(&pconfig->default_menu, value);
     }
     else if (!strcmp(name,SETTING_HIGHLIGHT_COLOR)) {
       hex_to_color(value, &pconfig->highlight_color);
@@ -202,7 +202,7 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name, SETTING_ICON_SPACING)) {
       if (is_percent(value)) {
-        strcpy(pconfig->icon_spacing_str, value);
+        copy_string(pconfig->icon_spacing_str, value, sizeof(pconfig->icon_spacing_str));
       }
       else {
         int icon_spacing = atoi(value);
@@ -239,17 +239,17 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name, SETTING_TITLE_OPACITY)) {
       if (is_percent(value)) {
-        strcpy(pconfig->title_opacity, value);
+        copy_string(pconfig->title_opacity, value, sizeof(pconfig->title_opacity));
       }
     }
     else if (!strcmp(name, SETTING_HIGHLIGHT_OPACITY)) {
       if (is_percent(value)) {
-        strcpy(pconfig->highlight_opacity, value);
+        copy_string(pconfig->highlight_opacity, value, sizeof(pconfig->highlight_opacity));
       }
     }
     else if (!strcmp(name, SETTING_BUTTON_CENTERLINE)) {
       if (is_percent(value)) {
-        strcpy(pconfig->button_centerline, value);
+        copy_string(pconfig->button_centerline, value, sizeof(pconfig->button_centerline));
       }
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATORS)) {
@@ -260,7 +260,7 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OPACITY)) {
       if (is_percent(value)) {
-        strcpy(pconfig->scroll_indicator_opacity,value);
+        copy_string(pconfig->scroll_indicator_opacity, value, sizeof(pconfig->scroll_indicator_opacity));
       }
     }
     else if (!strcmp(name,SETTING_TITLE_OVERSIZE_MODE)) {
@@ -304,12 +304,12 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name, SETTING_CLOCK_FONT)) {
-      copy_string(&pconfig->clock_font_path, value);
+      copy_string_alloc(&pconfig->clock_font_path, value);
       clean_path(pconfig->clock_font_path);
     }
     else if (!strcmp(name, SETTING_CLOCK_MARGIN)) {
       if (is_percent(value)) {
-        strcpy(pconfig->clock_margin_str, value);
+        copy_string(pconfig->clock_margin_str, value, sizeof(pconfig->clock_margin_str));
       }
       else {
         int clock_margin = atoi(value);
@@ -322,10 +322,8 @@ int config_handler(void *user, const char *section, const char *name, const char
       hex_to_color(value, &pconfig->clock_color);
     }
     else if (!strcmp(name, SETTING_CLOCK_OPACITY)) {
-      if (strstr(value, ".") == NULL && 
-      strstr(value, "%") != NULL && 
-      strlen(value) < PERCENT_MAX_CHARS) {
-        strcpy(pconfig->clock_opacity, value);
+      if (is_percent(value)) {
+        copy_string(pconfig->clock_opacity, value, sizeof(pconfig->clock_opacity));
       }
     }
     else if (!strcmp(name, SETTING_CLOCK_FONT_SIZE)) {
@@ -369,7 +367,7 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name, SETTING_SCREENSAVER_INTENSITY)) {
       if (is_percent(value)) {
-        strcpy(pconfig->screensaver_intensity_str, value);
+        copy_string(pconfig->screensaver_intensity_str, value, sizeof(pconfig->screensaver_intensity_str));
       }
     }
     else if (!strcmp(name, SETTING_SCREENSAVER_PAUSE_SLIDESHOW)) {
@@ -400,7 +398,7 @@ int config_handler(void *user, const char *section, const char *name, const char
       }
     }
     else if (!strcmp(name, SETTING_GAMEPAD_MAPPINGS_FILE)) {
-      copy_string(&pconfig->gamepad_mappings_file, value);
+      copy_string_alloc(&pconfig->gamepad_mappings_file, value);
       clean_path(pconfig->gamepad_mappings_file);
     }
     else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XM)) {
@@ -535,15 +533,15 @@ int config_handler(void *user, const char *section, const char *name, const char
     int i;
     for (i = 0;i < 3 && token != NULL; i++) {
         if (i == 0) {
-          copy_string(&entry->title, token);
+          copy_string_alloc(&entry->title, token);
         }
         else if (i == 1) {
-          copy_string(&entry->icon_path, token);
+          copy_string_alloc(&entry->icon_path, token);
           clean_path(entry->icon_path);
           delimiter = "";
         }
         else if (i == 2){
-          copy_string(&entry->cmd, token);
+          copy_string_alloc(&entry->cmd, token);
         }
         token = strtok(NULL, delimiter);
     }
@@ -643,8 +641,15 @@ bool convert_bool(const char *string, bool default_setting)
   }
 }
 
+// A function to copy a string into an existing buffer
+void copy_string(char *dest, const char *string, size_t size)
+{
+  strncpy(dest, string, size);
+  dest[size - 1] = '\0';
+}
+
 // Allocates memory and copies a variable length string
-void copy_string(char **dest, const char *string)
+void copy_string_alloc(char **dest, const char *string)
 {
   int length = strlen(string);
   if (length) {
@@ -657,40 +662,44 @@ void copy_string(char **dest, const char *string)
 }
 
 // A function to join paths together
-char *join_paths(char *buffer, int num_paths, ...)
+char *join_paths(char *buffer, size_t bytes, int num_paths, ...)
 {
   va_list list;
   char *arg;
   int length;
-  memset(buffer, 0, MAX_PATH_CHARS + 1);
-  int bytes = MAX_PATH_CHARS;
   va_start(list, num_paths);
 
   // Add each subdirectory to path
-  for (int i = 0; i < num_paths && bytes > 0; i++) {
+  for (int i = 0; i < num_paths && bytes > 1; i++) {
     arg = va_arg(list, char*);
     length = strlen(arg);
+    if (length > bytes - 1) {
+      length = bytes - 1;  
+    }
     if (i == 0) {
-      strncpy(buffer, arg, bytes);
+      copy_string(buffer, arg, bytes);
       bytes -= length;
+      if (bytes == 1) {
+        break;
+      }
     }
     else {
 
       // Don't copy preceding slash if present
       if (*arg == '/' || *arg == '\\') {
-        strncat(buffer, arg + 1, bytes);
+        strncat(buffer, arg + 1, bytes - 1);
         bytes -= (length - 1);
       }
       else {
-        strncat(buffer, arg, bytes);
+        strncat(buffer, arg, bytes - 1);
         bytes -= length;
       }
     }
 
     // Add trailing slash if not present, except last argument
-    if ((i != num_paths - 1) && bytes > 0 && *(buffer + strlen(buffer) - 1) != '/' &&
+    if ((i != num_paths - 1) && bytes > 1 && *(buffer + strlen(buffer) - 1) != '/' &&
     *(buffer + strlen(buffer) - 1) != '\\')  {
-      strncat(buffer, PATH_SEPARATOR, bytes);
+      strncat(buffer, PATH_SEPARATOR, bytes - 1);
       bytes -= 1;
     }
   }
@@ -704,10 +713,10 @@ char *find_file(const char *file, int num_prefixes, const char **prefixes)
   char buffer[MAX_PATH_CHARS + 1];
   for (int i = 0; i < num_prefixes; i++) {
     if (prefixes[i] != NULL) {
-      join_paths(buffer, 2, prefixes[i], file);
+      join_paths(buffer, sizeof(buffer), 2, prefixes[i], file);
       if (file_exists(buffer)) {
         char *output;
-        copy_string(&output, buffer);
+        copy_string_alloc(&output, buffer);
         return output;
       }
     }
@@ -852,7 +861,7 @@ void add_hotkey(const char *keycode, const char *cmd)
     current_hotkey = current_hotkey->next;
   }
   current_hotkey->keycode = code;
-  copy_string(&current_hotkey->cmd, cmd);
+  copy_string_alloc(&current_hotkey->cmd, cmd);
   current_hotkey->next = NULL;
 }
 
@@ -880,8 +889,8 @@ void add_gamepad_control(int type, int index, const char *label, const char *cmd
   current_gamepad_control->type = type;
   current_gamepad_control->index = index;
   current_gamepad_control->repeat = 0;
-  copy_string(&current_gamepad_control->label, label);
-  copy_string(&current_gamepad_control->cmd, cmd);
+  copy_string_alloc(&current_gamepad_control->label, label);
+  copy_string_alloc(&current_gamepad_control->cmd, cmd);
   current_gamepad_control->next = NULL;
 }
 
@@ -890,7 +899,7 @@ void convert_percent_to_int(char *string, int *result, int max_value)
 {
   int length = strlen(string);
   char tmp[PERCENT_MAX_CHARS];
-  strcpy(tmp, string);
+  copy_string(tmp, string, sizeof(tmp));
   tmp[length - 1] = '\0';
   float percent = atof(tmp);
   if (percent >= 0.0F && percent <= 100.0F) {
@@ -1059,7 +1068,7 @@ menu_t *get_menu(char *menu_name)
 menu_t *create_menu(char *menu_name, int *num_menus)
 {
   menu_t *menu = malloc(sizeof(menu_t));
-  copy_string(&menu->name, menu_name);  
+  copy_string_alloc(&menu->name, menu_name);  
   menu->first_entry = NULL;
   menu->next = NULL;
   menu->back = NULL;

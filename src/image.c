@@ -253,7 +253,7 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
 
   // Copy text into new buffer in case we need to manipulate it
   char *text_buffer;
-  copy_string(&text_buffer, text);
+  copy_string_alloc(&text_buffer, text);
 
   // Calculate size of the rendered title
   int title_length = strlen(text_buffer);
@@ -337,7 +337,7 @@ int load_font(text_info_t *info, const char *default_font)
     output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
     char *prefixes[2];
     char fonts_exe_buffer[MAX_PATH_CHARS + 1];
-    prefixes[0] = join_paths(fonts_exe_buffer, 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
+    prefixes[0] = join_paths(fonts_exe_buffer, sizeof(fonts_exe_buffer), 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
     #ifdef __unix__
     prefixes[1] = PATH_FONTS_SYSTEM;
     #else
@@ -349,7 +349,7 @@ int load_font(text_info_t *info, const char *default_font)
     if (default_font_path != NULL) {
       info->font = TTF_OpenFont(default_font_path, info->font_size);
       free(font_path);
-      copy_string(info->font_path, default_font_path);
+      copy_string_alloc(info->font_path, default_font_path);
       free(default_font_path);
     }
     if (info->font == NULL) {

@@ -22,7 +22,7 @@ static int desktop_handler(void *user, const char *section, const char *name, co
 {
   desktop_t *pdesktop = (desktop_t*) user;
   if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC)) {
-    copy_string(&pdesktop->exec, value);
+    copy_string_alloc(&pdesktop->exec, value);
   }
 }
 
@@ -112,7 +112,7 @@ bool start_process(char *cmd, bool check_result)
   // Check if the command is an XDG .desktop file
   char *tmp = NULL;
   char *exec = NULL;
-  copy_string(&tmp, cmd);
+  copy_string_alloc(&tmp, cmd);
   char *file = strtok(tmp, DELIMITER_ACTION);
   if (ends_with(file, EXT_DESKTOP)) {
     desktop_t desktop;
@@ -121,7 +121,7 @@ bool start_process(char *cmd, bool check_result)
     // Parse the desktop action from the command (if any)
     char *action = strtok(NULL, DELIMITER_ACTION);
     if (action == NULL) {
-      strncpy(desktop.section, DESKTOP_SECTION_HEADER, sizeof(desktop.section));
+      copy_string(desktop.section, DESKTOP_SECTION_HEADER, sizeof(desktop.section));
     }
     else {
       snprintf(desktop.section, sizeof(desktop.section), DESKTOP_SECTION_HEADER_ACTION, action);
@@ -223,8 +223,8 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
   char file_path[MAX_PATH_CHARS + 1];
   for (int i = 0; i < n; i++) {
     if (i < MAX_SLIDESHOW_IMAGES) {
-      join_paths(file_path, 2, directory, files[i]->d_name);
-      copy_string(&slideshow->images[i], file_path);
+      join_paths(file_path, sizeof(file_path), 2, directory, files[i]->d_name);
+      copy_string_alloc(&slideshow->images[i], file_path);
     }
     free(files[i]);
   }
@@ -247,7 +247,7 @@ void get_region(char *buffer)
   }
   token = strtok(NULL, ".");
   if (token != NULL && strlen(token) == 2) {
-    strcpy(buffer, token);
+    copy_string(buffer, token, 3);
   }
 }
 

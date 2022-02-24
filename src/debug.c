@@ -22,13 +22,13 @@ static int init_log()
   char log_file_path[MAX_PATH_CHARS + 1];
   #ifdef __unix__
   char log_file_directory[MAX_PATH_CHARS + 1];
-  join_paths(log_file_directory, 4, getenv("HOME"), ".local", "share", EXECUTABLE_TITLE);
+  join_paths(log_file_directory, sizeof(log_file_directory), 4, getenv("HOME"), ".local", "share", EXECUTABLE_TITLE);
   make_directory(log_file_directory);
-  join_paths(log_file_path, 2, log_file_directory, FILENAME_LOG);
+  join_paths(log_file_path, sizeof(log_file_path), 2, log_file_directory, FILENAME_LOG);
   #else
-  join_paths(log_file_path, 2, config.exe_path, FILENAME_LOG);
+  join_paths(log_file_path, sizeof(log_file_path), 2, config.exe_path, FILENAME_LOG);
   #endif
-
+  printf("%s\n", log_file_path);
   // Open log
   log_file = SDL_RWFromFile(log_file_path, "w");
   if (log_file == NULL) {

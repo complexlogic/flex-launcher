@@ -151,7 +151,7 @@ static void format_date(launcher_clock_t *launcher_clock)
   else {
     weekday[0] = '\0';
   }
-  strncpy(launcher_clock->date_string, 
+  copy_string(launcher_clock->date_string, 
     weekday, 
     sizeof(launcher_clock->date_string)
   );

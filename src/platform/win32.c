@@ -329,9 +329,9 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
 
   // Generate a UTF-16 wildcard file search string for all supported image file extensions
   for (int i = 0; i < NUM_IMAGE_EXTENSIONS && num_images < MAX_SLIDESHOW_IMAGES; i++) {
-    strcpy(extension, "*");
+    copy_string(extension, "*", sizeof(extension));
     strcat(extension, extensions[i]);
-    join_paths(file_search, 2, directory, extension);
+    join_paths(file_search, sizeof(file_search), 2, directory, extension);
     convert_utf8_string(w_file_search, file_search, sizeof(w_file_search));
 
     // Convert every search result to back to UTF-8, store in slideshow struct
@@ -339,8 +339,8 @@ int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
     if (handle != INVALID_HANDLE_VALUE) {
       do {
         convert_utf16_string(file_result, data.cFileName, sizeof(file_result));
-        join_paths(file_output, 2, directory, file_result);
-        copy_string(&slideshow->images[num_images], file_output);
+        join_paths(file_output, sizeof(file_output), 2, directory, file_result);
+        copy_string_alloc(&slideshow->images[num_images], file_output);
         num_images++;
       } while (FindNextFileW(handle, &data) != 0 && num_images < MAX_SLIDESHOW_IMAGES);
     }

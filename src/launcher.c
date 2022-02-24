@@ -450,10 +450,10 @@ static void init_screensaver()
   // Convert intensity string to float
   char intensity[PERCENT_MAX_CHARS];
   if (config.screensaver_intensity_str[0] != '\0') {
-    strcpy(intensity, config.screensaver_intensity_str);
+    copy_string(intensity, config.screensaver_intensity_str, sizeof(intensity));
   }
   else {
-    strcpy(intensity, DEFAULT_SCREENSAVER_INTENSITY);
+    copy_string(intensity, DEFAULT_SCREENSAVER_INTENSITY, sizeof(intensity));
   }
   int length = strlen(intensity);
   intensity[length - 1] = '\0';
@@ -505,7 +505,7 @@ static void render_scroll_indicators()
   // Find scroll indicator file
   char *prefixes[2];
   char assets_exe_buffer[MAX_PATH_CHARS + 1];
-  prefixes[0] = join_paths(assets_exe_buffer, 2, config.exe_path, PATH_ASSETS_EXE);
+  prefixes[0] = join_paths(assets_exe_buffer, sizeof(assets_exe_buffer), 2, config.exe_path, PATH_ASSETS_EXE);
   #ifdef __unix__
   prefixes[1] = PATH_ASSETS_SYSTEM;
   #else
@@ -799,7 +799,7 @@ static void draw_screen()
 static void launch_application(char *cmd)
 {
   bool successful = start_process(cmd, true);
-  if (!successful) return;
+
   SDL_Event event;  
 
   // Wait until application has closed
@@ -820,7 +820,7 @@ static void execute_command(const char *command)
 {
   // Copy command into separate buffer
   char *cmd;
-  copy_string(&cmd, command);
+  copy_string_alloc(&cmd, command);
 
   // Parse special commands
   if (cmd[0] == ':') {
