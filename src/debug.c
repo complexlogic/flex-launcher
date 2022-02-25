@@ -35,7 +35,7 @@ static int init_log()
     #ifdef __unix__
     printf("Failed to create log file\n");
     #endif
-    quit(1);
+    quit(EXIT_FAILURE);
   }
   #ifdef __unix__
   if (config.debug) {

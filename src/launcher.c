@@ -808,7 +808,7 @@ static void launch_application(char *cmd)
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
-          quit(0);
+          quit(EXIT_SUCCESS);
           break;
       }
     }
@@ -855,7 +855,7 @@ static void execute_command(const char *command)
       load_back_menu(current_menu);
     }
     else if (!strcmp(special_command, SCMD_QUIT)) {
-      quit(0);
+      quit(EXIT_SUCCESS);
     }
     else if (!strcmp(special_command, SCMD_SHUTDOWN)) {
       system(CMD_SHUTDOWN);
@@ -1151,7 +1151,7 @@ int main(int argc, char *argv[])
 
   // Initialize libraries
   if (init_sdl() || init_ttf() || init_svg()) {
-    quit(1);
+    quit(EXIT_FAILURE);
   }
 
   // Initialize timing
@@ -1236,16 +1236,16 @@ int main(int argc, char *argv[])
   // Load the default menu and display it
   if (config.default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
-    quit(1);
+    quit(EXIT_FAILURE);
   }
   default_menu = get_menu(config.default_menu);
   if (default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu\n");
-    quit(1);
+    quit(EXIT_FAILURE);
   }
   error = load_menu(default_menu, false, true);
   if (error) {
-    quit(1);
+    quit(EXIT_FAILURE);
   }
   
   // Draw initial screen
@@ -1258,7 +1258,7 @@ int main(int argc, char *argv[])
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
-          quit(0);
+          quit(EXIT_SUCCESS);
           break;
 
         case SDL_KEYDOWN:
@@ -1333,5 +1333,5 @@ int main(int argc, char *argv[])
     }  
     SDL_Delay(POLLING_PERIOD);
   }
-  quit(0);
+  quit(EXIT_SUCCESS);
 }
