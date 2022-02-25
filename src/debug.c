@@ -148,6 +148,12 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_RESET_ON_BACK,"false");
   }
+  if (config.mouse_select) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_MOUSE_SELECT, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_MOUSE_SELECT, "false");
+  }
   output_log(LOGLEVEL_DEBUG, "========================== Clock ==========================\n");
   if (config.clock_enabled) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ENABLED, "true");

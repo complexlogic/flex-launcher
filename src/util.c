@@ -275,6 +275,9 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (!strcmp(name, SETTING_RESET_ON_BACK)) {
       pconfig->reset_on_back = convert_bool(value, DEFAULT_RESET_ON_BACK);
     }
+    else if (!strcmp(name, SETTING_MOUSE_SELECT)) {
+      pconfig->mouse_select = convert_bool(value, DEFAULT_MOUSE_SELECT);
+    }
   }
 
   // Parse clock settings

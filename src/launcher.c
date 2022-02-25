@@ -55,6 +55,7 @@ config_t config = {
   .scroll_indicator_opacity[0] = '\0',
   .title_oversize_mode = MODE_TEXT_TRUNCATE,
   .reset_on_back = DEFAULT_RESET_ON_BACK,
+  .mouse_select = DEFAULT_MOUSE_SELECT,
   .screensaver_enabled = false,
   .screensaver_idle_time = DEFAULT_SCREENSAVER_IDLE_TIME*1000,
   .screensaver_intensity_str[0] = '\0',
@@ -1264,7 +1265,14 @@ int main(int argc, char *argv[])
           ticks.last_input = ticks.main;
           handle_keypress(&event.key.keysym);
           break;
-
+        
+        case SDL_MOUSEBUTTONDOWN:
+          if (config.mouse_select && event.button.button == SDL_BUTTON_LEFT) {
+            ticks.last_input = ticks.main;
+            execute_command(current_entry->cmd);
+          }
+          break;
+          
         case SDL_CONTROLLERDEVICEADDED:
           output_log(LOGLEVEL_DEBUG, "Gamepad connected with device index %i\n", event.cdevice.which);
           if (event.cdevice.which == config.gamepad_device) {

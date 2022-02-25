@@ -225,6 +225,7 @@ typedef struct {
   SDL_Color scroll_indicator_color;
   char scroll_indicator_opacity[PERCENT_MAX_CHARS];
   bool reset_on_back;
+  bool mouse_select;
   mode on_launch;
   bool screensaver_enabled;
   Uint32 screensaver_idle_time;
