@@ -800,7 +800,7 @@ static void draw_screen()
 static void launch_application(char *cmd)
 {
   bool successful = start_process(cmd, true);
-
+  if (!successful) return;
   SDL_Event event;  
 
   // Wait until application has closed
