@@ -105,15 +105,13 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
 // A function to parse the config file and store the settings into the config struct
 void parse_config_file(const char *config_file_path)
 {
-  char *buffer = NULL;
-  read_file(config_file_path, &buffer);
-  if (buffer == NULL) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not read config file\n");
-    exit(1);
+  FILE *file = fopen(config_file_path, "r");
+  if (file == NULL) {
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file\n");
+    quit(EXIT_FAILURE);
   }
-  
-  int error = ini_parse_string(buffer, config_handler, &config);
-  free(buffer);
+  int error = ini_parse_file(file, config_handler, &config);
+  fclose(file);
   
   if (error < 0) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
@@ -844,6 +842,14 @@ void add_hotkey(const char *keycode, const char *cmd)
   static hotkey_t *current_hotkey = NULL;
   SDL_Keycode code = (SDL_Keycode) strtol(keycode, NULL, 16);
 
+  // Check if exit hotkey for Windows
+  #ifdef _WIN32
+  if (!strcmp(cmd, SCMD_EXIT)) {
+    set_exit_hotkey(code);
+    return;
+  }
+  #endif
+
   // Create first node if not initialized, else add to end of linked list
   if (current_hotkey == NULL) {
     hotkeys = malloc(sizeof(hotkey_t));
@@ -1090,32 +1096,35 @@ entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
   return entry;
 }
 
-// A function to read a file into a buffer
+// A function to read a file into a null-terminated buffer
 void read_file(const char *path, char **buffer)
 {
-  SDL_RWops *file = SDL_RWFromFile(path, "rb");
+  FILE *file = fopen(path, "rb");
   if (file == NULL) {
-    output_log(LOGLEVEL_ERROR, "Error: Could not open file\n%s\n", SDL_GetError());
+    output_log(LOGLEVEL_ERROR, "Error: Could not open file\n%s\n");
     return;
   }
 
   // Allocate buffer
-  Sint64 file_size = SDL_RWsize(file);
+  fseek(file, 0L, SEEK_END);
+  int64_t file_size = ftell(file);
+  rewind(file);
   *buffer = malloc(file_size + 1);
   if (*buffer == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Failed to allocate memory for file\n");
     return;
   }
 
   // Read contents of file into buffer
-  Sint64 total_bytes_read = 0;
-  Sint64 current_bytes_read;
+  int64_t total_bytes_read = 0;
+  int64_t current_bytes_read;
   char *p = *buffer;
   do {
-    current_bytes_read = SDL_RWread(file, p, 1, file_size - total_bytes_read);
+    current_bytes_read = fread(p, 1, file_size - total_bytes_read, file);
     total_bytes_read += current_bytes_read;
     p += current_bytes_read;
   } while (total_bytes_read < file_size && current_bytes_read > 0);
-  SDL_RWclose(file);
+  fclose(file);
 
   if (total_bytes_read != file_size) {
     free(*buffer);

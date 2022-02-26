@@ -21,6 +21,7 @@ bool web_browser;
 bool browser_launched;
 char *browser_process         = NULL;
 HANDLE child_process          = NULL;
+UINT exit_hotkey              = 0;
 
 // A function to get the basename of a file
 static char *path_basename(const char *path)
@@ -225,7 +226,7 @@ bool start_process(char *cmd, bool application)
 {
   char file[MAX_PATH_CHARS + 1];
   char *params = NULL;
-  int cmd_show = application ? SW_SHOW : SW_HIDE;
+  int cmd_show = application ? SW_SHOWMAXIMIZED : SW_HIDE;
   
   // Parse command into file and parameters strings
   parse_command(cmd, file, sizeof(file), &params);
@@ -312,4 +313,57 @@ void get_region(char *buffer)
 {
   GEOID geo_id = GetUserGeoID(GEOCLASS_NATION);
   GetGeoInfoA(geo_id, GEO_ISO2, buffer, 3, 0);
+}
+
+// A function to check if there is an exit hotkey
+bool has_exit_hotkey()
+{
+  if (exit_hotkey) return true;
+  return false;
+}
+
+// A function to store an exit hotkey
+void set_exit_hotkey(SDL_Keycode keycode)
+{
+  if (exit_hotkey) return;
+  exit_hotkey = sdl_to_win32_keycode(keycode);
+  if (!exit_hotkey) {
+    output_log(LOGLEVEL_ERROR, "Error: Invalid exit hotkey keycode %X\n", keycode);
+  }
+}
+
+// A function to register the exit hotkey with Windows
+void register_exit_hotkey()
+{
+  BOOL ret = RegisterHotKey(wm_info.info.win.window, 1, 0, exit_hotkey);
+  if (!ret) {
+    exit_hotkey = 0;
+    output_log(LOGLEVEL_ERROR, "Error: Failed to register exit hotkey with Windows\n");
+  }
+}
+
+// A function to check if the exit hotkey was pressed, and close the active window if so
+void check_exit_hotkey(SDL_SysWMmsg *msg)
+{
+  if (msg->msg.win.msg == WM_HOTKEY) {
+    output_log(LOGLEVEL_DEBUG, "Exit hotkey detected\n");
+    HWND hwnd = GetForegroundWindow();
+    if (hwnd == NULL) {
+      output_log(LOGLEVEL_ERROR, "Error: Could not get top window\n");
+      return;
+    }
+    PostMessage(hwnd, WM_CLOSE, 0, 0);
+  }
+}
+
+// A function to convert an SDL keycode to a WIN32 virtual keycode
+static UINT sdl_to_win32_keycode(SDL_Keycode keycode)
+{
+  #include "keycode_convert.h" // Import the conversion table
+  for (int i = 0; i < sizeof(table) / sizeof(table[0]); i++) {
+    if (table[i].sdl == keycode) {
+      return table[i].win;
+    }
+  }
+  return 0;
 }

@@ -102,8 +102,9 @@ state_t state = {
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_SysWMinfo wm_info;
+SDL_Event event;
 SDL_DisplayMode display_mode;
-SDL_RWops *log_file = NULL;
+FILE *log_file = NULL;
 text_info_t title_info;
 launcher_clock_t *launcher_clock = NULL;
 TTF_Font *clock_font = NULL;
@@ -272,7 +273,7 @@ static void cleanup()
 
   // Close log file if open
   if (log_file != NULL) {
-    SDL_RWclose(log_file);
+    fclose(log_file);
   }
 
   // Free dynamically allocated memory
@@ -801,7 +802,13 @@ static void launch_application(char *cmd)
 {
   bool successful = start_process(cmd, true);
   if (!successful) return;
-  SDL_Event event;  
+
+  // Initialize exit hotkey for Windows
+  #ifdef _WIN32
+  if (has_exit_hotkey()) {
+    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+  }
+  #endif
 
   // Wait until application has closed
   do {
@@ -810,10 +817,20 @@ static void launch_application(char *cmd)
         case SDL_QUIT:
           quit(EXIT_SUCCESS);
           break;
+
+        #ifdef _WIN32
+        case SDL_SYSWMEVENT:
+          check_exit_hotkey(event.syswm.msg);
+          break;
+        #endif
       }
     }
     SDL_Delay(APPLICATION_WAIT_PERIOD);
   } while(process_running());
+
+  #ifdef _WIN32
+  SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+  #endif
 }
 
 // A function to execute the user's command
@@ -1137,7 +1154,6 @@ void quit(int status)
 
 int main(int argc, char *argv[]) 
 {
-  SDL_Event event;
   int error;
   char *config_file_path = NULL;
   config.exe_path = SDL_GetBasePath();
@@ -1223,6 +1239,13 @@ int main(int argc, char *argv[])
   if (config.scroll_indicators) {
     render_scroll_indicators();
   }
+
+  // Register exit hotkey with Windows
+  #ifdef _WIN32
+  if (has_exit_hotkey()) {
+    register_exit_hotkey();
+  }
+  #endif
   
   // Print debug info to log
   if (config.debug) {

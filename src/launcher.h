@@ -62,6 +62,7 @@ typedef int mode;
 #define SCMD_SELECT ":select"
 #define SCMD_SUBMENU ":submenu"
 #define SCMD_FORK ":fork"
+#define SCMD_EXIT ":exit"
 #define SCMD_LEFT ":left"
 #define SCMD_RIGHT ":right"
 #define SCMD_HOME ":home"

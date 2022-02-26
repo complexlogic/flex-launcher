@@ -8,12 +8,13 @@
 #include <launcher_config.h>
 #include "util.h"
 #include "debug.h"
+#include "platform/platform.h"
 #ifdef __unix__
 #include "platform/unix.h"
 #endif
 
 extern config_t config;
-extern SDL_RWops *log_file;
+extern FILE *log_file;
 
 // A function to initialize the logging subsystem
 static int init_log()
@@ -28,9 +29,9 @@ static int init_log()
   #else
   join_paths(log_file_path, sizeof(log_file_path), 2, config.exe_path, FILENAME_LOG);
   #endif
-  printf("%s\n", log_file_path);
+
   // Open log
-  log_file = SDL_RWFromFile(log_file_path, "w");
+  log_file = fopen(log_file_path, FILE_MODE_WRITE);
   if (log_file == NULL) {
     #ifdef __unix__
     printf("Failed to create log file\n");
@@ -63,7 +64,7 @@ void output_log(log_level_t log_level, const char *format, ...)
   va_list args;
   va_start(args, format);
   int length = vsnprintf(buffer, MAX_LOG_LINE_BYTES - 1, format, args);
-  SDL_RWwrite(log_file, buffer, 1, length);
+  fwrite(buffer, 1, length, log_file);
   
   #ifdef __unix__
   if (log_level > LOGLEVEL_DEBUG) {

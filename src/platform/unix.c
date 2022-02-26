@@ -13,6 +13,7 @@
 #include "unix.h"
 #include "../util.h"
 #include "../debug.h"
+#include "platform.h"
 #include "slideshow.h"
 
 pid_t child_pid;
