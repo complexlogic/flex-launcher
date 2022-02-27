@@ -88,7 +88,6 @@ config_t config = {
 };
 
 state_t state = {
-  .screen_updates = false,
   .slideshow_transition = false,
   .slideshow_background_ready = false,
   .slideshow_paused = false,
@@ -117,6 +116,7 @@ ticks_t ticks;
 SDL_GameController *gamepad = NULL;
 SDL_Thread *slideshow_thread = NULL;
 SDL_Thread *clock_thread = NULL;
+int refresh_period;
 int delay_period;
 int repeat_period; 
 scroll_t *scroll = NULL;
@@ -138,8 +138,6 @@ static int init_sdl()
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"1");
   if (config.gamepad_enabled) {
     sdl_flags |= SDL_INIT_GAMECONTROLLER;
-    delay_period = GAMEPAD_REPEAT_DELAY / POLLING_PERIOD;
-    repeat_period = GAMEPAD_REPEAT_INTERVAL / POLLING_PERIOD; 
   }
 
   // Initialize SDL
@@ -170,10 +168,15 @@ static int init_sdl()
   SDL_ShowCursor(SDL_DISABLE);
 
   // Create HW accelerated renderer, get screen resolution for geometry calculations
-  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   SDL_GetCurrentDisplayMode(0, &display_mode);
   geo.screen_width = display_mode.w;
   geo.screen_height = display_mode.h;
+  refresh_period = 1000 / display_mode.refresh_rate;
+  if (config.gamepad_enabled) {
+    delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
+    repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
+  }
   geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   if (renderer == NULL) {
@@ -405,7 +408,7 @@ static void init_slideshow()
   slideshow->num_images = 0;
   slideshow->transition_texture = NULL;
   slideshow->transition_alpha = 0.0f;
-  slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) POLLING_PERIOD);
+  slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) refresh_period);
 
   // Find background images from directory
   int num_images = scan_slideshow_directory(slideshow, config.slideshow_directory);
@@ -473,7 +476,7 @@ static void init_screensaver()
   else if (screensaver->alpha_end_value >= 255.0f) {
     screensaver->alpha_end_value = 255.0f;
   }
-  screensaver->transition_change_rate = screensaver->alpha_end_value / ((float) SCREENSAVER_TRANSITION_TIME / (float) POLLING_PERIOD);
+  screensaver->transition_change_rate = screensaver->alpha_end_value / ((float) SCREENSAVER_TRANSITION_TIME / (float) refresh_period);
   
   // Render texture
   SDL_Surface *surface = NULL;
@@ -608,9 +611,6 @@ static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position)
   //}
   highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
   highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
-  
-  // Output to screen
-  state.screen_updates = true;
   return 0;
 }
 
@@ -681,7 +681,6 @@ static void move_left()
     highlight->rect.x -= geo.x_advance;
     current_menu->highlight_position--;
     current_entry = current_entry->previous;
-    state.screen_updates = true;
   }
 
   // If we are in leftmost position, but there is a previous page, load the previous page
@@ -697,7 +696,6 @@ static void move_left()
     //if (config.debug) {
     //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
     //}
-    state.screen_updates = true;
   }
 }
 
@@ -709,7 +707,6 @@ static void move_right()
     highlight->rect.x += geo.x_advance;
     current_menu->highlight_position++;
     current_entry = current_entry->next;
-    state.screen_updates = true;
   }
 
   // If we are in the rightmost postion, but there are more entries in the menu, load next page
@@ -729,7 +726,6 @@ static void move_right()
     //if (config.debug) {
     //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
     //}
-    state.screen_updates = true;
   }
 }
 
@@ -750,10 +746,9 @@ static void load_back_menu(menu_t *menu)
 static void draw_screen()
 {
   // Draw background
-  if (config.background_mode == MODE_COLOR) {
-    SDL_RenderClear(renderer);
-  }
-  else {
+  SDL_RenderClear(renderer);
+  
+  if (config.background_mode == MODE_IMAGE || config.background_mode == MODE_SLIDESHOW) {
     SDL_RenderCopy(renderer, background_texture, NULL, NULL);
   }
 
@@ -792,45 +787,7 @@ static void draw_screen()
   if (state.screensaver_active) {
     SDL_RenderCopy(renderer, screensaver->texture, NULL, NULL);
   }
-
-  // Output to screen
   SDL_RenderPresent(renderer);
-  state.screen_updates = false;
-}
-
-static void launch_application(char *cmd)
-{
-  bool successful = start_process(cmd, true);
-  if (!successful) return;
-
-  // Initialize exit hotkey for Windows
-  #ifdef _WIN32
-  if (has_exit_hotkey()) {
-    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
-  }
-  #endif
-
-  // Wait until application has closed
-  do {
-    while (SDL_PollEvent(&event)) {
-      switch(event.type) {
-        case SDL_QUIT:
-          quit(EXIT_SUCCESS);
-          break;
-
-        #ifdef _WIN32
-        case SDL_SYSWMEVENT:
-          check_exit_hotkey(event.syswm.msg);
-          break;
-        #endif
-      }
-    }
-    SDL_Delay(APPLICATION_WAIT_PERIOD);
-  } while(process_running());
-
-  #ifdef _WIN32
-  SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
-  #endif
 }
 
 // A function to execute the user's command
@@ -906,12 +863,6 @@ static void execute_command(const char *command)
     ticks.main = SDL_GetTicks();
     ticks.last_input = ticks.main;
     
-    // Track the screen re-draw
-    if (config.on_launch == MODE_ON_LAUNCH_NONE || MODE_ON_LAUNCH_BLANK) {
-      state.application_exited = true;
-      ticks.application_exited = ticks.main;
-    }
-    
     // Post-application updates
     if (config.clock_enabled) {
       update_clock(true);
@@ -922,15 +873,54 @@ static void execute_command(const char *command)
     if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
       SDL_ShowWindow(window);
     }
+    else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+      set_draw_color();
+    }
   
-  // Prevent any duplicate keypresses that were used to exit the program (Wayland workaround)
-  #ifdef __unix__
-  SDL_Delay(50);
-  SDL_PumpEvents();
-  SDL_FlushEvent(SDL_KEYDOWN);
-  #endif
+    // Prevent any duplicate keypresses that were used to exit the program (Wayland workaround)
+    #ifdef __unix__
+    SDL_Delay(50);
+    SDL_PumpEvents();
+    SDL_FlushEvent(SDL_KEYDOWN);
+    #endif
   }
   free(cmd);
+}
+
+// A function to launch an external application
+static void launch_application(char *cmd)
+{
+  bool successful = start_process(cmd, true);
+  if (!successful) return;
+
+  // Initialize exit hotkey for Windows
+  #ifdef _WIN32
+  if (has_exit_hotkey()) {
+    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+  }
+  #endif
+
+  // Wait until application has closed
+  do {
+    while (SDL_PollEvent(&event)) {
+      switch(event.type) {
+        case SDL_QUIT:
+          quit(EXIT_SUCCESS);
+          break;
+
+        #ifdef _WIN32
+        case SDL_SYSWMEVENT:
+          check_exit_hotkey(event.syswm.msg);
+          break;
+        #endif
+      }
+    }
+    SDL_Delay(APPLICATION_WAIT_PERIOD);
+  } while(process_running());
+
+  #ifdef _WIN32
+  SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+  #endif
 }
 
 // A function to connect to a gamepad
@@ -1029,7 +1019,6 @@ static void update_slideshow()
       }
     slideshow->transition_surface = NULL;
     state.slideshow_background_ready = false;
-    state.screen_updates = true;  
     }
   }
   else if (state.slideshow_transition) {
@@ -1050,7 +1039,6 @@ static void update_slideshow()
     else {
       SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
     }
-  state.screen_updates = true;
   }
 }
 
@@ -1077,7 +1065,6 @@ static void update_screensaver()
       else {
         SDL_SetTextureAlphaMod(screensaver->texture, (Uint8) screensaver->alpha);
       }
-    state.screen_updates = true;
     }
 
     // User has pressed input, deactivate the screensaver
@@ -1093,7 +1080,6 @@ static void update_screensaver()
         // after coming out of screensaver mode
         ticks.slideshow_load = ticks.main;
       }
-      state.screen_updates = true;
     }
   }
 }
@@ -1137,7 +1123,6 @@ static void update_clock(bool block)
       launcher_clock->render_date = false;
       state.clock_rendering = false;
       state.clock_ready = false;
-      state.screen_updates = true;
     }
   }
 }
@@ -1145,9 +1130,7 @@ static void update_clock(bool block)
 // A function to quit the launcher
 void quit(int status)
 {
-  if (status == 0) {
-    output_log(LOGLEVEL_DEBUG, "Quitting program\n");
-  }
+  output_log(LOGLEVEL_DEBUG, "Quitting program\n");
   cleanup();
   exit(status);
 }
@@ -1270,9 +1253,6 @@ int main(int argc, char *argv[])
   if (error) {
     quit(EXIT_FAILURE);
   }
-  
-  // Draw initial screen
-  draw_screen();
    
   // Main program loop
   output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
@@ -1312,19 +1292,7 @@ int main(int argc, char *argv[])
           break;
 
         case SDL_WINDOWEVENT:
-          if (event.window.event == SDL_WINDOWEVENT_SHOWN || 
-          event.window.event == SDL_WINDOWEVENT_EXPOSED || 
-          event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-            if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
-              set_draw_color();
-              state.screen_updates = true;
-            }
-            else {
-              state.screen_updates = true;
-            }
-            output_log(LOGLEVEL_DEBUG, "Redrawing window\n");
-          }
-          else if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+          if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
             output_log(LOGLEVEL_DEBUG, "Lost keyboard focus\n");
           }
           else if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
@@ -1334,7 +1302,7 @@ int main(int argc, char *argv[])
       }
     }
 
-    // Post-loop updates
+    // Post-event loop updates
     if (gamepad != NULL) {
       poll_gamepad();
     }
@@ -1347,14 +1315,7 @@ int main(int argc, char *argv[])
     if (config.clock_enabled) {
       update_clock(false);
     }
-    if (state.application_exited && (ticks.main - ticks.application_exited > MAX_SCREEN_REDRAW_PERIOD)) {
-      draw_screen();
-      state.application_exited = false;
-    }
-    if (state.screen_updates) {
-      draw_screen();
-    }  
-    SDL_Delay(POLLING_PERIOD);
+    draw_screen();
   }
   quit(EXIT_SUCCESS);
 }

@@ -18,7 +18,6 @@
 #define MIN_RX_SIZE 0
 #define MAX_RX_SIZE 100
 #define PERCENT_MAX_CHARS 10
-#define POLLING_PERIOD 15
 #define GAMEPAD_DEADZONE 10000
 #define GAMEPAD_REPEAT_DELAY 500
 #define GAMEPAD_REPEAT_INTERVAL 25
@@ -37,7 +36,6 @@
 #define MAX_SCREENSAVER_IDLE_TIME 900
 #define SCREENSAVER_TRANSITION_TIME 1500
 #define APPLICATION_WAIT_PERIOD 100
-#define MAX_SCREEN_REDRAW_PERIOD 100
 
 // Modes
 typedef int mode;
@@ -78,8 +76,6 @@ typedef enum {
 } launcher_alignment_t;
 
 typedef struct {
-  bool screen_updates;
-  bool application_exited;
   bool slideshow_transition;
   bool slideshow_background_rendering;
   bool slideshow_background_ready;
