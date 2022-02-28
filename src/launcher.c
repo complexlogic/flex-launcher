@@ -608,9 +608,6 @@ static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position)
   
   // Recalculate the screen geometry
   calculate_button_geometry(current_menu->root_entry, buttons);
-  //if (config.debug) {
-  //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
-  //}
   highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
   highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
   return 0;
@@ -695,9 +692,6 @@ static void move_left()
                         - config.highlight_hpadding;
     current_menu->page--;
     current_menu->highlight_position = buttons - 1;
-    //if (config.debug) {
-    //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
-    //}
   }
 }
 
@@ -725,9 +719,6 @@ static void move_right()
     highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
     current_menu->page++;
     current_menu->highlight_position = 0;
-    //if (config.debug) {
-    //  debug_button_positions(current_menu->root_entry, current_menu, &geo);
-    //}
   }
 }
 

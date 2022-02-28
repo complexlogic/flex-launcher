@@ -320,33 +320,3 @@ void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
   }
 }
 
-// A function to print the current button geometry to the command line
-void debug_button_positions(entry_t *entry, menu_t *current_menu, geometry_t *geo)
-{
-  output_log(LOGLEVEL_DEBUG, "================= Menu \"%s\" Page %i =================\n",
-         current_menu->name,
-         current_menu->page);
-  int left_margin;
-  int right_margin;
-  for (int i = 0; i < geo->num_buttons; i++) {
-    if (i == 0) {
-      left_margin = entry->icon_rect.x;
-    }
-    else if (i == geo->num_buttons - 1) {
-      right_margin = geo->screen_width - (entry->icon_rect.x + entry->icon_rect.w);
-    }
-    output_log(LOGLEVEL_DEBUG, "Button %i:\n",i);
-    output_log(LOGLEVEL_DEBUG, "Icon X1: %i\n",entry->icon_rect.x);
-    output_log(LOGLEVEL_DEBUG, "Icon X2: %i\n",entry->icon_rect.x + entry->icon_rect.w);
-    output_log(LOGLEVEL_DEBUG, "Icon Y1: %i\n",entry->icon_rect.y);
-    output_log(LOGLEVEL_DEBUG, "Icon Y2: %i\n",entry->icon_rect.y + entry->icon_rect.h);
-    output_log(LOGLEVEL_DEBUG, "Text X1: %i\n",entry->text_rect.x);
-    output_log(LOGLEVEL_DEBUG, "Text X2: %i\n",entry->text_rect.x + entry->icon_rect.w);
-    output_log(LOGLEVEL_DEBUG, "Text Y1: %i\n",entry->text_rect.y);
-    output_log(LOGLEVEL_DEBUG, "Text Y2: %i\n\n",entry->text_rect.y + entry->icon_rect.h);
-    entry = entry->next;
-  }
-  output_log(LOGLEVEL_DEBUG, "Total Buttons: %i\n",geo->num_buttons);
-  output_log(LOGLEVEL_DEBUG, "Left Margin: %i\n",left_margin);
-  output_log(LOGLEVEL_DEBUG, "Right Margin: %i\n",right_margin);
-}
