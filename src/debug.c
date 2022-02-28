@@ -77,83 +77,83 @@ void output_log(log_level_t log_level, const char *format, ...)
 void debug_settings()
 {
   output_log(LOGLEVEL_DEBUG, "======================== Settings ========================\n");
-  output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_DEFAULT_MENU,config.default_menu);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_MAX_BUTTONS,config.max_buttons);
+  output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_DEFAULT_MENU,config.default_menu);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_MAX_BUTTONS,config.max_buttons);
   if (config.background_mode == MODE_COLOR) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_MODE,"Color");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_BACKGROUND_MODE, "Color");
   }
   else if (config.background_mode == MODE_IMAGE) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_MODE,"Image");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_BACKGROUND_MODE, "Image");
   }
   else if (config.background_mode == MODE_SLIDESHOW) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_MODE,"Slideshow");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_BACKGROUND_MODE, "Slideshow");
   }
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_BACKGROUND_COLOR,config.background_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_BACKGROUND_COLOR,config.background_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_BACKGROUND_COLOR,config.background_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_BACKGROUND_COLOR, config.background_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_BACKGROUND_COLOR, config.background_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_BACKGROUND_COLOR, config.background_color.b);
   if (config.background_image != NULL) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_BACKGROUND_IMAGE,config.background_image);
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_BACKGROUND_IMAGE, config.background_image);
   }
   if (config.slideshow_directory != NULL) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SLIDESHOW_DIRECTORY ,config.slideshow_directory);
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_SLIDESHOW_DIRECTORY , config.slideshow_directory);
   }
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_SLIDESHOW_IMAGE_DURATION, config.slideshow_image_duration / 1000);
-  output_log(LOGLEVEL_DEBUG, "%s: %f\n",SETTING_SLIDESHOW_TRANSITION_TIME, ((float) config.slideshow_transition_time) / 1000.0f);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_ICON_SIZE,config.icon_size);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_ICON_SPACING,config.icon_spacing);
-  output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_TITLE_FONT,config.title_font_path);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_TITLE_FONT_SIZE,config.font_size);
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_TITLE_COLOR,config.title_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_TITLE_COLOR,config.title_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_TITLE_COLOR,config.title_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n",SETTING_TITLE_COLOR,config.title_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_SLIDESHOW_IMAGE_DURATION, config.slideshow_image_duration / 1000);
+  output_log(LOGLEVEL_DEBUG, "%s: %f\n", SETTING_SLIDESHOW_TRANSITION_TIME, ((float) config.slideshow_transition_time) / 1000.0f);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_ICON_SIZE, config.icon_size);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_ICON_SPACING, config.icon_spacing);
+  output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_FONT, config.title_font_path);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_FONT_SIZE, config.font_size);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_TITLE_COLOR, config.title_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_COLOR, config.title_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_COLOR, config.title_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_COLOR, config.title_color.a);
   if (config.title_oversize_mode == MODE_TEXT_TRUNCATE) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_TITLE_OVERSIZE_MODE,"Truncate");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "Truncate");
   }
   else if (config.title_oversize_mode == MODE_TEXT_SHRINK) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_TITLE_OVERSIZE_MODE,"Shrink");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "Shrink");
   }
   else if (config.title_oversize_mode == MODE_TEXT_NONE) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_TITLE_OVERSIZE_MODE,"None");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "None");
   }
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_TITLE_PADDING,config.title_padding);
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_HIGHLIGHT_COLOR,config.highlight_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_HIGHLIGHT_COLOR,config.highlight_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_HIGHLIGHT_COLOR,config.highlight_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n",SETTING_HIGHLIGHT_COLOR,config.highlight_color.a);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_HIGHLIGHT_CORNER_RADIUS,config.highlight_rx);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_HIGHLIGHT_VPADDING,config.highlight_vpadding);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_HIGHLIGHT_HPADDING,config.highlight_hpadding);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_PADDING, config.title_padding);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_CORNER_RADIUS, config.highlight_rx);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_VPADDING, config.highlight_vpadding);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_HPADDING, config.highlight_hpadding);
   if (config.scroll_indicators) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCROLL_INDICATORS,"true");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_SCROLL_INDICATORS, "true");
   }
   else {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_SCROLL_INDICATORS,"false");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_SCROLL_INDICATORS, "false");
   }
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n",SETTING_SCROLL_INDICATOR_COLOR,config.scroll_indicator_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.a);
   if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Hide");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Hide");
   }
   else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"Blank");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Blank");
   }
   else if (config.on_launch == MODE_ON_LAUNCH_NONE) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH,"None");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "None");
   }
   if (config.reset_on_back) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_RESET_ON_BACK,"true");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_RESET_ON_BACK, "true");
   }
   else {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_RESET_ON_BACK,"false");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_RESET_ON_BACK, "false");
   }
   if (config.mouse_select) {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_MOUSE_SELECT, "true");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_MOUSE_SELECT, "true");
   }
   else {
-    output_log(LOGLEVEL_DEBUG, "%s: %s\n",SETTING_MOUSE_SELECT, "false");
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_MOUSE_SELECT, "false");
   }
   output_log(LOGLEVEL_DEBUG, "========================== Clock ==========================\n");
   if (config.clock_enabled) {

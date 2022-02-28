@@ -15,8 +15,8 @@
 extern config_t config;
 extern gamepad_control_t *gamepad_controls;
 extern hotkey_t *hotkeys;
-menu_t *menu = NULL;
-entry_t *entry = NULL;
+menu_t *menu       = NULL;
+entry_t *entry     = NULL;
 
 // A function to handle the arguments from the command line
 void handle_arguments(int argc, char *argv[], char **config_file_path)

@@ -18,113 +18,115 @@
 
 // Initialize default settings
 config_t config = {
-  .background_image = NULL,
-  .slideshow_directory = NULL,
-  .title_font_path = NULL,
-  .font_size = DEFAULT_FONT_SIZE,
-  .title_color.r = DEFAULT_TITLE_COLOR_R,
-  .title_color.g = DEFAULT_TITLE_COLOR_G,
-  .title_color.b = DEFAULT_TITLE_COLOR_B,
-  .title_color.a = DEFAULT_TITLE_COLOR_A,
-  .background_mode = MODE_COLOR,
-  .background_color.r = DEFAULT_BACKGROUND_COLOR_R,
-  .background_color.g = DEFAULT_BACKGROUND_COLOR_G,
-  .background_color.b = DEFAULT_BACKGROUND_COLOR_B,
-  .background_color.a = 0xFF,
-  .icon_size = DEFAULT_ICON_SIZE,
-  .default_menu = NULL,
-  .highlight_color.r = DEFAULT_HIGHLIGHT_COLOR_R,
-  .highlight_color.g = DEFAULT_HIGHLIGHT_COLOR_G,
-  .highlight_color.b = DEFAULT_HIGHLIGHT_COLOR_B,
-  .highlight_color.a = DEFAULT_HIGHLIGHT_COLOR_A,
-  .highlight_rx = DEFAULT_HIGHLIGHT_CORNER_RADIUS,
-  .title_padding = -1,
-  .max_buttons = DEFAULT_MAX_BUTTONS,
-  .icon_spacing = -1,
-  .highlight_vpadding = -1,
-  .highlight_hpadding = -1,
-  .title_opacity[0] = '\0',
-  .highlight_opacity[0] = '\0',
-  .button_centerline[0] = '\0',
-  .icon_spacing_str[0] = '\0',
-  .scroll_indicators = DEFAULT_SCROLL_INDICATORS,
-  .scroll_indicator_color.r = DEFAULT_SCROLL_INDICATOR_COLOR_R,
-  .scroll_indicator_color.g = DEFAULT_SCROLL_INDICATOR_COLOR_G,
-  .scroll_indicator_color.b = DEFAULT_SCROLL_INDICATOR_COLOR_B,
-  .scroll_indicator_color.a = DEFAULT_SCROLL_INDICATOR_COLOR_A,
-  .scroll_indicator_opacity[0] = '\0',
-  .title_oversize_mode = MODE_TEXT_TRUNCATE,
-  .reset_on_back = DEFAULT_RESET_ON_BACK,
-  .mouse_select = DEFAULT_MOUSE_SELECT,
-  .screensaver_enabled = false,
-  .screensaver_idle_time = DEFAULT_SCREENSAVER_IDLE_TIME*1000,
-  .screensaver_intensity_str[0] = '\0',
-  .screensaver_pause_slideshow = DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW,
-  .gamepad_enabled = DEFAULT_GAMEPAD_ENABLED,
-  .gamepad_device = DEFAULT_GAMEPAD_DEVICE,
-  .gamepad_mappings_file = NULL,
-  .on_launch = MODE_ON_LAUNCH_HIDE,
-  .debug = false,
-  .exe_path = NULL,
-  .first_menu = NULL,
-  .num_menus = 0,
-  .clock_enabled = DEFAULT_CLOCK_ENABLED,
-  .clock_show_date = DEFAULT_CLOCK_SHOW_DATE,
-  .clock_alignment = DEFAULT_CLOCK_ALIGNMENT,
-  .clock_font_path = NULL,
-  .clock_margin_str[0] = '\0',
-  .clock_margin = -1,
-  .clock_color.r = DEFAULT_CLOCK_COLOR_R,
-  .clock_color.g = DEFAULT_CLOCK_COLOR_G,
-  .clock_color.b = DEFAULT_CLOCK_COLOR_B,
-  .clock_color.a = DEFAULT_CLOCK_COLOR_A,
-  .clock_opacity[0] = '\0',
-  .clock_font_size = DEFAULT_CLOCK_FONT_SIZE,
-  .clock_time_format = DEFAULT_CLOCK_TIME_FORMAT,
-  .clock_date_format = DEFAULT_CLOCK_DATE_FORMAT,
-  .clock_include_weekday = DEFAULT_CLOCK_INCLUDE_WEEKDAY,
-  .slideshow_image_duration = DEFAULT_SLIDESHOW_IMAGE_DURATION,
-  .slideshow_transition_time = DEFAULT_SLIDESHOW_TRANSITION_TIME
+  .default_menu                     = NULL,
+  .background_image                 = NULL,
+  .slideshow_directory              = NULL,
+  .title_font_path                  = NULL,
+  .font_size                        = DEFAULT_FONT_SIZE,
+  .title_color.r                    = DEFAULT_TITLE_COLOR_R,
+  .title_color.g                    = DEFAULT_TITLE_COLOR_G,
+  .title_color.b                    = DEFAULT_TITLE_COLOR_B,
+  .title_color.a                    = DEFAULT_TITLE_COLOR_A,
+  .background_mode                  = MODE_COLOR,
+  .background_color.r               = DEFAULT_BACKGROUND_COLOR_R,
+  .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
+  .background_color.b               = DEFAULT_BACKGROUND_COLOR_B,
+  .background_color.a               = 0xFF,
+  .icon_size                        = DEFAULT_ICON_SIZE,
+  .highlight_color.r                = DEFAULT_HIGHLIGHT_COLOR_R,
+  .highlight_color.g                = DEFAULT_HIGHLIGHT_COLOR_G,
+  .highlight_color.b                = DEFAULT_HIGHLIGHT_COLOR_B,
+  .highlight_color.a                = DEFAULT_HIGHLIGHT_COLOR_A,
+  .highlight_rx                     = DEFAULT_HIGHLIGHT_CORNER_RADIUS,
+  .title_padding                    = -1,
+  .max_buttons                      = DEFAULT_MAX_BUTTONS,
+  .icon_spacing                     = -1,
+  .highlight_vpadding               = -1,
+  .highlight_hpadding               = -1,
+  .title_opacity[0]                 = '\0',
+  .highlight_opacity[0]             = '\0',
+  .button_centerline[0]             = '\0',
+  .icon_spacing_str[0]              = '\0',
+  .scroll_indicators                = DEFAULT_SCROLL_INDICATORS,
+  .scroll_indicator_color.r         = DEFAULT_SCROLL_INDICATOR_COLOR_R,
+  .scroll_indicator_color.g         = DEFAULT_SCROLL_INDICATOR_COLOR_G,
+  .scroll_indicator_color.b         = DEFAULT_SCROLL_INDICATOR_COLOR_B,
+  .scroll_indicator_color.a         = DEFAULT_SCROLL_INDICATOR_COLOR_A,
+  .scroll_indicator_opacity[0]      = '\0',
+  .title_oversize_mode              = MODE_TEXT_TRUNCATE,
+  .reset_on_back                    = DEFAULT_RESET_ON_BACK,
+  .mouse_select                     = DEFAULT_MOUSE_SELECT,
+  .screensaver_enabled              = false,
+  .screensaver_idle_time            = DEFAULT_SCREENSAVER_IDLE_TIME*1000,
+  .screensaver_intensity_str[0]     = '\0',
+  .screensaver_pause_slideshow      = DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW,
+  .gamepad_enabled                  = DEFAULT_GAMEPAD_ENABLED,
+  .gamepad_device                   = DEFAULT_GAMEPAD_DEVICE,
+  .gamepad_mappings_file            = NULL,
+  .on_launch                        = MODE_ON_LAUNCH_HIDE,
+  .debug                            = false,
+  .exe_path                         = NULL,
+  .first_menu                       = NULL,
+  .num_menus                        = 0,
+  .clock_enabled                    = DEFAULT_CLOCK_ENABLED,
+  .clock_show_date                  = DEFAULT_CLOCK_SHOW_DATE,
+  .clock_alignment                  = DEFAULT_CLOCK_ALIGNMENT,
+  .clock_font_path                  = NULL,
+  .clock_margin_str[0]              = '\0',
+  .clock_margin                     = -1,
+  .clock_color.r                    = DEFAULT_CLOCK_COLOR_R,
+  .clock_color.g                    = DEFAULT_CLOCK_COLOR_G,
+  .clock_color.b                    = DEFAULT_CLOCK_COLOR_B,
+  .clock_color.a                    = DEFAULT_CLOCK_COLOR_A,
+  .clock_opacity[0]                 = '\0',
+  .clock_font_size                  = DEFAULT_CLOCK_FONT_SIZE,
+  .clock_time_format                = DEFAULT_CLOCK_TIME_FORMAT,
+  .clock_date_format                = DEFAULT_CLOCK_DATE_FORMAT,
+  .clock_include_weekday            = DEFAULT_CLOCK_INCLUDE_WEEKDAY,
+  .slideshow_image_duration         = DEFAULT_SLIDESHOW_IMAGE_DURATION,
+  .slideshow_transition_time        = DEFAULT_SLIDESHOW_TRANSITION_TIME
 };
 
+// Initialize default states
 state_t state = {
-  .slideshow_transition = false,
-  .slideshow_background_ready = false,
-  .slideshow_paused = false,
-  .screensaver_active = false,
-  .screensaver_transition = false,
-  .clock_rendering = false,
-  .clock_ready = false
+  .slideshow_transition             = false,
+  .slideshow_background_ready       = false,
+  .slideshow_paused                 = false,
+  .screensaver_active               = false,
+  .screensaver_transition           = false,
+  .clock_rendering                  = false,
+  .clock_ready                      = false
 };
 
 // Global variables
-SDL_Window *window = NULL;
-SDL_Renderer *renderer = NULL;
-SDL_SysWMinfo wm_info;
-SDL_Event event;
-SDL_DisplayMode display_mode;
-FILE *log_file = NULL;
-text_info_t title_info;
-launcher_clock_t *launcher_clock = NULL;
-TTF_Font *clock_font = NULL;
-menu_t *default_menu = NULL;
-menu_t *current_menu = NULL; // Current selected menu
-entry_t *current_entry = NULL; // Current selected entry
+SDL_Window *window                  = NULL;
+SDL_Renderer *renderer              = NULL;
+SDL_Texture *background_texture     = NULL;
+menu_t *default_menu                = NULL;
+menu_t *current_menu                = NULL;
+entry_t *current_entry              = NULL;
+highlight_t *highlight              = NULL;
+scroll_t *scroll                    = NULL;
+slideshow_t *slideshow              = NULL;
+screensaver_t *screensaver          = NULL;
+FILE *log_file                      = NULL;
+SDL_GameController *gamepad         = NULL;
 gamepad_control_t *gamepad_controls = NULL;
-hotkey_t *hotkeys = NULL;
+hotkey_t *hotkeys                   = NULL;
+launcher_clock_t *launcher_clock    = NULL;
+TTF_Font *clock_font                = NULL;
+SDL_Thread *slideshow_thread        = NULL;
+SDL_Thread *clock_thread            = NULL;
+SDL_Event event;
+SDL_SysWMinfo wm_info;
+SDL_DisplayMode display_mode;
+text_info_t title_info;
 ticks_t ticks;
-SDL_GameController *gamepad = NULL;
-SDL_Thread *slideshow_thread = NULL;
-SDL_Thread *clock_thread = NULL;
+geometry_t geo;
 int refresh_period;
 int delay_period;
 int repeat_period; 
-scroll_t *scroll = NULL;
-slideshow_t *slideshow = NULL;
-screensaver_t *screensaver = NULL;
-SDL_Texture *background_texture = NULL; // Background texture (image only)
-highlight_t *highlight = NULL; // Pointer containing highlight texture and coordinates
-geometry_t geo; // Struct containing screen geometry for the current page of buttons
+
 
 // A function to initialize SDL
 static int init_sdl()
@@ -493,7 +495,7 @@ static void init_screensaver()
   SDL_SetTextureAlphaMod(screensaver->texture, 0.0f);
 }
 
-// A function to resume th slideshow after a launched application returns
+// A function to resume the slideshow after a launched application returns
 static void resume_slideshow()
 {
   ticks.slideshow_load = ticks.main;
