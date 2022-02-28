@@ -787,6 +787,8 @@ static void draw_screen()
   if (state.screensaver_active) {
     SDL_RenderCopy(renderer, screensaver->texture, NULL, NULL);
   }
+
+  // Output to screen
   SDL_RenderPresent(renderer);
 }
 
@@ -892,7 +894,8 @@ static void launch_application(char *cmd)
 {
   bool successful = start_process(cmd, true);
   if (!successful) return;
-
+  bool has_focus = true;
+  
   // Initialize exit hotkey for Windows
   #ifdef _WIN32
   if (has_exit_hotkey()) {
@@ -900,12 +903,19 @@ static void launch_application(char *cmd)
   }
   #endif
 
-  // Wait until application has closed
+  // Check for events while the application is running
   do {
     while (SDL_PollEvent(&event)) {
       switch(event.type) {
         case SDL_QUIT:
           quit(EXIT_SUCCESS);
+          break;
+
+        case SDL_WINDOWEVENT:
+          if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+            has_focus = false;
+            output_log(LOGLEVEL_DEBUG, "Lost focus\n");
+          }
           break;
 
         #ifdef _WIN32
@@ -915,12 +925,27 @@ static void launch_application(char *cmd)
         #endif
       }
     }
-    SDL_Delay(APPLICATION_WAIT_PERIOD);
+
+    // Keep drawing the screen until the application has created its window
+    if (config.on_launch == MODE_ON_LAUNCH_NONE && has_focus) {
+      draw_screen();
+    }
+    else if (config.on_launch == MODE_ON_LAUNCH_BLANK && has_focus) {
+      SDL_RenderClear(renderer);
+      SDL_RenderPresent(renderer);
+     }
+   
+    // We're in the background, keep waiting until the application finishes
+    else {
+      SDL_Delay(APPLICATION_WAIT_PERIOD);
+    }
   } while(process_running());
 
   #ifdef _WIN32
   SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
   #endif
+
+  output_log(LOGLEVEL_DEBUG, "Application finished\n");
 }
 
 // A function to connect to a gamepad
@@ -1315,6 +1340,8 @@ int main(int argc, char *argv[])
     if (config.clock_enabled) {
       update_clock(false);
     }
+
+    // Draw the screen
     draw_screen();
   }
   quit(EXIT_SUCCESS);
