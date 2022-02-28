@@ -1,3 +1,10 @@
+Unreleased
+- Added :fork special command
+- Enabled VSync
+- Added MouseSelect setting for gyroscopic mouse support
+- Windows: Added exit hotkey feature
+- Windows: The :sleep special command now properly sleeps the PC instead of hibernating it
+
 v1.4 (2022-2-5)
 - Added clock widget to show the current time and date
 - Windows: Full Unicode support implemented
