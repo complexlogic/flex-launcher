@@ -19,6 +19,7 @@ extern config_t config;
 extern SDL_SysWMinfo wm_info;
 bool web_browser;
 bool browser_launched;
+bool has_shutdown_privilege   = false;
 char *browser_process         = NULL;
 HANDLE child_process          = NULL;
 UINT exit_hotkey              = 0;
@@ -313,6 +314,77 @@ void get_region(char *buffer)
 {
   GEOID geo_id = GetUserGeoID(GEOCLASS_NATION);
   GetGeoInfoA(geo_id, GEO_ISO2, buffer, 3, 0);
+}
+
+// A function to shutdown the computer
+void scmd_shutdown()
+{
+  if (!has_shutdown_privilege) {
+    bool successful = get_shutdown_privilege();
+    if (!successful) return;
+  }
+  InitiateShutdownA(NULL, 
+    NULL, 
+    0, 
+    SHUTDOWN_FORCE_OTHERS | SHUTDOWN_POWEROFF | SHUTDOWN_HYBRID,
+    SHTDN_REASON_MAJOR_OTHER | SHTDN_REASON_MINOR_OTHER
+  );
+}
+
+// A function to restart the computer
+void scmd_restart()
+{
+  if (!has_shutdown_privilege) {
+    bool successful = get_shutdown_privilege();
+    if (!successful) return;
+  }
+  InitiateShutdownA(NULL,
+    NULL,
+    0,
+    SHUTDOWN_FORCE_OTHERS | SHUTDOWN_RESTART | SHUTDOWN_HYBRID,
+    SHTDN_REASON_MAJOR_OTHER | SHTDN_REASON_MINOR_OTHER
+  );
+}
+
+// A function to put the computer to sleep
+void scmd_sleep()
+{
+  if (!has_shutdown_privilege) {
+    bool successful = get_shutdown_privilege();
+    if (!successful) return;
+  }
+  SetSuspendState(FALSE, FALSE, FALSE);
+}
+
+// A function to get the shutdown privilege from Windows
+static bool get_shutdown_privilege()
+{
+  HANDLE token = NULL;
+  BOOL ret = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &token);
+  if (!ret) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not open process token\n");
+    return false;
+  }
+  LUID luid;
+  ret = LookupPrivilegeValueA(NULL, SE_SHUTDOWN_NAME, &luid);
+  if (!ret) {
+    output_log(LOGLEVEL_ERROR, "Error: Failed to lookup privilege\n");
+    CloseHandle(token);
+    return false;
+  }
+  TOKEN_PRIVILEGES tp;
+  tp.PrivilegeCount = 1;
+  tp.Privileges[0].Luid = luid;
+  tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+  ret = AdjustTokenPrivileges(token, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
+  if (!ret) {
+    output_log(LOGLEVEL_ERROR, "Error: Failed to adjust token privileges\n");
+    CloseHandle(token);
+    return false;
+  }
+  has_shutdown_privilege = true;
+  CloseHandle(token);
+  return true;
 }
 
 // A function to check if there is an exit hotkey

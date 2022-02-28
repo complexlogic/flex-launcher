@@ -252,6 +252,24 @@ void get_region(char *buffer)
   }
 }
 
+// A function to shutdown the computer
+void scmd_shutdown()
+{
+  start_process(CMD_SHUTDOWN, false);
+}
+
+// A function to restart the computer
+void scmd_restart()
+{
+  start_process(CMD_RESTART, false);
+}
+
+// A function to put the computer to sleep
+void scmd_sleep()
+{
+  start_process(CMD_SLEEP, false);
+}
+
 // A function to print usage to the command line
 void print_usage()
 {

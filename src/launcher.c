@@ -832,13 +832,13 @@ static void execute_command(const char *command)
       quit(EXIT_SUCCESS);
     }
     else if (!strcmp(special_command, SCMD_SHUTDOWN)) {
-      system(CMD_SHUTDOWN);
+      scmd_shutdown();
     }
     else if (!strcmp(special_command, SCMD_RESTART)) {
-      system(CMD_RESTART);
+      scmd_restart();
     }
     else if (!strcmp(special_command, SCMD_SLEEP)) {
-      system(CMD_SLEEP);
+      scmd_sleep();
     }
   }
 

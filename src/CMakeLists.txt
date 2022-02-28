@@ -18,7 +18,7 @@ add_subdirectory("platform")
 # Link libraries together 
 target_link_libraries(${EXECUTABLE_TITLE} platform inih)
 if (WIN32)
-  target_link_libraries(${EXECUTABLE_TITLE} SDL2::SDL2main SDL2::SDL2_image SDL2::SDL2_ttf)
+  target_link_libraries(${EXECUTABLE_TITLE} SDL2::SDL2main SDL2::SDL2_image SDL2::SDL2_ttf PowrProf)
 endif ()
 
 

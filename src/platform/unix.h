@@ -1,3 +1,6 @@
+#define CMD_SHUTDOWN "systemctl poweroff"
+#define CMD_RESTART "systemctl reboot"
+#define CMD_SLEEP "systemctl suspend"
 #define EXT_DESKTOP ".desktop"
 #define DELIMITER_ACTION ";"
 #define DESKTOP_SECTION_HEADER "Desktop Entry"
