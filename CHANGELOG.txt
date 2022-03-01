@@ -1,4 +1,4 @@
-Unreleased
+v1.5 (2022-2-28)
 - Added :fork special command
 - Enabled VSync
 - Added MouseSelect setting for gyroscopic mouse support
