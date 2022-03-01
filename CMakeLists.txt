@@ -13,6 +13,7 @@ include_directories(${PROJECT_BINARY_DIR})
 set(MIN_SDL_VERSION "2.0.14")
 set(MIN_SDL_IMAGE_VERSION "2.0.5")
 set(MIN_SDL_TTF_VERSION "2.0.15")
+set(MIN_GLIBC_VERSION "2.31") # Enforced for .deb packages only
 
 #Generate PKGBUILD script for Arch packages
 if (PACKAGE STREQUAL "ARCH")
@@ -286,7 +287,7 @@ if (UNIX)
     else ()
       set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${DEB_ARCH}")
     endif ()
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0 (>= ${MIN_SDL_VERSION}), libsdl2-image-2.0-0 (>= ${MIN_SDL_IMAGE_VERSION}), libsdl2-ttf-2.0-0 (>= ${MIN_SDL_TTF_VERSION})")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0 (>= ${MIN_SDL_VERSION}), libsdl2-image-2.0-0 (>= ${MIN_SDL_IMAGE_VERSION}), libsdl2-ttf-2.0-0 (>= ${MIN_SDL_TTF_VERSION}), libc6 (>= ${MIN_GLIBC_VERSION}")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "complexlogic")
     set(CPACK_DEBIAN_PACKAGE_SECTION "video")
     set(CPACK_DEBIAN_ARCHIVE_TYPE "gnutar")
