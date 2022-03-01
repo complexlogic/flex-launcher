@@ -134,6 +134,9 @@ Every config file must have a section titled "Settings". Within this section, th
     <li>
       <a href="#resetonback">ResetOnBack</a>
     </li>
+    <li>
+      <a href="#mouseselect">MouseSelect</a>
+    </li>
   </ul>
 </details>
 
@@ -273,8 +276,13 @@ Defines whether Flex Launcher will remember the previous entry position when goi
 
 Default: false
 
+#### MouseSelect
+Defines whether the left mouse button can be used to select the highlighted entry. This setting is intended to support gyroscopic mouse devices where the enter/ok button functions as a mouse left click instead of the keyboard enter button.
+
+Default: false
+
 ## Creating Menus
-At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of the menu is the section name. Any title may be used that is not reserved for another section, such as "Settings", and "Gamepad". The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
+At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of a menu is its section name. Any title may be used that is not reserved for another section, such as "Settings", "Gamepad", etc. The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
 
 Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons:
 ```
@@ -302,6 +310,19 @@ Special commands are commands that are internal to Flex Launcher and begin with 
 #### :submenu
 Change to a different menu. Requires a menu title as an argument. For example, the command ```:submenu Games``` will change to the menu ```Games```. The argument must be a valid menu title that is defined elsewhere in the config file.
 
+#### :fork
+Forks a new process and executes a command in it without exiting the launcher. This is typically used in combination with a [hotkey](#hotkeys). Use this special command when you want to execute a command on your system for some reason other than launching a graphical application. Example use cases:
+- Change a Wi-Fi connection
+- Pair or connect a Bluetooth device
+- Start or stop some system service/daemon
+
+The :fork special command requires a command as an argument. For example ```:fork command arguments``` will execute ```command arguments``` without leaving the launcher.
+
+Windows users should invoke a command line interpreter such as Command Prompt and pass the command to run as an argument, e.g. ```:fork cmd.exe /c "command arguments"```
+
+#### :exit
+Windows only. Quits the currently running application. This special command is only available as a hotkey command. See the [Exit Hotkey](#exit-hotkey-windows-only) section for more information.
+
 #### :back
 Go back to the previous menu.
 
@@ -318,7 +339,7 @@ Move the highlight cursor left.
 Move the highlight cursor right.
 
 #### :select
-Press enter on the current selection. This special command is only available as a gamepad command, it is forbidden for menu entries.
+Press enter on the current selection. This special command is only available as a gamepad or hotkey command, it is forbidden for menu entries.
 
 #### :shutdown
 Shut down the computer.<sup>1</sup>
@@ -329,7 +350,7 @@ Restart the computer.<sup>1</sup>
 #### :sleep
 Put the computer to sleep.<sup>1</sup>
 
-<sup>1</sup> *Linux: Only works in systemd-based distros. Non-systemd distro users need to implement the command manually for their init system.*
+<sup>1</sup> *Linux: Works in systemd-based distros only. Non-systemd distro users need to implement the command manually for their init system.*
 
 ### Desktop Files (Linux Only)
 If the application you want to launch was installed via your distro's package manager, a .desktop file was most likely provided. The command to launch a Linux application can simply be the path to its .desktop file, and Flex Launcher will run the Exec command that the developers have specified in the file. Desktop files are located in /usr/share/applications.
@@ -426,18 +447,29 @@ When ```BackgroundMode``` is set to "Slideshow", this setting defines whether or
 Default: true
 
 ## Hotkeys
-Flex Launch supports configurable hotkeys, which executes a command when a specified key is pressed. Each hotkey consists of a key=value pair, where the key is an arbitrary name, and the value contains the SDL keycode of the hotkey and the command to run when it is pressed, delimited by a semicolon:
+Flex Launcher supports configurable hotkeys, which executes a command when a specified key is pressed. Each hotkey consists of a key=value pair, where the key is an arbitrary name, and the value contains the SDL keycode of the hotkey and the command to run when it is pressed, delimited by a semicolon:
 ```
 Hotkey=keycode;command
 ```
 The keycode is a HEX value *without* any 0x or # prefix. There are two ways to find a keycode for a given key. The first is to use the [lookup table provided by SDL](https://wiki.libsdl.org/SDLKeycodeLookup). The name of each key is in the right column of the table, and the corresponding HEX keycode is in the center column. The second is to [run Flex Launcher in debug mode](../../README.md#debugging), press the key, then check the log. For each keystroke, the name of the key will be printed and the HEX value will be in parenthesis next to it.
 
-Any key can be set as a hotkey, except keys that are reserved for the default controls: the left/right arrow keys, enter/return, and backspace. Hotkeys may be used to "speed dial" your favorite applications, or to add controls via [special commands](#special-commands). As an example configuration below, the first hotkey is mapped to F1 and will launch Kodi when it is pressed, and the second hotkey is mapped to F12 and will cause Flex Launcher to quit when it is pressed:
+Any key can be set as a hotkey, except keys that are reserved for the default controls: the left and right arrow keys, enter/return, and backspace. Hotkeys may be used to "speed dial" your favorite applications, or to add controls via [special commands](#special-commands). As an example configuration below, the first hotkey is mapped to F1 and will launch Kodi when it is pressed, and the second hotkey is mapped to F12 and will cause Flex Launcher to quit when it is pressed:
 ```
 [Hotkeys]
 Hotkey1=4000003A;"C:\Program Shortcuts\kodi.lnk"
 Hotkey2=40000045;:quit
 ```
+
+### Exit Hotkey (Windows only)
+The exit hotkey feature allows a user to quit the running application using a button on their remote. This is especially useful for applications that don't have a quit button, such as a web browser operating in fullscreen mode.
+
+Only the function keys F1-F24 may be used as an exit hotkey, with the exception of F12 which is forbidden by Windows. Pressing an exit hotkey is functionally equivalent to using the Alt+F4 keyboard shortcut on the active window; it is not a forceful method, so the application is able to close cleanly. However, the application could also choose to ignore it, display a confirmation dialog, or not respond if it's hung.
+
+The following example maps F10 as an exit hotkey:
+```
+Hotkey=40000043;:exit
+```
+Linux users that desire similar functionality should check the documentation of their desktop environment and/or window manager. Most support global hotkeys that can be configured to close the active window.
 
 ## Gamepad Controls
 Flex Launcher has built-in support for gamepad controls through SDL. All settings for gamepads will be in a section titled ```Gamepad```. Within the section, there are key=value pairs which define the gamepad settings and the commands to be run when a button or axis is pressed.

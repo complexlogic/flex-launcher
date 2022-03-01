@@ -46,12 +46,13 @@ Flex Launcher is compatible with both Windows and Linux (including Raspberry Pi 
 Compiled binaries are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. Alternatively, you may also choose to compile the program yourself using the [compilation guide](extra/docs/compilation_guide.md).
 
 ### Windows
-A win64 zip file is provided on the [release page](https://github.com/complexlogic/flex-launcher/releases). Simply download the file and extract the contents to a directory of your choosing.
+A win64 zip file is provided on the [release page](https://github.com/complexlogic/flex-launcher/releases). Simply download the file and extract the contents to a directory of your choosing. Flex Launcher should be run on an up-to-date Windows 10 system, or Windows 11.
 
 ### Linux
 Binary packages are available on the [release page](https://github.com/complexlogic/flex-launcher/releases) for APT and pacman based distributions. You may use the commands below to install.
 
-#### APT-based x86-64 Distributions (Debian, Ubuntu, Mint, etc.)
+#### APT-based x86-64 Distributions (Debian, Ubuntu, etc.)
+This package is compatible with Debian Bullseye and later, Ubuntu 21.04 and later.
 ```
 VERSION=1.4
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
@@ -64,6 +65,7 @@ wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}
 sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
+This package is compatible with Raspbian Bullseye and later.
 ```
 VERSION=1.4
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_armhf.deb
@@ -90,7 +92,7 @@ flex-launcher -c /path/to/config.ini
 Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings.
 
 ### Controls
-The keyboard arrow keys move the cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. 
+The keyboard arrow keys move the highlight cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. 
 
 #### TV Remotes
 Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher. You can also use a hardware-based solution, such as the FLIRC USB device 
@@ -122,4 +124,4 @@ Flex Launcher is made possible by the following projects:
 - [inih](https://github.com/benhoyt/inih)
 - [Numix icons](https://github.com/numixproject)
 
-Flex Launcher was inspired and strongly influenced by the excellent desktop application launcher [xlunch](https://github.com/Tomas-M/xlunch).
+The design of Flex Launcher was strongly influenced by the excellent desktop application launcher [xlunch](https://github.com/Tomas-M/xlunch).
