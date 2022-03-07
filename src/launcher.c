@@ -1179,15 +1179,14 @@ int main(int argc, char *argv[])
   validate_settings(&geo);
 
   // Load gamepad overrides
-  if (config.gamepad_enabled) {
-    if (config.gamepad_mappings_file != NULL) {
-      error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
-      if (error) {
-        output_log(LOGLEVEL_ERROR, 
-          "Error: Could not load gamepad mappings from %s\n", 
-          config.gamepad_mappings_file
-        );
-      }
+  if (config.gamepad_enabled && config.gamepad_mappings_file != NULL) {
+    error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
+    if (error < 0) {
+      output_log(LOGLEVEL_ERROR, 
+        "Error: Could not load gamepad mappings from %s\n%s\n", 
+        config.gamepad_mappings_file,
+        SDL_GetError()
+      );
     }
   }
 
