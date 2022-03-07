@@ -1294,16 +1294,18 @@ int main(int argc, char *argv[])
           }
           break;
           
-        case SDL_CONTROLLERDEVICEADDED:
-          output_log(LOGLEVEL_DEBUG, "Gamepad connected with device index %i\n", event.cdevice.which);
-          if (event.cdevice.which == config.gamepad_device) {
-            connect_gamepad(event.cdevice.which);
+        case SDL_JOYDEVICEADDED:
+          if (SDL_IsGameController(event.jdevice.which) == SDL_TRUE) {
+            output_log(LOGLEVEL_DEBUG, "Gamepad connected with device index %i\n", event.jdevice.which);
+            if (event.jdevice.which == config.gamepad_device) {
+              connect_gamepad(event.jdevice.which);
+            }
           }
           break;
 
-        case SDL_CONTROLLERDEVICEREMOVED:
-          output_log(LOGLEVEL_DEBUG, "Gamepad removed with device index %i\n", event.cdevice.which);
-          if (event.cdevice.which == config.gamepad_device) {
+        case SDL_JOYDEVICEREMOVED:
+          if (event.jdevice.which == config.gamepad_device && gamepad != NULL) {
+            output_log(LOGLEVEL_DEBUG, "Gamepad disconnected\n");
             SDL_GameControllerClose(gamepad);
             gamepad = NULL;
           }
