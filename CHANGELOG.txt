@@ -1,3 +1,6 @@
+Unreleased
+- Fixed bug where an unmapped controller won't properly connect upon startup
+
 v1.5 (2022-2-28)
 - Added :fork special command
 - Enabled VSync
