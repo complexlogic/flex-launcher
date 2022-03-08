@@ -30,6 +30,7 @@ void clean_path(char *path);
 void validate_settings(geometry_t *geo);
 void parse_config_file(const char *config_file_path);
 void read_file(const char *path, char **buffer);
+void sprintf_alloc(char **buffer, const char *format, ...);
 Uint16 get_unicode_code_point(const char *p, int *bytes);
 menu_t *get_menu(char *menu_name);
 menu_t *create_menu(char *menu_name, int *num_menus);

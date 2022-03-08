@@ -229,11 +229,12 @@ SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *r
 SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
 {
   // Insert user config variables into SVG-formatted text buffer
-  char buffer[500];
-  sprintf(buffer, SVG_HIGHLIGHT, width, height, width, height, rx);
+  char *buffer = NULL;
+  sprintf_alloc(&buffer, SVG_HIGHLIGHT, width, height, width, height, rx);
   
   // Rasterize the SVG
   SDL_Texture *texture = rasterize_svg(buffer, -1, -1, rect);
+  free(buffer);
   
   // Set color
   SDL_SetTextureColorMod(texture,

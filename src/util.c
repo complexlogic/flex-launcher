@@ -1162,3 +1162,19 @@ void read_file(const char *path, char **buffer)
   }
   *(*buffer + total_bytes_read) = '\0';
 }
+
+// A function to dynamically allocate a buffer for and copy a formatted string
+void sprintf_alloc(char **buffer, const char *format, ...)
+{
+  va_list args1, args2;
+  va_start(args1, format);
+  va_copy(args2, args1);
+  
+  int length = vsnprintf(NULL, 0, format, args1);
+  if (length) {
+    *buffer = malloc(length + 1);
+    vsnprintf(*buffer, length + 1, format, args2);
+  }
+  va_end(args1);
+  va_end(args2);
+}
