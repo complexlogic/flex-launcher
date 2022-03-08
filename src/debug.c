@@ -102,11 +102,16 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_ICON_SIZE, config.icon_size);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_ICON_SPACING, config.icon_spacing);
   output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_FONT, config.title_font_path);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_FONT_SIZE, config.font_size);
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_TITLE_COLOR, config.title_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_COLOR, config.title_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_COLOR, config.title_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_COLOR, config.title_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_FONT_SIZE, config.title_font_size);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_OUTLINE_SIZE, config.title_font_outline_size);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.a);
   if (config.title_oversize_mode == MODE_TEXT_TRUNCATE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "Truncate");
   }
@@ -177,10 +182,15 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_FONT, config.clock_font_path);
   output_log(LOGLEVEL_DEBUG, "%s: %u\n", SETTING_CLOCK_FONT_SIZE,config.clock_font_size);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n",SETTING_CLOCK_MARGIN, config.clock_margin);  
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_COLOR, config.clock_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_COLOR, config.clock_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_COLOR, config.clock_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_COLOR, config.clock_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_CLOCK_FONT_OUTLINE_SIZE, config.title_font_outline_size);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.a);
   if (config.clock_time_format == FORMAT_TIME_12HR) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_TIME_FORMAT, "12hr");
   }

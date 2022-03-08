@@ -199,7 +199,9 @@ void init_clock(launcher_clock_t *launcher_clock)
   launcher_clock->text_info = (text_info_t) {.font = NULL,
                               .font_size = config.clock_font_size,
                               .font_path = &config.clock_font_path,
-                              .color = &config.clock_color,
+                              .color = &config.clock_font_color,
+                              .outline_size = config.clock_font_outline_size,
+                              .outline_color = &config.clock_font_outline_color,
                               .oversize_mode = MODE_TEXT_NONE};
   launcher_clock->time_format = config.clock_time_format;
   launcher_clock->date_format = config.clock_date_format;

@@ -135,10 +135,24 @@ int config_handler(void *user, const char *section, const char *name, const char
       clean_path(pconfig->title_font_path);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT_SIZE)) {
-      pconfig->font_size = (unsigned int) atoi(value);
+      pconfig->title_font_size = (unsigned int) atoi(value);
     }
-    else if (!strcmp(name,SETTING_TITLE_COLOR)) {
-      hex_to_color(value, &pconfig->title_color);
+    else if (!strcmp(name,SETTING_TITLE_FONT_COLOR)) {
+      hex_to_color(value, &pconfig->title_font_color);
+    }
+    else if (!strcmp(name, SETTING_TITLE_OUTLINE_SIZE)) {
+      int title_font_outline_size = atoi(value);
+      int max_title_outline_size = config.title_font_size / 10;
+      if (title_font_outline_size > max_title_outline_size) {
+        title_font_outline_size = max_title_outline_size;
+      }
+      else if (title_font_outline_size < 0) {
+        title_font_outline_size = 0;
+      }
+      pconfig->title_font_outline_size = title_font_outline_size;
+    }
+    else if (!strcmp(name, SETTING_TITLE_OUTLINE_COLOR)) {
+      hex_to_color(value, &pconfig->title_font_outline_color);
     }
     else if (!strcmp(name,SETTING_BACKGROUND_MODE)) {
       if (!strcmp(value, "Image")) {
@@ -309,8 +323,22 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
       }
     }
-    else if (!strcmp(name, SETTING_CLOCK_COLOR)) {
-      hex_to_color(value, &pconfig->clock_color);
+    else if (!strcmp(name, SETTING_CLOCK_FONT_COLOR)) {
+      hex_to_color(value, &pconfig->clock_font_color);
+    }
+    else if (!strcmp(name,SETTING_CLOCK_FONT_OUTLINE_COLOR)) {
+      hex_to_color(value, &pconfig->clock_font_outline_color);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_FONT_OUTLINE_SIZE)) {
+      int clock_font_outline_size = atoi(value);
+      int max_clock_font_outline_size = config.clock_font_size / 10;
+      if (clock_font_outline_size > max_clock_font_outline_size) {
+        clock_font_outline_size = max_clock_font_outline_size;
+      }
+      else if (clock_font_outline_size < 0) {
+        clock_font_outline_size = 0;
+      }
+      pconfig->clock_font_outline_size = clock_font_outline_size;
     }
     else if (!strcmp(name, SETTING_CLOCK_OPACITY)) {
       if (is_percent(value)) {
@@ -924,7 +952,8 @@ void validate_settings(geometry_t *geo)
     int title_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.title_opacity, &title_opacity, 255);
     if (title_opacity != INVALID_PERCENT_VALUE) {
-      config.title_color.a = (Uint8) title_opacity;
+      config.title_font_color.a = (Uint8) title_opacity;
+      config.title_font_outline_color.a = config.title_font_color.a;
     }
   }
   if (config.highlight_opacity[0] != '\0') {
@@ -945,7 +974,8 @@ void validate_settings(geometry_t *geo)
     int clock_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.clock_opacity, &clock_opacity, 255);
     if (clock_opacity != INVALID_PERCENT_VALUE) {
-      config.clock_color.a = (Uint8) clock_opacity;
+      config.clock_font_color.a = (Uint8) clock_opacity;
+      config.clock_font_outline_color.a = config.clock_font_color.a;
     }
   }
 

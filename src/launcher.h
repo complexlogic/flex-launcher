@@ -96,35 +96,35 @@ typedef struct {
 
 // Linked list for menu entries
 typedef struct entry {
-  char *title;
-  char *icon_path;
-  char *cmd;
-  SDL_Texture *icon;
-  SDL_Rect icon_rect;
-  SDL_Texture *title_texture;
-  SDL_Rect text_rect;
-  int title_offset;
+  char         *title;
+  char         *icon_path;
+  char         *cmd;
+  SDL_Texture  *icon;
+  SDL_Rect     icon_rect;
+  SDL_Texture  *title_texture;
+  SDL_Rect     text_rect;
+  int          title_offset;
   struct entry *next;
   struct entry *previous;
 } entry_t;
 
 // Linked list for menus
 typedef struct menu {
-  char *name;
-  int num_entries;
-  bool rendered;
-  int page;
-  int highlight_position;
-  entry_t *first_entry;
-  entry_t *root_entry;
-  entry_t *last_selected_entry;
+  char        *name;
+  int         num_entries;
+  bool        rendered;
+  int         page;
+  int         highlight_position;
+  entry_t     *first_entry;
+  entry_t     *root_entry;
+  entry_t     *last_selected_entry;
   struct menu *next;
   struct menu *back;
 } menu_t;
 
 typedef struct hotkey {
-  SDL_Keycode keycode;
-  char *cmd;
+  SDL_Keycode   keycode;
+  char          *cmd;
   struct hotkey *next;
 } hotkey_t;
 
@@ -155,11 +155,11 @@ typedef struct {
 
 // Linked list of gamepad controls
 typedef struct gamepad_control {
-  int type;
-  int index;
-  int repeat;
-  char *label;
-  char *cmd;
+  int                    type;
+  int                    index;
+  int                    repeat;
+  char                   *label;
+  char                   *cmd;
   struct gamepad_control *next;
 } gamepad_control_t;
 
@@ -207,8 +207,10 @@ typedef struct {
   int icon_spacing;
   char icon_spacing_str[PERCENT_MAX_CHARS];
   char *title_font_path; // Path to title TTF font file
-  unsigned int font_size;
-  SDL_Color title_color; // Color struct for title text
+  unsigned int title_font_size;
+  SDL_Color title_font_color; // Color struct for title text
+  int title_font_outline_size;
+  SDL_Color title_font_outline_color;
   char title_opacity[PERCENT_MAX_CHARS];
   mode title_oversize_mode; 
   unsigned int title_padding;  
@@ -241,9 +243,11 @@ typedef struct {
   char *clock_font_path;
   char clock_margin_str[PERCENT_MAX_CHARS];
   int clock_margin;
-  SDL_Color clock_color;
+  SDL_Color clock_font_color;
   char clock_opacity[PERCENT_MAX_CHARS];
   unsigned int clock_font_size;
+  int clock_font_outline_size;
+  SDL_Color clock_font_outline_color;
   time_format_t clock_time_format;
   date_format_t clock_date_format;
   bool clock_include_weekday;

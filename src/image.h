@@ -4,8 +4,10 @@
 typedef struct {
   TTF_Font *font;
   int font_size;
+  int outline_size;
   const char **font_path;
   SDL_Color *color;
+  SDL_Color *outline_color;
   int max_width;
   mode oversize_mode;
 } text_info_t;

@@ -22,11 +22,16 @@ config_t config = {
   .background_image                 = NULL,
   .slideshow_directory              = NULL,
   .title_font_path                  = NULL,
-  .font_size                        = DEFAULT_FONT_SIZE,
-  .title_color.r                    = DEFAULT_TITLE_COLOR_R,
-  .title_color.g                    = DEFAULT_TITLE_COLOR_G,
-  .title_color.b                    = DEFAULT_TITLE_COLOR_B,
-  .title_color.a                    = DEFAULT_TITLE_COLOR_A,
+  .title_font_size                   = DEFAULT_FONT_SIZE,
+  .title_font_color.r               = DEFAULT_TITLE_FONT_COLOR_R,
+  .title_font_color.g               = DEFAULT_TITLE_FONT_COLOR_G,
+  .title_font_color.b               = DEFAULT_TITLE_FONT_COLOR_B,
+  .title_font_color.a               = DEFAULT_TITLE_FONT_COLOR_A,
+  .title_font_outline_size          = DEFAULT_TITLE_OUTLINE_SIZE,
+  .title_font_outline_color.r       = DEFAULT_TITLE_OUTLINE_COLOR_R,
+  .title_font_outline_color.g       = DEFAULT_TITLE_OUTLINE_COLOR_G,
+  .title_font_outline_color.b       = DEFAULT_TITLE_OUTLINE_COLOR_B,
+  .title_font_outline_color.a       = DEFAULT_TITLE_OUTLINE_COLOR_A,
   .background_mode                  = MODE_COLOR,
   .background_color.r               = DEFAULT_BACKGROUND_COLOR_R,
   .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
@@ -74,10 +79,15 @@ config_t config = {
   .clock_font_path                  = NULL,
   .clock_margin_str[0]              = '\0',
   .clock_margin                     = -1,
-  .clock_color.r                    = DEFAULT_CLOCK_COLOR_R,
-  .clock_color.g                    = DEFAULT_CLOCK_COLOR_G,
-  .clock_color.b                    = DEFAULT_CLOCK_COLOR_B,
-  .clock_color.a                    = DEFAULT_CLOCK_COLOR_A,
+  .clock_font_color.r               = DEFAULT_CLOCK_FONT_COLOR_R,
+  .clock_font_color.g               = DEFAULT_CLOCK_FONT_COLOR_G,
+  .clock_font_color.b               = DEFAULT_CLOCK_FONT_COLOR_B,
+  .clock_font_color.a               = DEFAULT_CLOCK_FONT_COLOR_A,
+  .clock_font_outline_size          = DEFAULT_CLOCK_FONT_OUTLINE_SIZE,
+  .clock_font_outline_color.r       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_R,
+  .clock_font_outline_color.g       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_G,
+  .clock_font_outline_color.b       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_B,
+  .clock_font_outline_color.a       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_A,
   .clock_opacity[0]                 = '\0',
   .clock_font_size                  = DEFAULT_CLOCK_FONT_SIZE,
   .clock_time_format                = DEFAULT_CLOCK_TIME_FORMAT,
@@ -235,11 +245,13 @@ static int init_ttf()
     return 1;
    }
 
-  title_info.font_size = config.font_size;
+  title_info.font_size = config.title_font_size;
+  title_info.outline_size = config.title_font_outline_size;
   title_info.font_path = &config.title_font_path;
   title_info.max_width = config.icon_size,
   title_info.oversize_mode = config.title_oversize_mode;
-  title_info.color = &config.title_color;
+  title_info.color = &config.title_font_color;
+  title_info.outline_color = &config.title_font_outline_color;
   
   int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
   if (error) {
@@ -1293,7 +1305,7 @@ int main(int argc, char *argv[])
             execute_command(current_entry->cmd);
           }
           break;
-          
+
         case SDL_CONTROLLERDEVICEADDED:
           output_log(LOGLEVEL_DEBUG, "Gamepad connected with device index %i\n", event.cdevice.which);
           if (event.cdevice.which == config.gamepad_device) {

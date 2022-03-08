@@ -283,8 +283,6 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
         TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
       }
 
-      // Set vertical offset so reduced font title remains vertically centered
-      // with other titles
       if (reduced_font_size) {
         output_font = reduced_font;
       }
@@ -293,26 +291,45 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
       }
     }
   }
-
-  // Set geometry
-  rect->w = w;
-  rect->h = h;
-  if (info->oversize_mode == MODE_TEXT_SHRINK && text_height != NULL) {
-    *text_height = h;
-  }
   if (reduced_font == NULL) {
     output_font = info->font;
   }
 
   // Render surface
-  SDL_Surface *surface = TTF_RenderUTF8_Blended(output_font,
-                           text_buffer,
-                           *info->color
-                         );
+  SDL_Surface *surface = NULL;
+  if (info->outline_size) {
+    TTF_SetFontOutline(output_font, info->outline_size);
+    surface = TTF_RenderUTF8_Blended(output_font, text_buffer, *info->outline_color);
+    TTF_SetFontOutline(output_font, 0);
+    SDL_Surface *fill_surface = TTF_RenderUTF8_Blended(output_font, text_buffer, *info->color);
+    SDL_SetSurfaceBlendMode(fill_surface, SDL_BLENDMODE_BLEND);
+    SDL_Rect rect = {info->outline_size, 
+      info->outline_size, 
+      fill_surface->w, 
+      fill_surface->h
+    };
+    SDL_BlitSurface(fill_surface, NULL, surface, &rect);
+  }
+  else {
+    surface = TTF_RenderUTF8_Blended(output_font,
+                text_buffer,
+                *info->color
+              );
+  }
+
+  // Set geometry
+  rect->w = surface->w;
+  rect->h = surface->h;
+  if (info->oversize_mode == MODE_TEXT_SHRINK && text_height != NULL) {
+    *text_height = h;
+  }
+
+  // Clean up
   if (reduced_font != NULL) {
     TTF_CloseFont(reduced_font);
   }
   free(text_buffer);
+  
   return surface;
 }
 
