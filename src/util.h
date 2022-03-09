@@ -8,6 +8,12 @@
 #define PATH_SEPARATOR "/"
 #endif
 
+struct gamepad_info {
+  const char *label;
+  int type;
+  int index;
+};
+
 int config_handler(void *user, const char *section, const char *name, const char *value);
 int convert_percent(const char *string, int max_value);
 int utf8_length(const char *string);
@@ -24,7 +30,7 @@ void copy_string_alloc(char **dest, const char *string);
 void utf8_truncate(char *string, int width, int max_width);
 void convert_percent_to_int(char *string, int *result, int max_value);
 void add_hotkey(const char *keycode, const char *cmd);
-void add_gamepad_control(int type, int index, const char *label, const char *cmd);
+static void add_gamepad_control(const char *label, const char *cmd);
 void random_array(int *array, int array_size);
 void clean_path(char *path);
 void validate_settings(geometry_t *geo);

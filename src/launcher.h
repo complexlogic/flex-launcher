@@ -158,7 +158,7 @@ typedef struct gamepad_control {
   int                    type;
   int                    index;
   int                    repeat;
-  char                   *label;
+  const char             *label;
   char                   *cmd;
   struct gamepad_control *next;
 } gamepad_control_t;

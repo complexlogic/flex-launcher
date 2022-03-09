@@ -420,80 +420,10 @@ int config_handler(void *user, const char *section, const char *name, const char
       copy_string_alloc(&pconfig->gamepad_mappings_file, value);
       clean_path(pconfig->gamepad_mappings_file);
     }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_YM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_YP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_XM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_XP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_YM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_YP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LTRIGGER)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERLEFT, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RTRIGGER)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_A)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_A, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_B)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_B, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_X)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_X, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_Y)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_Y, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_BACK)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_BACK, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_GUIDE)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_GUIDE, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_START)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_START, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_LEFT_STICK)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSTICK, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_RIGHT_STICK)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSTICK, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_UP)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_UP, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_DOWN)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_DOWN, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_LEFT)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_LEFT, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_RIGHT)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, name, value);
+
+    // Parse gamepad controls
+    else {
+      add_gamepad_control(name, value);
     }
   }
 
@@ -893,14 +823,54 @@ void add_hotkey(const char *keycode, const char *cmd)
 }
 
 // A function to add a gamepad control to the linked list
-void add_gamepad_control(int type, int index, const char *label, const char *cmd)
+static void add_gamepad_control(const char *label, const char *cmd)
 {
-  static gamepad_control_t *current_gamepad_control = NULL;
   if (cmd[0] == '\0') {
+    return;
+  }
+  
+  // Table of gamepad info
+  static const struct gamepad_info info[] = {
+    {SETTING_GAMEPAD_LSTICK_XM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX},
+    {SETTING_GAMEPAD_LSTICK_XP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTX},
+    {SETTING_GAMEPAD_LSTICK_YM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTY},
+    {SETTING_GAMEPAD_LSTICK_YP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTY},
+    {SETTING_GAMEPAD_RSTICK_XM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTX},
+    {SETTING_GAMEPAD_RSTICK_XP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTX},
+    {SETTING_GAMEPAD_RSTICK_YM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTY},
+    {SETTING_GAMEPAD_RSTICK_YP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTY},
+    {SETTING_GAMEPAD_LTRIGGER, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
+    {SETTING_GAMEPAD_RTRIGGER, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
+    {SETTING_GAMEPAD_BUTTON_A, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_A},
+    {SETTING_GAMEPAD_BUTTON_B, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_B},
+    {SETTING_GAMEPAD_BUTTON_X, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_X},
+    {SETTING_GAMEPAD_BUTTON_Y, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_Y},
+    {SETTING_GAMEPAD_BUTTON_BACK, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_BACK},
+    {SETTING_GAMEPAD_BUTTON_GUIDE, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_GUIDE},
+    {SETTING_GAMEPAD_BUTTON_START, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_START},
+    {SETTING_GAMEPAD_BUTTON_LEFT_STICK, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSTICK},
+    {SETTING_GAMEPAD_BUTTON_RIGHT_STICK, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSTICK},
+    {SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
+    {SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
+    {SETTING_GAMEPAD_BUTTON_DPAD_UP, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_UP},
+    {SETTING_GAMEPAD_BUTTON_DPAD_DOWN, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
+    {SETTING_GAMEPAD_BUTTON_DPAD_LEFT, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
+    {SETTING_GAMEPAD_BUTTON_DPAD_RIGHT, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_RIGHT}
+  };
+
+  // Find correct gamepad info for label, return if none found
+  int i;
+  for (i = 0; i < sizeof(info) / sizeof(info[0]); i++) {
+    if (!strcmp(info[i].label, label)) {
+      break;
+    }
+  }
+  if (i == sizeof(info) / sizeof(info[0])) {
     return;
   }
 
   // Begin the linked list if none exists
+  static gamepad_control_t *current_gamepad_control = NULL;
   if (current_gamepad_control == NULL) {
     gamepad_controls = malloc(sizeof(gamepad_control_t));
     current_gamepad_control = gamepad_controls;
@@ -913,12 +883,14 @@ void add_gamepad_control(int type, int index, const char *label, const char *cmd
   }
 
   // Copy the parameters in the struct
-  current_gamepad_control->type = type;
-  current_gamepad_control->index = index;
-  current_gamepad_control->repeat = 0;
-  copy_string_alloc(&current_gamepad_control->label, label);
+  *current_gamepad_control = (gamepad_control_t) { 
+    .type   = info[i].type,
+    .index  = info[i].index,
+    .label  = info[i].label,
+    .repeat = 0,
+    .next   = NULL
+  };
   copy_string_alloc(&current_gamepad_control->cmd, cmd);
-  current_gamepad_control->next = NULL;
 }
 
 // A function to convert a string percent setting to an int value

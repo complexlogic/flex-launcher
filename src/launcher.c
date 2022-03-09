@@ -340,7 +340,6 @@ static void cleanup()
   gamepad_control_t *tmp_gamepad = NULL;
   for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
     free(tmp_gamepad);
-    free(i->label);
     free(i->cmd);
     tmp_gamepad = i;
   }
