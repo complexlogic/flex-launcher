@@ -9,7 +9,7 @@ typedef struct {
   SDL_Color *color;
   SDL_Color *outline_color;
   int max_width;
-  mode oversize_mode;
+  launcher_mode_t oversize_mode;
 } text_info_t;
 
 int init_svg(void);

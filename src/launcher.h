@@ -12,7 +12,7 @@
 #endif
 #define COLOR_MASKS RMASK, GMASK, BMASK, AMASK
 
-// Definitions
+// Launcher parameters
 #define MIN_ICON_SIZE 32
 #define MAX_ICON_SIZE 1024
 #define MIN_RX_SIZE 0
@@ -37,25 +37,6 @@
 #define SCREENSAVER_TRANSITION_TIME 1500
 #define APPLICATION_WAIT_PERIOD 100
 
-// Modes
-typedef int mode;
-#define MODE_COLOR 0
-#define MODE_IMAGE 1
-#define MODE_SLIDESHOW 2
-#define MODE_TEXT_TRUNCATE 0
-#define MODE_TEXT_SHRINK 1
-#define MODE_TEXT_NONE 2
-#define DIRECTION_LEFT 0
-#define DIRECTION_RIGHT 1
-#define MODE_ON_LAUNCH_HIDE 0
-#define MODE_ON_LAUNCH_NONE 1
-#define MODE_ON_LAUNCH_BLANK 2
-
-// Types
-#define TYPE_BUTTON 0
-#define TYPE_AXIS_POS 1
-#define TYPE_AXIS_NEG 2
-
 // Special commands
 #define SCMD_SELECT ":select"
 #define SCMD_SUBMENU ":submenu"
@@ -70,11 +51,47 @@ typedef int mode;
 #define SCMD_RESTART ":restart"
 #define SCMD_SLEEP ":sleep"
 
+// Enum definitions
+typedef enum {
+  MODE_NONE,
+  MODE_COLOR,
+  MODE_IMAGE,
+  MODE_SLIDESHOW,
+  MODE_TRUNCATE,
+  MODE_SHRINK,
+  MODE_HIDE,
+  MODE_BLANK,
+} launcher_mode_t;
+
 typedef enum {
   ALIGNMENT_LEFT,
   ALIGNMENT_RIGHT,
 } launcher_alignment_t;
 
+typedef enum {
+  TYPE_BUTTON,
+  TYPE_AXIS_POS,
+  TYPE_AXIS_NEG,
+} control_type_t;
+
+typedef enum {
+  DIRECTION_LEFT,
+  DIRECTION_RIGHT,
+} direction_t;
+
+typedef enum {
+  FORMAT_TIME_AUTO,
+  FORMAT_TIME_12HR,
+  FORMAT_TIME_24HR
+} time_format_t;
+
+typedef enum {
+  FORMAT_DATE_AUTO,
+  FORMAT_DATE_LITTLE,
+  FORMAT_DATE_BIG
+} date_format_t;
+
+// Program states
 typedef struct {
   bool slideshow_transition;
   bool slideshow_background_rendering;
@@ -86,6 +103,7 @@ typedef struct {
   bool clock_ready;
 } state_t;
 
+// Timing information
 typedef struct {
   Uint32 main;
   Uint32 slideshow_load;
@@ -122,6 +140,17 @@ typedef struct menu {
   struct menu *back;
 } menu_t;
 
+// Linked list of gamepad controls
+typedef struct gamepad_control {
+  control_type_t         type;
+  int                    index;
+  int                    repeat;
+  const char             *label;
+  char                   *cmd;
+  struct gamepad_control *next;
+} gamepad_control_t;
+
+// Linked list of hotkeys
 typedef struct hotkey {
   SDL_Keycode   keycode;
   char          *cmd;
@@ -153,16 +182,6 @@ typedef struct {
   SDL_Rect rect_left;
 } scroll_t;
 
-// Linked list of gamepad controls
-typedef struct gamepad_control {
-  int                    type;
-  int                    index;
-  int                    repeat;
-  const char             *label;
-  char                   *cmd;
-  struct gamepad_control *next;
-} gamepad_control_t;
-
 // Slideshow
 typedef struct {
   char *images[MAX_SLIDESHOW_IMAGES];
@@ -183,23 +202,11 @@ typedef struct {
   SDL_Texture *texture;
 } screensaver_t;
 
-typedef enum {
-  FORMAT_TIME_AUTO,
-  FORMAT_TIME_12HR,
-  FORMAT_TIME_24HR
-} time_format_t;
-
-typedef enum {
-  FORMAT_DATE_AUTO,
-  FORMAT_DATE_LITTLE,
-  FORMAT_DATE_BIG
-} date_format_t;
-
 // Configuration settings
 typedef struct {
   char *default_menu;
   unsigned int max_buttons;
-  mode background_mode; // Defines image or color background mode
+  launcher_mode_t background_mode; // Defines image or color background mode
   SDL_Color background_color; // Background color
   char *background_image; // Path to background image
   char *slideshow_directory;
@@ -212,7 +219,7 @@ typedef struct {
   int title_font_outline_size;
   SDL_Color title_font_outline_color;
   char title_opacity[PERCENT_MAX_CHARS];
-  mode title_oversize_mode; 
+  launcher_mode_t title_oversize_mode; 
   unsigned int title_padding;  
   SDL_Color highlight_color;
   char highlight_opacity[PERCENT_MAX_CHARS];
@@ -225,7 +232,7 @@ typedef struct {
   char scroll_indicator_opacity[PERCENT_MAX_CHARS];
   bool reset_on_back;
   bool mouse_select;
-  mode on_launch;
+  launcher_mode_t on_launch;
   bool screensaver_enabled;
   Uint32 screensaver_idle_time;
   char screensaver_intensity_str[PERCENT_MAX_CHARS];

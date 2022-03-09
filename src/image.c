@@ -261,16 +261,16 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
   TTF_SizeUTF8(info->font, text_buffer, &w, &h);
 
   // If title is too large to fit
-  if (info->oversize_mode != MODE_TEXT_NONE && w > info->max_width) {
+  if (info->oversize_mode != MODE_NONE && w > info->max_width) {
 
     // Truncate mode:
-    if (info->oversize_mode == MODE_TEXT_TRUNCATE) {
+    if (info->oversize_mode == MODE_TRUNCATE) {
       utf8_truncate(text_buffer, w, info->max_width);
       TTF_SizeUTF8(info->font, text_buffer, &w, &h);
     }
 
     // Shrink mode:
-    else if (info->oversize_mode == MODE_TEXT_SHRINK) {
+    else if (info->oversize_mode == MODE_SHRINK) {
       int reduced_font_size = info->font_size - 1;
       reduced_font = TTF_OpenFont(*info->font_path, reduced_font_size);
       TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
@@ -321,7 +321,7 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
   // Set geometry
   rect->w = surface->w;
   rect->h = surface->h;
-  if (info->oversize_mode == MODE_TEXT_SHRINK && text_height != NULL) {
+  if (info->oversize_mode == MODE_SHRINK && text_height != NULL) {
     *text_height = h;
   }
 

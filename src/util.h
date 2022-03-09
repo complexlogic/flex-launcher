@@ -40,4 +40,4 @@ void sprintf_alloc(char **buffer, const char *format, ...);
 Uint16 get_unicode_code_point(const char *p, int *bytes);
 menu_t *get_menu(char *menu_name);
 menu_t *create_menu(char *menu_name, int *num_menus);
-entry_t *advance_entries(entry_t *entry, int spaces, mode direction);
+entry_t *advance_entries(entry_t *entry, int spaces, direction_t direction);

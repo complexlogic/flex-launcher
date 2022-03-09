@@ -267,21 +267,21 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name,SETTING_TITLE_OVERSIZE_MODE)) {
       if (!strcmp(value,"Shrink")) {
-        pconfig->title_oversize_mode = MODE_TEXT_SHRINK;
+        pconfig->title_oversize_mode = MODE_SHRINK;
       }
       else if (!strcmp(value,"None")) {
-        pconfig->title_oversize_mode = MODE_TEXT_NONE;
+        pconfig->title_oversize_mode = MODE_NONE;
       }
     }
     else if (!strcmp(name, SETTING_ON_LAUNCH)) {
       if (!strcmp(value, "None")) {
-        pconfig->on_launch = MODE_ON_LAUNCH_NONE;
+        pconfig->on_launch = MODE_NONE;
       }
       else if (!strcmp(value, "Blank")) {
-        pconfig->on_launch = MODE_ON_LAUNCH_BLANK;
+        pconfig->on_launch = MODE_BLANK;
       }
       else {
-        pconfig->on_launch = MODE_ON_LAUNCH_HIDE;
+        pconfig->on_launch = MODE_HIDE;
       }
     }
     else if (!strcmp(name, SETTING_RESET_ON_BACK)) {
@@ -1083,7 +1083,7 @@ menu_t *create_menu(char *menu_name, int *num_menus)
 }
 
 // A function to advance X spaces in the entry linked list (left or right)
-entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
+entry_t *advance_entries(entry_t *entry, int spaces, direction_t direction)
 {
   if (direction == DIRECTION_LEFT) {
     for (int i = 0; i < spaces; i++) {

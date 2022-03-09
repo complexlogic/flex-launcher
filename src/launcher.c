@@ -58,7 +58,7 @@ config_t config = {
   .scroll_indicator_color.b         = DEFAULT_SCROLL_INDICATOR_COLOR_B,
   .scroll_indicator_color.a         = DEFAULT_SCROLL_INDICATOR_COLOR_A,
   .scroll_indicator_opacity[0]      = '\0',
-  .title_oversize_mode              = MODE_TEXT_TRUNCATE,
+  .title_oversize_mode              = MODE_TRUNCATE,
   .reset_on_back                    = DEFAULT_RESET_ON_BACK,
   .mouse_select                     = DEFAULT_MOUSE_SELECT,
   .screensaver_enabled              = false,
@@ -68,7 +68,7 @@ config_t config = {
   .gamepad_enabled                  = DEFAULT_GAMEPAD_ENABLED,
   .gamepad_device                   = DEFAULT_GAMEPAD_DEVICE,
   .gamepad_mappings_file            = NULL,
-  .on_launch                        = MODE_ON_LAUNCH_HIDE,
+  .on_launch                        = MODE_HIDE,
   .debug                            = false,
   .exe_path                         = NULL,
   .first_menu                       = NULL,
@@ -666,7 +666,7 @@ static void render_buttons(menu_t *menu)
                              &title_info, 
                              &entry->text_rect,
                              &h);
-    if (config.title_oversize_mode == MODE_TEXT_SHRINK && h != geo.font_height) {
+    if (config.title_oversize_mode == MODE_SHRINK && h != geo.font_height) {
       entry->title_offset = (geo.font_height - h) / 2;
     }
   }
@@ -852,10 +852,10 @@ static void execute_command(const char *command)
   else {
 
     // Perform prelaunch behavior from OnLaunch setting
-    if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+    if (config.on_launch == MODE_HIDE) {
       SDL_HideWindow(window);
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+    else if (config.on_launch == MODE_BLANK) {
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
@@ -876,10 +876,10 @@ static void execute_command(const char *command)
     if (config.background_mode == MODE_SLIDESHOW) {
       resume_slideshow();
     }
-    if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+    if (config.on_launch == MODE_HIDE) {
       SDL_ShowWindow(window);
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+    else if (config.on_launch == MODE_BLANK) {
       set_draw_color();
     }
   
@@ -931,10 +931,10 @@ static void launch_application(char *cmd)
     }
 
     // Keep drawing the screen until the application has created its window
-    if (config.on_launch == MODE_ON_LAUNCH_NONE && has_focus) {
+    if (config.on_launch == MODE_NONE && has_focus) {
       draw_screen();
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLANK && has_focus) {
+    else if (config.on_launch == MODE_BLANK && has_focus) {
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
      }

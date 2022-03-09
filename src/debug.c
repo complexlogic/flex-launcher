@@ -112,13 +112,13 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.g);
   output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.b);
   output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.a);
-  if (config.title_oversize_mode == MODE_TEXT_TRUNCATE) {
+  if (config.title_oversize_mode == MODE_TRUNCATE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "Truncate");
   }
-  else if (config.title_oversize_mode == MODE_TEXT_SHRINK) {
+  else if (config.title_oversize_mode == MODE_SHRINK) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "Shrink");
   }
-  else if (config.title_oversize_mode == MODE_TEXT_NONE) {
+  else if (config.title_oversize_mode == MODE_NONE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "None");
   }
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_PADDING, config.title_padding);
@@ -139,13 +139,13 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.g);
   output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.b);
   output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.a);
-  if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+  if (config.on_launch == MODE_HIDE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Hide");
   }
-  else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+  else if (config.on_launch == MODE_BLANK) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Blank");
   }
-  else if (config.on_launch == MODE_ON_LAUNCH_NONE) {
+  else if (config.on_launch == MODE_NONE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "None");
   }
   if (config.reset_on_back) {
