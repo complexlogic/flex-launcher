@@ -298,18 +298,32 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
 
   // Render surface
   SDL_Surface *surface = NULL;
-  if (info->outline_size) {
-    TTF_SetFontOutline(output_font, info->outline_size);
-    surface = TTF_RenderUTF8_Blended(output_font, text_buffer, *info->outline_color);
-    TTF_SetFontOutline(output_font, 0);
-    SDL_Surface *fill_surface = TTF_RenderUTF8_Blended(output_font, text_buffer, *info->color);
-    SDL_SetSurfaceBlendMode(fill_surface, SDL_BLENDMODE_BLEND);
-    SDL_Rect rect = {info->outline_size, 
-      info->outline_size, 
-      fill_surface->w, 
-      fill_surface->h
-    };
-    SDL_BlitSurface(fill_surface, NULL, surface, &rect);
+  if (info->shadow) {
+    int shadow_offset = h / 40;
+    if (shadow_offset < 2)
+      shadow_offset = 2;
+    SDL_Surface *foreground = TTF_RenderUTF8_Blended(output_font,
+                               text_buffer,
+                               *info->color
+                             );
+    SDL_Surface *shadow    = TTF_RenderUTF8_Blended(output_font, 
+                               text_buffer, 
+                               *info->shadow_color
+                             );
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 
+                foreground->w + shadow_offset, 
+                foreground->h + shadow_offset, 
+                32,
+                SDL_PIXELFORMAT_ARGB8888
+              );
+    Uint32 color = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
+    SDL_FillRect(surface, NULL, color);
+    SDL_Rect shadow_rect = {shadow_offset, shadow_offset, shadow->w, shadow->h};
+    SDL_BlitSurface(shadow, NULL, surface, &shadow_rect);
+    SDL_Rect rect = {0, 0, foreground->w, foreground->h};
+    SDL_BlitSurface(foreground, NULL, surface, &rect);
+    SDL_FreeSurface(foreground);
+    SDL_FreeSurface(shadow);
   }
   else {
     surface = TTF_RenderUTF8_Blended(output_font,

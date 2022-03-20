@@ -216,8 +216,8 @@ typedef struct {
   char *title_font_path; // Path to title TTF font file
   unsigned int title_font_size;
   SDL_Color title_font_color; // Color struct for title text
-  int title_font_outline_size;
-  SDL_Color title_font_outline_color;
+  bool title_shadows;
+  SDL_Color title_shadow_color;
   char title_opacity[PERCENT_MAX_CHARS];
   launcher_mode_t title_oversize_mode; 
   unsigned int title_padding;  
@@ -253,8 +253,8 @@ typedef struct {
   SDL_Color clock_font_color;
   char clock_opacity[PERCENT_MAX_CHARS];
   unsigned int clock_font_size;
-  int clock_font_outline_size;
-  SDL_Color clock_font_outline_color;
+  bool clock_shadows;
+  SDL_Color clock_shadow_color;
   time_format_t clock_time_format;
   date_format_t clock_date_format;
   bool clock_include_weekday;
@@ -264,7 +264,9 @@ typedef struct {
 
 // Function prototypes
 static int init_sdl(void);
-static int init_ttf(void);
+static int init_sdl_image(void);
+static int create_window(void);
+static int int_sdl_ttf(void);
 static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position);
 static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position);
 static void update_slideshow(void);
@@ -275,6 +277,7 @@ static void init_slideshow(void);
 static void init_screensaver(void);
 void quit_slideshow(void);
 void set_draw_color(void);
+static void get_display_info(void);
 static void calculate_button_geometry(entry_t *entry, int buttons);
 static void render_buttons(menu_t *menu);
 static void draw_buttons(entry_t *entry);

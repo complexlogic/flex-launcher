@@ -200,12 +200,18 @@ void init_clock(launcher_clock_t *launcher_clock)
                               .font_size = config.clock_font_size,
                               .font_path = &config.clock_font_path,
                               .color = &config.clock_font_color,
-                              .outline_size = config.clock_font_outline_size,
-                              .outline_color = &config.clock_font_outline_color,
+                              .shadow = config.clock_shadows,
                               .oversize_mode = MODE_NONE};
   launcher_clock->time_format = config.clock_time_format;
   launcher_clock->date_format = config.clock_date_format;
   launcher_clock->time_info = NULL;
+  if (config.clock_shadows) {
+    launcher_clock->text_info.shadow_color = &config.clock_shadow_color;
+    calculate_shadow_alpha(launcher_clock->text_info);
+  }
+  else {
+    launcher_clock->text_info.shadow_color = NULL;
+  }
   
   // Load the font
   int error = load_font(&launcher_clock->text_info, FILENAME_DEFAULT_CLOCK_FONT);

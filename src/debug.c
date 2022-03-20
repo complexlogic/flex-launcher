@@ -107,11 +107,17 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.g);
   output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.b);
   output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_FONT_COLOR, config.title_font_color.a);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_OUTLINE_SIZE, config.title_font_outline_size);
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_OUTLINE_COLOR, config.title_font_outline_color.a);
+  if (config.title_shadows) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_SHADOWS, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_SHADOWS, "false");
+  }
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.a);
+  
   if (config.title_oversize_mode == MODE_TRUNCATE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "Truncate");
   }
@@ -186,11 +192,16 @@ void debug_settings()
   output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.g);
   output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.b);
   output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.a);
-  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_CLOCK_FONT_OUTLINE_SIZE, config.title_font_outline_size);
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_FONT_OUTLINE_COLOR, config.clock_font_outline_color.a);
+  if (config.clock_shadows) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_SHADOWS, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_SHADOWS, "false");
+  }
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.a);
   if (config.clock_time_format == FORMAT_TIME_12HR) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_TIME_FORMAT, "12hr");
   }

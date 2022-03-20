@@ -1,13 +1,15 @@
 // Dynamic SVG generation for highlight
 #define SVG_HIGHLIGHT "<svg viewBox=\"0 0 %i %i\"><rect x=\"0\" width=\"%i\" height=\"%i\" rx=\"%i\" fill=\"white\" /></svg>"
+#define SHADOW_OPACITY_MULTIPLIER 0.75F
+#define calculate_shadow_alpha(x) x.shadow_color->a = (Uint8) (SHADOW_OPACITY_MULTIPLIER * (float) x.color->a)
 
 typedef struct {
   TTF_Font *font;
   int font_size;
-  int outline_size;
   const char **font_path;
   SDL_Color *color;
-  SDL_Color *outline_color;
+  bool shadow;
+  SDL_Color *shadow_color;
   int max_width;
   launcher_mode_t oversize_mode;
 } text_info_t;

@@ -12,11 +12,11 @@
 #include "platform/platform.h"
 #include "external/ini.h"
 
-extern config_t config;
+extern config_t          config;
 extern gamepad_control_t *gamepad_controls;
-extern hotkey_t *hotkeys;
-menu_t *menu       = NULL;
-entry_t *entry     = NULL;
+extern hotkey_t          *hotkeys;
+menu_t                   *menu  = NULL;
+entry_t                  *entry = NULL;
 
 // A function to handle the arguments from the command line
 void handle_arguments(int argc, char *argv[], char **config_file_path)
@@ -140,19 +140,11 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (!strcmp(name,SETTING_TITLE_FONT_COLOR)) {
       hex_to_color(value, &pconfig->title_font_color);
     }
-    else if (!strcmp(name, SETTING_TITLE_OUTLINE_SIZE)) {
-      int title_font_outline_size = atoi(value);
-      int max_title_outline_size = config.title_font_size / 10;
-      if (title_font_outline_size > max_title_outline_size) {
-        title_font_outline_size = max_title_outline_size;
-      }
-      else if (title_font_outline_size < 0) {
-        title_font_outline_size = 0;
-      }
-      pconfig->title_font_outline_size = title_font_outline_size;
+    else if (!strcmp(name, SETTING_TITLE_SHADOWS)) {
+      pconfig->title_shadows = convert_bool(value, DEFAULT_TITLE_SHADOWS);
     }
-    else if (!strcmp(name, SETTING_TITLE_OUTLINE_COLOR)) {
-      hex_to_color(value, &pconfig->title_font_outline_color);
+    else if (!strcmp(name, SETTING_TITLE_SHADOW_COLOR)) {
+      hex_to_color(value, &pconfig->title_shadow_color);
     }
     else if (!strcmp(name,SETTING_BACKGROUND_MODE)) {
       if (!strcmp(value, "Image")) {
@@ -326,19 +318,11 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (!strcmp(name, SETTING_CLOCK_FONT_COLOR)) {
       hex_to_color(value, &pconfig->clock_font_color);
     }
-    else if (!strcmp(name,SETTING_CLOCK_FONT_OUTLINE_COLOR)) {
-      hex_to_color(value, &pconfig->clock_font_outline_color);
+    else if (!strcmp(name, SETTING_CLOCK_SHADOW_COLOR)) {
+      hex_to_color(value, &pconfig->clock_shadow_color);
     }
-    else if (!strcmp(name, SETTING_CLOCK_FONT_OUTLINE_SIZE)) {
-      int clock_font_outline_size = atoi(value);
-      int max_clock_font_outline_size = config.clock_font_size / 10;
-      if (clock_font_outline_size > max_clock_font_outline_size) {
-        clock_font_outline_size = max_clock_font_outline_size;
-      }
-      else if (clock_font_outline_size < 0) {
-        clock_font_outline_size = 0;
-      }
-      pconfig->clock_font_outline_size = clock_font_outline_size;
+    else if (!strcmp(name, SETTING_CLOCK_SHADOWS)) {
+      pconfig->clock_shadows = convert_bool(value, DEFAULT_CLOCK_SHADOWS);
     }
     else if (!strcmp(name, SETTING_CLOCK_OPACITY)) {
       if (is_percent(value)) {
@@ -831,31 +815,31 @@ static void add_gamepad_control(const char *label, const char *cmd)
   
   // Table of gamepad info
   static const struct gamepad_info info[] = {
-    {SETTING_GAMEPAD_LSTICK_XM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX},
-    {SETTING_GAMEPAD_LSTICK_XP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTX},
-    {SETTING_GAMEPAD_LSTICK_YM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTY},
-    {SETTING_GAMEPAD_LSTICK_YP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTY},
-    {SETTING_GAMEPAD_RSTICK_XM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTX},
-    {SETTING_GAMEPAD_RSTICK_XP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTX},
-    {SETTING_GAMEPAD_RSTICK_YM, TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTY},
-    {SETTING_GAMEPAD_RSTICK_YP, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTY},
-    {SETTING_GAMEPAD_LTRIGGER, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
-    {SETTING_GAMEPAD_RTRIGGER, TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
-    {SETTING_GAMEPAD_BUTTON_A, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_A},
-    {SETTING_GAMEPAD_BUTTON_B, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_B},
-    {SETTING_GAMEPAD_BUTTON_X, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_X},
-    {SETTING_GAMEPAD_BUTTON_Y, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_Y},
-    {SETTING_GAMEPAD_BUTTON_BACK, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_BACK},
-    {SETTING_GAMEPAD_BUTTON_GUIDE, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_GUIDE},
-    {SETTING_GAMEPAD_BUTTON_START, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_START},
-    {SETTING_GAMEPAD_BUTTON_LEFT_STICK, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSTICK},
-    {SETTING_GAMEPAD_BUTTON_RIGHT_STICK, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSTICK},
-    {SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
-    {SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
-    {SETTING_GAMEPAD_BUTTON_DPAD_UP, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_UP},
-    {SETTING_GAMEPAD_BUTTON_DPAD_DOWN, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
-    {SETTING_GAMEPAD_BUTTON_DPAD_LEFT, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
-    {SETTING_GAMEPAD_BUTTON_DPAD_RIGHT, TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_RIGHT}
+    {SETTING_GAMEPAD_LSTICK_XM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX},
+    {SETTING_GAMEPAD_LSTICK_XP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTX},
+    {SETTING_GAMEPAD_LSTICK_YM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTY},
+    {SETTING_GAMEPAD_LSTICK_YP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTY},
+    {SETTING_GAMEPAD_RSTICK_XM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTX},
+    {SETTING_GAMEPAD_RSTICK_XP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTX},
+    {SETTING_GAMEPAD_RSTICK_YM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTY},
+    {SETTING_GAMEPAD_RSTICK_YP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTY},
+    {SETTING_GAMEPAD_LTRIGGER,              TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
+    {SETTING_GAMEPAD_RTRIGGER,              TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
+    {SETTING_GAMEPAD_BUTTON_A,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_A},
+    {SETTING_GAMEPAD_BUTTON_B,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_B},
+    {SETTING_GAMEPAD_BUTTON_X,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_X},
+    {SETTING_GAMEPAD_BUTTON_Y,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_Y},
+    {SETTING_GAMEPAD_BUTTON_BACK,           TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_BACK},
+    {SETTING_GAMEPAD_BUTTON_GUIDE,          TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_GUIDE},
+    {SETTING_GAMEPAD_BUTTON_START,          TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_START},
+    {SETTING_GAMEPAD_BUTTON_LEFT_STICK,     TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_LEFTSTICK},
+    {SETTING_GAMEPAD_BUTTON_RIGHT_STICK,    TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_RIGHTSTICK},
+    {SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER,  TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
+    {SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER, TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
+    {SETTING_GAMEPAD_BUTTON_DPAD_UP,        TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_UP},
+    {SETTING_GAMEPAD_BUTTON_DPAD_DOWN,      TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_DOWN},
+    {SETTING_GAMEPAD_BUTTON_DPAD_LEFT,      TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_LEFT},
+    {SETTING_GAMEPAD_BUTTON_DPAD_RIGHT,     TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_RIGHT}
   };
 
   // Find correct gamepad info for label, return if none found
@@ -925,7 +909,6 @@ void validate_settings(geometry_t *geo)
     convert_percent_to_int(config.title_opacity, &title_opacity, 255);
     if (title_opacity != INVALID_PERCENT_VALUE) {
       config.title_font_color.a = (Uint8) title_opacity;
-      config.title_font_outline_color.a = config.title_font_color.a;
     }
   }
   if (config.highlight_opacity[0] != '\0') {
@@ -947,7 +930,6 @@ void validate_settings(geometry_t *geo)
     convert_percent_to_int(config.clock_opacity, &clock_opacity, 255);
     if (clock_opacity != INVALID_PERCENT_VALUE) {
       config.clock_font_color.a = (Uint8) clock_opacity;
-      config.clock_font_outline_color.a = config.clock_font_color.a;
     }
   }
 

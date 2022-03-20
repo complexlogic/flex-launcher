@@ -27,11 +27,11 @@ config_t config = {
   .title_font_color.g               = DEFAULT_TITLE_FONT_COLOR_G,
   .title_font_color.b               = DEFAULT_TITLE_FONT_COLOR_B,
   .title_font_color.a               = DEFAULT_TITLE_FONT_COLOR_A,
-  .title_font_outline_size          = DEFAULT_TITLE_OUTLINE_SIZE,
-  .title_font_outline_color.r       = DEFAULT_TITLE_OUTLINE_COLOR_R,
-  .title_font_outline_color.g       = DEFAULT_TITLE_OUTLINE_COLOR_G,
-  .title_font_outline_color.b       = DEFAULT_TITLE_OUTLINE_COLOR_B,
-  .title_font_outline_color.a       = DEFAULT_TITLE_OUTLINE_COLOR_A,
+  .title_shadows                    = DEFAULT_TITLE_SHADOWS,
+  .title_shadow_color.r             = DEFAULT_TITLE_SHADOW_COLOR_R,
+  .title_shadow_color.g             = DEFAULT_TITLE_SHADOW_COLOR_G,
+  .title_shadow_color.b             = DEFAULT_TITLE_SHADOW_COLOR_B,
+  .title_shadow_color.a             = DEFAULT_TITLE_SHADOW_COLOR_A,
   .background_mode                  = MODE_COLOR,
   .background_color.r               = DEFAULT_BACKGROUND_COLOR_R,
   .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
@@ -83,11 +83,11 @@ config_t config = {
   .clock_font_color.g               = DEFAULT_CLOCK_FONT_COLOR_G,
   .clock_font_color.b               = DEFAULT_CLOCK_FONT_COLOR_B,
   .clock_font_color.a               = DEFAULT_CLOCK_FONT_COLOR_A,
-  .clock_font_outline_size          = DEFAULT_CLOCK_FONT_OUTLINE_SIZE,
-  .clock_font_outline_color.r       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_R,
-  .clock_font_outline_color.g       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_G,
-  .clock_font_outline_color.b       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_B,
-  .clock_font_outline_color.a       = DEFAULT_CLOCK_FONT_OUTLINE_COLOR_A,
+  .clock_shadows                    = DEFAULT_CLOCK_SHADOWS,
+  .clock_shadow_color.r             = DEFAULT_CLOCK_SHADOW_COLOR_R,
+  .clock_shadow_color.g             = DEFAULT_CLOCK_SHADOW_COLOR_G,
+  .clock_shadow_color.b             = DEFAULT_CLOCK_SHADOW_COLOR_B,
+  .clock_shadow_color.a             = DEFAULT_CLOCK_SHADOW_COLOR_A,
   .clock_opacity[0]                 = '\0',
   .clock_font_size                  = DEFAULT_CLOCK_FONT_SIZE,
   .clock_time_format                = DEFAULT_CLOCK_TIME_FORMAT,
@@ -143,7 +143,6 @@ static int init_sdl()
 {  
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
-  int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
   #ifdef __unix__
   SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
   #endif
@@ -161,8 +160,23 @@ static int init_sdl()
     );
     return 1;
   }
+  int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
+  geo.screen_width = display_mode.w;
+  geo.screen_height = display_mode.h;
+  refresh_period = 1000 / display_mode.refresh_rate;
+  if (config.gamepad_enabled) {
+    delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
+    repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
+  }
+  geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
 
-  // Create window, hide mouse cursor
+
+  return 0;
+}
+
+// A function to create the window and renderer
+static int create_window()
+{
   window = SDL_CreateWindow(PROJECT_NAME, 
              SDL_WINDOWPOS_UNDEFINED,
              SDL_WINDOWPOS_UNDEFINED,
@@ -181,15 +195,6 @@ static int init_sdl()
 
   // Create HW accelerated renderer, get screen resolution for geometry calculations
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  SDL_GetCurrentDisplayMode(0, &display_mode);
-  geo.screen_width = display_mode.w;
-  geo.screen_height = display_mode.h;
-  refresh_period = 1000 / display_mode.refresh_rate;
-  if (config.gamepad_enabled) {
-    delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
-    repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
-  }
-  geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   if (renderer == NULL) {
     output_log(LOGLEVEL_FATAL, 
@@ -202,6 +207,16 @@ static int init_sdl()
   // Set background color
   set_draw_color();
 
+  #ifdef _WIN32
+  SDL_VERSION(&wm_info.version);
+  SDL_GetWindowWMInfo(window, &wm_info);
+  #endif
+  return 0;
+}
+
+static int init_sdl_image()
+{
+  int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
   // Initialize SDL_image
   if (!(IMG_Init(img_flags) & img_flags)) {
     output_log(LOGLEVEL_FATAL, 
@@ -210,10 +225,6 @@ static int init_sdl()
     );
     return 1;
   }
-  #ifdef _WIN32
-  SDL_VERSION(&wm_info.version);
-  SDL_GetWindowWMInfo(window, &wm_info);
-  #endif
   return 0;
 }
 
@@ -234,7 +245,7 @@ void set_draw_color()
 }
 
 // A function to initialize SDL's TTF subsystem
-static int init_ttf()
+static int int_sdl_ttf()
 {
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
@@ -246,13 +257,19 @@ static int init_ttf()
    }
 
   title_info.font_size = config.title_font_size;
-  title_info.outline_size = config.title_font_outline_size;
+  title_info.shadow = config.title_shadows;
   title_info.font_path = &config.title_font_path;
   title_info.max_width = config.icon_size,
   title_info.oversize_mode = config.title_oversize_mode;
   title_info.color = &config.title_font_color;
-  title_info.outline_color = &config.title_font_outline_color;
-  
+  if (config.title_shadows) {
+    title_info.shadow_color = &config.title_shadow_color;
+    calculate_shadow_alpha(title_info);
+  }
+  else {
+    title_info.shadow_color = NULL;
+  }
+
   int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
   if (error) {
     return error;
@@ -433,9 +450,8 @@ static void init_slideshow()
       "Changing background mode to color\n", 
       config.slideshow_directory
     );
-    quit_slideshow();
     config.background_mode = MODE_COLOR;
-    set_draw_color();
+    quit_slideshow();
   } 
   else if (num_images == 1) {
     output_log(LOGLEVEL_ERROR, 
@@ -443,16 +459,15 @@ static void init_slideshow()
       "Changing background mode to single image\n", 
       config.slideshow_directory
     );
-    background_texture = load_texture_from_file(slideshow->images[0]);
-    quit_slideshow();
+    free(config.background_image);
+    copy_string_alloc(&config.background_image, slideshow->images[0]);
     config.background_mode = MODE_IMAGE;
+    quit_slideshow();
   }
 
   // Generate array of random numbers for image order, load first image
   else {
     random_array(slideshow->order, slideshow->num_images);
-    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
-    background_texture = load_texture(surface);
     if (config.debug) {
       debug_slideshow(slideshow);
     }
@@ -1177,17 +1192,25 @@ int main(int argc, char *argv[])
   parse_config_file(config_file_path);
   free(config_file_path);
 
-  // Initialize libraries
-  if (init_sdl() || init_ttf() || init_svg()) {
+  // Initialize SDL, verify all settings are in their allowable range
+  if (init_sdl()) {
+    quit(EXIT_FAILURE);
+  }
+  validate_settings(&geo);
+
+  // Initialize slideshow
+  if (config.background_mode == MODE_SLIDESHOW) {
+    init_slideshow();
+  }
+
+  // Initialize remaining libraries, create window and renderer
+  if (init_sdl_image() || int_sdl_ttf() || init_svg() || create_window()) {
     quit(EXIT_FAILURE);
   }
 
   // Initialize timing
   ticks.main = SDL_GetTicks();
   ticks.last_input = ticks.main;
-
-  // Check settings against requirements
-  validate_settings(&geo);
 
   // Load gamepad overrides
   if (config.gamepad_enabled) {
@@ -1219,9 +1242,10 @@ int main(int argc, char *argv[])
     }
   }
 
-  // Initialize slideshow
+  // Render first slideshow image
   else if (config.background_mode == MODE_SLIDESHOW) {
-    init_slideshow();
+    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
+    background_texture = load_texture(surface);
   }
 
   // Initialize screensaver
