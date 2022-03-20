@@ -35,7 +35,6 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
         }
         else {
           output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", argv[i]);
-          quit(EXIT_FAILURE);
         }
       }
       if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
@@ -54,7 +53,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
       #endif
       else if (i != config_file_index) {
         #ifdef __unix__
-        printf("Unrecognized option %s\n",argv[i]);
+        fprintf(stderr, "Unrecognized option %s\n",argv[i]);
         print_usage();
         #endif
         quit(EXIT_FAILURE);
@@ -93,10 +92,6 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
 
     if (*config_file_path == NULL) {
       output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
-      #ifdef __unix__
-      print_usage();
-      #endif
-      quit(EXIT_FAILURE);
     }
   }
   output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", *config_file_path);
@@ -108,14 +103,12 @@ void parse_config_file(const char *config_file_path)
   FILE *file = fopen(config_file_path, "r");
   if (file == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file\n");
-    quit(EXIT_FAILURE);
   }
   int error = ini_parse_file(file, config_handler, &config);
   fclose(file);
   
   if (error < 0) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
-    quit(EXIT_FAILURE);
   }
 }
 

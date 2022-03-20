@@ -72,6 +72,10 @@ void output_log(log_level_t log_level, const char *format, ...)
   }
   #endif
   va_end(args);
+
+  if (log_level == LOGLEVEL_FATAL) {
+    quit(EXIT_FAILURE);
+  }
 }
 // A function to print the parsed settings to the command line
 void debug_settings()

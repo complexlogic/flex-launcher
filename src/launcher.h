@@ -263,10 +263,10 @@ typedef struct {
 } config_t;
 
 // Function prototypes
-static int init_sdl(void);
-static int init_sdl_image(void);
-static int create_window(void);
-static int int_sdl_ttf(void);
+static void init_sdl(void);
+static void init_sdl_image(void);
+static void create_window(void);
+static void int_sdl_ttf(void);
 static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position);
 static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position);
 static void update_slideshow(void);

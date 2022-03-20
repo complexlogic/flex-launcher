@@ -139,7 +139,7 @@ int repeat_period;
 
 
 // A function to initialize SDL
-static int init_sdl()
+static void init_sdl()
 {  
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
@@ -158,7 +158,6 @@ static int init_sdl()
       "Fatal Error: Could not initialize SDL\n%s\n", 
       SDL_GetError()
     );
-    return 1;
   }
   int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
   geo.screen_width = display_mode.w;
@@ -169,13 +168,10 @@ static int init_sdl()
     repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
   }
   geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
-
-
-  return 0;
 }
 
 // A function to create the window and renderer
-static int create_window()
+static void create_window()
 {
   window = SDL_CreateWindow(PROJECT_NAME, 
              SDL_WINDOWPOS_UNDEFINED,
@@ -189,7 +185,6 @@ static int create_window()
       "Fatal Error: Could not create SDL Window\n%s\n", 
       SDL_GetError()
     );
-    return 1;
   }
   SDL_ShowCursor(SDL_DISABLE);
 
@@ -201,7 +196,6 @@ static int create_window()
       "Fatal Error: Could not initialize renderer\n%s\n", 
       SDL_GetError()
     );
-    return 1;
   }
 
   // Set background color
@@ -211,10 +205,9 @@ static int create_window()
   SDL_VERSION(&wm_info.version);
   SDL_GetWindowWMInfo(window, &wm_info);
   #endif
-  return 0;
 }
 
-static int init_sdl_image()
+static void init_sdl_image()
 {
   int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
   // Initialize SDL_image
@@ -223,9 +216,7 @@ static int init_sdl_image()
       "Fatal Error: Could not initialize SDL_image\n%s\n", 
       IMG_GetError()
     );
-    return 1;
   }
-  return 0;
 }
 
 // A function to set the color of the renderer
@@ -245,7 +236,7 @@ void set_draw_color()
 }
 
 // A function to initialize SDL's TTF subsystem
-static int int_sdl_ttf()
+static void int_sdl_ttf()
 {
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
@@ -253,7 +244,6 @@ static int int_sdl_ttf()
       "Fatal Error: Could not initialize SDL_ttf\n%s\n", 
       TTF_GetError()
     );
-    return 1;
    }
 
   title_info.font_size = config.title_font_size;
@@ -1193,9 +1183,7 @@ int main(int argc, char *argv[])
   free(config_file_path);
 
   // Initialize SDL, verify all settings are in their allowable range
-  if (init_sdl()) {
-    quit(EXIT_FAILURE);
-  }
+  init_sdl();
   validate_settings(&geo);
 
   // Initialize slideshow
@@ -1204,9 +1192,10 @@ int main(int argc, char *argv[])
   }
 
   // Initialize remaining libraries, create window and renderer
-  if (init_sdl_image() || int_sdl_ttf() || init_svg() || create_window()) {
-    quit(EXIT_FAILURE);
-  }
+  init_sdl_image();
+  int_sdl_ttf();
+  init_svg();
+  create_window();
 
   // Initialize timing
   ticks.main = SDL_GetTicks();
@@ -1295,16 +1284,14 @@ int main(int argc, char *argv[])
   // Load the default menu and display it
   if (config.default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
-    quit(EXIT_FAILURE);
   }
   default_menu = get_menu(config.default_menu);
   if (default_menu == NULL) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu\n");
-    quit(EXIT_FAILURE);
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Default menu %s not found in config file\n", config.default_menu);
   }
   error = load_menu(default_menu, false, true);
   if (error) {
-    quit(EXIT_FAILURE);
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu %s\n", config.default_menu);
   }
    
   // Main program loop
