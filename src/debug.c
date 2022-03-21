@@ -132,10 +132,15 @@ void debug_settings()
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_OVERSIZE_MODE, "None");
   }
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_TITLE_PADDING, config.title_padding);
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_HIGHLIGHT_COLOR, config.highlight_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_OUTLINE_SIZE, config.highlight_outline_size);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.a);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_CORNER_RADIUS, config.highlight_rx);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_VPADDING, config.highlight_vpadding);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_HIGHLIGHT_HPADDING, config.highlight_hpadding);

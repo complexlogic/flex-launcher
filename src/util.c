@@ -163,11 +163,20 @@ int config_handler(void *user, const char *section, const char *name, const char
         pconfig->icon_size = icon_size;
       }
     }
-    else if (!strcmp(name,SETTING_DEFAULT_MENU)) {
+    else if (!strcmp(name, SETTING_DEFAULT_MENU)) {
       copy_string_alloc(&pconfig->default_menu, value);
     }
-    else if (!strcmp(name,SETTING_HIGHLIGHT_COLOR)) {
-      hex_to_color(value, &pconfig->highlight_color);
+    else if (!strcmp(name, SETTING_HIGHLIGHT_FILL_COLOR)) {
+      hex_to_color(value, &pconfig->highlight_fill_color);
+    }
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OUTLINE_COLOR)) {
+      hex_to_color(value, &pconfig->highlight_outline_color);
+    }
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OUTLINE_SIZE)) {
+      int highlight_outline_size = atoi(value);
+      if (highlight_outline_size >= 0) {
+        pconfig->highlight_outline_size = highlight_outline_size;
+      }
     }
     else if (!strcmp(name,SETTING_HIGHLIGHT_CORNER_RADIUS)) {
       Uint16 rx = (Uint16) atoi(value);
@@ -229,9 +238,14 @@ int config_handler(void *user, const char *section, const char *name, const char
         copy_string(pconfig->title_opacity, value, sizeof(pconfig->title_opacity));
       }
     }
-    else if (!strcmp(name, SETTING_HIGHLIGHT_OPACITY)) {
+    else if (!strcmp(name, SETTING_HIGHLIGHT_FILL_OPACITY)) {
       if (is_percent(value)) {
-        copy_string(pconfig->highlight_opacity, value, sizeof(pconfig->highlight_opacity));
+        copy_string(pconfig->highlight_fill_opacity, value, sizeof(pconfig->highlight_fill_opacity));
+      }
+    }
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OUTLINE_OPACITY)) {
+      if (is_percent(value)) {
+        copy_string(pconfig->highlight_outline_opacity, value, sizeof(pconfig->highlight_outline_opacity));
       }
     }
     else if (!strcmp(name, SETTING_BUTTON_CENTERLINE)) {
@@ -904,11 +918,18 @@ void validate_settings(geometry_t *geo)
       config.title_font_color.a = (Uint8) title_opacity;
     }
   }
-  if (config.highlight_opacity[0] != '\0') {
-    int highlight_opacity = INVALID_PERCENT_VALUE;
-    convert_percent_to_int(config.highlight_opacity, &highlight_opacity, 255);
-    if (highlight_opacity != INVALID_PERCENT_VALUE) {
-      config.highlight_color.a = (Uint8) highlight_opacity;
+  if (config.highlight_fill_opacity[0] != '\0') {
+    int highlight_fill_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.highlight_fill_opacity, &highlight_fill_opacity, 255);
+    if (highlight_fill_opacity != INVALID_PERCENT_VALUE) {
+      config.highlight_fill_color.a = (Uint8) highlight_fill_opacity;
+    }
+  }
+  if (config.highlight_outline_opacity[0] != '\0') {
+    int highlight_outline_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.highlight_outline_opacity, &highlight_outline_opacity, 255);
+    if (highlight_outline_opacity != INVALID_PERCENT_VALUE) {
+      config.highlight_outline_color.a = (Uint8) highlight_outline_opacity;
     }
   }
   if (config.scroll_indicator_opacity[0] != '\0') {
@@ -1023,6 +1044,18 @@ void validate_settings(geometry_t *geo)
     button_centerline = upper_limit;
   }
   geo->y_margin = button_centerline - button_height / 2;
+
+  // Max highlight outline
+  int max_highlight_outline_size = (config.highlight_hpadding < config.highlight_vpadding) 
+                                   ? config.highlight_hpadding : config.highlight_vpadding;
+  if (config.highlight_outline_size > max_highlight_outline_size) {
+    config.highlight_outline_size = max_highlight_outline_size;
+  }
+
+  // Don't allow rounded rectangle with outline due to Nanosvg bug
+  if (config.highlight_rx && config.highlight_outline_size) {
+    config.highlight_rx = 0;
+  }
 }
 
 // A function to retreive menu struct from the linked list via the menu name

@@ -38,10 +38,15 @@ config_t config = {
   .background_color.b               = DEFAULT_BACKGROUND_COLOR_B,
   .background_color.a               = 0xFF,
   .icon_size                        = DEFAULT_ICON_SIZE,
-  .highlight_color.r                = DEFAULT_HIGHLIGHT_COLOR_R,
-  .highlight_color.g                = DEFAULT_HIGHLIGHT_COLOR_G,
-  .highlight_color.b                = DEFAULT_HIGHLIGHT_COLOR_B,
-  .highlight_color.a                = DEFAULT_HIGHLIGHT_COLOR_A,
+  .highlight_fill_color.r           = DEFAULT_HIGHLIGHT_FILL_COLOR_R,
+  .highlight_fill_color.g           = DEFAULT_HIGHLIGHT_FILL_COLOR_G,
+  .highlight_fill_color.b           = DEFAULT_HIGHLIGHT_FILL_COLOR_B,
+  .highlight_fill_color.a           = DEFAULT_HIGHLIGHT_FILL_COLOR_A,
+  .highlight_outline_color.r        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_R,
+  .highlight_outline_color.g        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_G,
+  .highlight_outline_color.b        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_B,
+  .highlight_outline_color.a        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_A,
+  .highlight_outline_size           = DEFAULT_HIGHLIGHT_OUTLINE_SIZE,
   .highlight_rx                     = DEFAULT_HIGHLIGHT_CORNER_RADIUS,
   .title_padding                    = -1,
   .max_buttons                      = DEFAULT_MAX_BUTTONS,
@@ -49,7 +54,8 @@ config_t config = {
   .highlight_vpadding               = -1,
   .highlight_hpadding               = -1,
   .title_opacity[0]                 = '\0',
-  .highlight_opacity[0]             = '\0',
+  .highlight_fill_opacity[0]        = '\0',
+  .highlight_outline_opacity[0]     = '\0',
   .button_centerline[0]             = '\0',
   .icon_spacing_str[0]              = '\0',
   .scroll_indicators                = DEFAULT_SCROLL_INDICATORS,
@@ -236,7 +242,7 @@ void set_draw_color()
 }
 
 // A function to initialize SDL's TTF subsystem
-static void int_sdl_ttf()
+static void init_sdl_ttf()
 {
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
@@ -262,11 +268,10 @@ static void int_sdl_ttf()
 
   int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
   if (error) {
-    return error;
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load title font\n");
   }
 
   TTF_SizeUTF8(title_info.font, "TEST STRING", NULL, &geo.font_height);
-  return 0;
 }
 
 // A function to close subsystems and free memory before quitting
@@ -1193,7 +1198,7 @@ int main(int argc, char *argv[])
 
   // Initialize remaining libraries, create window and renderer
   init_sdl_image();
-  int_sdl_ttf();
+  init_sdl_ttf();
   init_svg();
   create_window();
 
@@ -1252,12 +1257,10 @@ int main(int argc, char *argv[])
   // Render highlight
   int button_height = config.icon_size + config.title_padding + geo.font_height;
   highlight = malloc(sizeof(highlight_t));
-  highlight->rect.w = config.icon_size + 2*config.highlight_hpadding;
-  highlight->rect.h = button_height + 2*config.highlight_vpadding;
-  highlight->texture = render_highlight(highlight->rect.w,
-                         highlight->rect.h,
+  highlight->texture = render_highlight(config.icon_size + 2*config.highlight_hpadding,
+                         button_height + 2*config.highlight_vpadding,
                          config.highlight_rx,
-                         NULL
+                         &highlight->rect
                        );
 
   // Render scroll indicators

@@ -221,8 +221,11 @@ typedef struct {
   char title_opacity[PERCENT_MAX_CHARS];
   launcher_mode_t title_oversize_mode; 
   unsigned int title_padding;  
-  SDL_Color highlight_color;
-  char highlight_opacity[PERCENT_MAX_CHARS];
+  SDL_Color highlight_fill_color;
+  SDL_Color highlight_outline_color;
+  int highlight_outline_size;
+  char highlight_fill_opacity[PERCENT_MAX_CHARS];
+  char highlight_outline_opacity[PERCENT_MAX_CHARS];
   unsigned int highlight_rx;
   int highlight_vpadding;
   int highlight_hpadding;
@@ -266,7 +269,7 @@ typedef struct {
 static void init_sdl(void);
 static void init_sdl_image(void);
 static void create_window(void);
-static void int_sdl_ttf(void);
+static void init_sdl_ttf(void);
 static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position);
 static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position);
 static void update_slideshow(void);

@@ -230,18 +230,27 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
 {
   // Insert user config variables into SVG-formatted text buffer
   char *buffer = NULL;
-  sprintf_alloc(&buffer, SVG_HIGHLIGHT, width, height, width, height, rx);
-  
+  char *outline_buffer = NULL;
+  if (config.highlight_outline_size) {
+    float stroke_opacity = ((float) config.highlight_outline_color.a) / 255.0f;
+    format_highlight_outline(&outline_buffer, config.highlight_outline_size, config.highlight_outline_color, stroke_opacity);
+  }
+  else {
+    outline_buffer = "";
+  }
+  float fill_opacity = ((float) config.highlight_fill_color.a) / 255.0f;
+  format_highlight(&buffer, width, height, config.highlight_rx, config.highlight_fill_color, fill_opacity, outline_buffer);
+  printf("%s\n", buffer);
+
   // Rasterize the SVG
   SDL_Texture *texture = rasterize_svg(buffer, -1, -1, rect);
-  free(buffer);
   
-  // Set color
-  SDL_SetTextureColorMod(texture,
-                         config.highlight_color.r,
-                         config.highlight_color.g,
-                         config.highlight_color.b);
-  SDL_SetTextureAlphaMod(texture,config.highlight_color.a);
+  // Cleanup
+  free(buffer);
+  if (config.highlight_outline_size) {
+    free(outline_buffer);
+  }
+
   return texture;
 }
 

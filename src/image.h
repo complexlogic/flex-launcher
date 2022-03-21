@@ -1,6 +1,11 @@
 // Dynamic SVG generation for highlight
-#define SVG_HIGHLIGHT "<svg viewBox=\"0 0 %i %i\"><rect x=\"0\" width=\"%i\" height=\"%i\" rx=\"%i\" fill=\"white\" /></svg>"
+#define HIGHLIGHT_OUTLINE_FORMAT " stroke-width=\"%i\" stroke=\"#%02X%02X%02X\" stroke-opacity=\"%.2f\""
+#define HIGHLIGHT_FORMAT "<svg viewBox=\"0 0 %i %i\"><rect x=\"0\" width=\"%i\" height=\"%i\" rx=\"%i\" fill=\"#%02X%02X%02X\" fill-opacity=\"%.2f\"%s/></svg>"
 #define SHADOW_OPACITY_MULTIPLIER 0.75F
+
+// Macro functions
+#define format_highlight_outline(buffer, outline_size, outline_color, outline_opacity) sprintf_alloc(buffer, HIGHLIGHT_OUTLINE_FORMAT, outline_size, outline_color.r, outline_color.g, outline_color.b, outline_opacity)
+#define format_highlight(buffer, width, height, corner_radius, fill_color, fill_opacity, outline_buffer) sprintf_alloc(buffer, HIGHLIGHT_FORMAT, width, height, width, height, corner_radius, fill_color.r, fill_color.g, fill_color.b, fill_opacity, outline_buffer)
 #define calculate_shadow_alpha(x) x.shadow_color->a = (Uint8) (SHADOW_OPACITY_MULTIPLIER * (float) x.color->a)
 
 typedef struct {
