@@ -1201,16 +1201,16 @@ int main(int argc, char *argv[])
 
   // Initialize SDL, verify all settings are in their allowable range
   init_sdl();
+  init_sdl_image();
+  init_sdl_ttf();
   validate_settings(&geo);
-
+  
   // Initialize slideshow
   if (config.background_mode == MODE_SLIDESHOW) {
     init_slideshow();
   }
 
-  // Initialize remaining libraries, create window and renderer
-  init_sdl_image();
-  init_sdl_ttf();
+  // Initialize Nanosvg, create window and renderer
   init_svg();
   create_window();
 
