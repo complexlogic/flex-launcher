@@ -157,6 +157,17 @@ int config_handler(void *user, const char *section, const char *name, const char
       copy_string_alloc(&pconfig->slideshow_directory, value);
       clean_path(pconfig->slideshow_directory);
     }
+    else if (!strcmp(name, SETTING_BACKGROUND_OVERLAY)) {
+      pconfig->background_overlay = convert_bool(value, DEFAULT_BACKGROUND_OVERLAY);
+    }
+    else if (!strcmp(name,SETTING_BACKGROUND_OVERLAY_COLOR)) {
+      hex_to_color(value, &pconfig->background_overlay_color);
+    }
+    else if (!strcmp(name, SETTING_BACKGROUND_OVERLAY_OPACITY)) {
+      if (is_percent(value)) {
+        copy_string(pconfig->background_overlay_opacity, value, sizeof(pconfig->background_overlay_opacity));
+      }
+    }
     else if (!strcmp(name,SETTING_ICON_SIZE)) {
       Uint16 icon_size = (Uint16) atoi(value);
       if (icon_size >= MIN_ICON_SIZE && icon_size <= MAX_ICON_SIZE) {
@@ -918,6 +929,14 @@ void validate_settings(geometry_t *geo)
       config.title_font_color.a = (Uint8) title_opacity;
     }
   }
+  if (config.background_overlay_opacity[0] != '\0') {
+    int background_overlay_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.background_overlay_opacity, &background_overlay_opacity, 255);
+    if (background_overlay_opacity != INVALID_PERCENT_VALUE) {
+      config.background_overlay_color.a = (Uint8) background_overlay_opacity;
+    }
+  }
+
   if (config.highlight_fill_opacity[0] != '\0') {
     int highlight_fill_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.highlight_fill_opacity, &highlight_fill_opacity, 255);

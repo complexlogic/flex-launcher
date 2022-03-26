@@ -37,6 +37,12 @@ config_t config = {
   .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
   .background_color.b               = DEFAULT_BACKGROUND_COLOR_B,
   .background_color.a               = 0xFF,
+  .background_overlay               = DEFAULT_BACKGROUND_OVERLAY,
+  .background_overlay_color.r       = DEFAULT_BACKGROUND_OVERLAY_COLOR_R,
+  .background_overlay_color.g       = DEFAULT_BACKGROUND_OVERLAY_COLOR_G,
+  .background_overlay_color.b       = DEFAULT_BACKGROUND_OVERLAY_COLOR_B,
+  .background_overlay_color.a       = DEFAULT_BACKGROUND_OVERLAY_COLOR_A,
+  .background_overlay_opacity[0]    = '\0',
   .icon_size                        = DEFAULT_ICON_SIZE,
   .highlight_fill_color.r           = DEFAULT_HIGHLIGHT_FILL_COLOR_R,
   .highlight_fill_color.g           = DEFAULT_HIGHLIGHT_FILL_COLOR_G,
@@ -118,6 +124,7 @@ state_t state = {
 SDL_Window *window                  = NULL;
 SDL_Renderer *renderer              = NULL;
 SDL_Texture *background_texture     = NULL;
+SDL_Texture *background_overlay     = NULL;
 menu_t *default_menu                = NULL;
 menu_t *current_menu                = NULL;
 entry_t *current_entry              = NULL;
@@ -770,6 +777,11 @@ static void draw_screen()
     SDL_RenderCopy(renderer, slideshow->transition_texture, NULL, NULL);
   }
 
+  // Draw background overlay
+  if (config.background_overlay) {
+    SDL_RenderCopy(renderer, background_overlay, NULL, NULL);
+  }
+
   // Draw scroll indicators
   if (config.scroll_indicators &&
   (current_menu->page*config.max_buttons + geo.num_buttons) <= (current_menu->num_entries - 1)) {
@@ -1266,6 +1278,25 @@ int main(int argc, char *argv[])
   // Render scroll indicators
   if (config.scroll_indicators) {
     render_scroll_indicators();
+  }
+
+  // Render background overlay
+  if (config.background_overlay) {
+    SDL_Surface *overlay_surface = NULL;
+    overlay_surface = SDL_CreateRGBSurfaceWithFormat(0, 
+                        geo.screen_width, 
+                        geo.screen_height, 
+                        32,
+                        SDL_PIXELFORMAT_ARGB8888
+                      );
+    Uint32 overlay_color = SDL_MapRGBA(overlay_surface->format, 
+                             config.background_overlay_color.r, 
+                             config.background_overlay_color.g, 
+                             config.background_overlay_color.b, 
+                             config.background_overlay_color.a
+                           );
+    SDL_FillRect(overlay_surface, NULL, overlay_color);
+    background_overlay = load_texture(overlay_surface);
   }
 
   // Register exit hotkey with Windows

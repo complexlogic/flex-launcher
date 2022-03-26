@@ -210,6 +210,9 @@ typedef struct {
   SDL_Color background_color; // Background color
   char *background_image; // Path to background image
   char *slideshow_directory;
+  bool background_overlay;
+  SDL_Color background_overlay_color;
+  char background_overlay_opacity[PERCENT_MAX_CHARS];
   Uint16 icon_size;
   int icon_spacing;
   char icon_spacing_str[PERCENT_MAX_CHARS];

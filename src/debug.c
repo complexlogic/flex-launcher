@@ -103,6 +103,16 @@ void debug_settings()
   }
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_SLIDESHOW_IMAGE_DURATION, config.slideshow_image_duration / 1000);
   output_log(LOGLEVEL_DEBUG, "%s: %f\n", SETTING_SLIDESHOW_TRANSITION_TIME, ((float) config.slideshow_transition_time) / 1000.0f);
+  if (config.background_overlay) {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_BACKGROUND_OVERLAY, "true");
+  }
+  else {
+    output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_BACKGROUND_OVERLAY, "false");
+  }
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.a);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_ICON_SIZE, config.icon_size);
   output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_ICON_SPACING, config.icon_spacing);
   output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_TITLE_FONT, config.title_font_path);

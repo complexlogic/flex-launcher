@@ -240,7 +240,6 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
   }
   float fill_opacity = ((float) config.highlight_fill_color.a) / 255.0f;
   format_highlight(&buffer, width, height, config.highlight_rx, config.highlight_fill_color, fill_opacity, outline_buffer);
-  printf("%s\n", buffer);
 
   // Rasterize the SVG
   SDL_Texture *texture = rasterize_svg(buffer, -1, -1, rect);
