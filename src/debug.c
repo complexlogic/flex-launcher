@@ -160,10 +160,15 @@ void debug_settings()
   else {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_SCROLL_INDICATORS, "false");
   }
-  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.r);
-  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.g);
-  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.b);
-  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_SCROLL_INDICATOR_COLOR, config.scroll_indicator_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.a);
+  output_log(LOGLEVEL_DEBUG, "%s: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_SIZE, config.scroll_indicator_outline_size);
+  output_log(LOGLEVEL_DEBUG, "%s R: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.r);
+  output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.g);
+  output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.b);
+  output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.a);
   if (config.on_launch == MODE_HIDE) {
     output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Hide");
   }

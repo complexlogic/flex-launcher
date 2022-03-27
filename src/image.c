@@ -210,6 +210,7 @@ SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
 }
 
 // A function to rasterize an SVG from a file
+/* No longer used, reserved for future re-use
 SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *rect)
 {
   SDL_Texture *texture = NULL;
@@ -224,6 +225,7 @@ SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *r
   }
   return texture;
 }
+*/
 
 // A function to render the highlight for the buttons
 SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
@@ -251,6 +253,42 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
   }
 
   return texture;
+}
+
+// A function to render the scroll indicators
+void render_scroll_indicators(scroll_t *scroll, int height, geometry_t *geo)
+{
+  // Format the SVG
+  char *buffer = NULL;
+  float opacity = (float) config.scroll_indicator_fill_color.a / 255.0f;
+  format_scroll_indicator(&buffer, 
+    config.scroll_indicator_fill_color, 
+    config.scroll_indicator_outline_size, 
+    config.scroll_indicator_outline_color, 
+    opacity
+  );
+
+  // Rasterize the SVG
+  scroll->texture = rasterize_svg(buffer,
+                      -1,
+                      height,
+                      &scroll->rect_right
+                    );
+  free(buffer);
+  scroll->rect_left.w = scroll->rect_right.w;
+  scroll->rect_left.h = scroll->rect_right.h;
+  if (scroll->texture == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
+    free(scroll);
+    config.scroll_indicators = false;
+    return;
+  }
+
+  // Calculate screen position
+  scroll->rect_right.y = geo->screen_height - geo->screen_margin - scroll->rect_right.h;
+  scroll->rect_right.x = geo->screen_width - geo->screen_margin - scroll->rect_right.w;
+  scroll->rect_left.y = scroll->rect_right.y;
+  scroll->rect_left.x = geo->screen_margin;
 }
 
 // A function to render text

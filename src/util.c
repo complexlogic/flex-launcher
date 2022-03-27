@@ -267,8 +267,17 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (!strcmp(name,SETTING_SCROLL_INDICATORS)) {
       pconfig->scroll_indicators = convert_bool(value, DEFAULT_SCROLL_INDICATORS);
     }
-    else if (!strcmp(name,SETTING_SCROLL_INDICATOR_COLOR)) {
-      hex_to_color(value, &pconfig->scroll_indicator_color);
+    else if (!strcmp(name,SETTING_SCROLL_INDICATOR_FILL_COLOR)) {
+      hex_to_color(value, &pconfig->scroll_indicator_fill_color);
+    }
+    else if (!strcmp(name, SETTING_SCROLL_INDICATOR_OUTLINE_SIZE)) {
+      int scroll_indicator_outline_size = atoi(value);
+      if (scroll_indicator_outline_size >= 0) {
+        pconfig->scroll_indicator_outline_size = scroll_indicator_outline_size;
+      }
+    }
+    else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OUTLINE_COLOR)) {
+      hex_to_color(value, &pconfig->scroll_indicator_outline_color);
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OPACITY)) {
       if (is_percent(value)) {
@@ -955,7 +964,8 @@ void validate_settings(geometry_t *geo)
     int scroll_indicator_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.scroll_indicator_opacity, &scroll_indicator_opacity, 255);
     if (scroll_indicator_opacity != INVALID_PERCENT_VALUE) {
-      config.scroll_indicator_color.a = (Uint8) scroll_indicator_opacity;
+      config.scroll_indicator_fill_color.a = (Uint8) scroll_indicator_opacity;
+      config.scroll_indicator_outline_color.a = config.scroll_indicator_fill_color.a;
     }
   }
   if (config.clock_opacity[0] != '\0') {
@@ -1071,6 +1081,12 @@ void validate_settings(geometry_t *geo)
     config.highlight_outline_size = max_highlight_outline_size;
   }
 
+  // Max scroll indicator outline
+  int max_scroll_indicator_outline_size = (int) ((float) geo->screen_height * MAX_SCROLL_INDICATOR_OUTLINE);
+  if (config.scroll_indicator_outline_size > max_scroll_indicator_outline_size) {
+    config.scroll_indicator_outline_size = max_scroll_indicator_outline_size;
+  }
+
   // Don't allow rounded rectangle with outline due to Nanosvg bug
   if (config.highlight_rx && config.highlight_outline_size) {
     config.highlight_rx = 0;
@@ -1126,6 +1142,7 @@ entry_t *advance_entries(entry_t *entry, int spaces, direction_t direction)
 }
 
 // A function to read a file into a null-terminated buffer
+/* No longer used, reserved for future re-use
 void read_file(const char *path, char **buffer)
 {
   FILE *file = fopen(path, "rb");
@@ -1161,6 +1178,7 @@ void read_file(const char *path, char **buffer)
   }
   *(*buffer + total_bytes_read) = '\0';
 }
+*/
 
 // A function to dynamically allocate a buffer for and copy a formatted string
 void sprintf_alloc(char **buffer, const char *format, ...)

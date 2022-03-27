@@ -65,10 +65,15 @@ config_t config = {
   .button_centerline[0]             = '\0',
   .icon_spacing_str[0]              = '\0',
   .scroll_indicators                = DEFAULT_SCROLL_INDICATORS,
-  .scroll_indicator_color.r         = DEFAULT_SCROLL_INDICATOR_COLOR_R,
-  .scroll_indicator_color.g         = DEFAULT_SCROLL_INDICATOR_COLOR_G,
-  .scroll_indicator_color.b         = DEFAULT_SCROLL_INDICATOR_COLOR_B,
-  .scroll_indicator_color.a         = DEFAULT_SCROLL_INDICATOR_COLOR_A,
+  .scroll_indicator_fill_color.r    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_R,
+  .scroll_indicator_fill_color.g    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_G,
+  .scroll_indicator_fill_color.b    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_B,
+  .scroll_indicator_fill_color.a    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_A,
+  .scroll_indicator_outline_size    = DEFAULT_SCROLL_INDICATOR_OUTLINE_SIZE,
+  .scroll_indicator_outline_color.r = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_R,
+  .scroll_indicator_outline_color.g = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_G,
+  .scroll_indicator_outline_color.b = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_B,
+  .scroll_indicator_outline_color.a = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_A,
   .scroll_indicator_opacity[0]      = '\0',
   .title_oversize_mode              = MODE_TRUNCATE,
   .reset_on_back                    = DEFAULT_RESET_ON_BACK,
@@ -527,65 +532,6 @@ static void init_screensaver()
 static void resume_slideshow()
 {
   ticks.slideshow_load = ticks.main;
-}
-
-// A function to render the scroll indicators
-static void render_scroll_indicators()
-{
-  // Calcuate the geometry
-  scroll = malloc(sizeof(scroll_t));
-  scroll->texture = NULL;
-  int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT);
-
-  // Find scroll indicator file
-  char *prefixes[2];
-  char assets_exe_buffer[MAX_PATH_CHARS + 1];
-  prefixes[0] = join_paths(assets_exe_buffer, sizeof(assets_exe_buffer), 2, config.exe_path, PATH_ASSETS_EXE);
-  #ifdef __unix__
-  prefixes[1] = PATH_ASSETS_SYSTEM;
-  #else
-  prefixes[1] = PATH_ASSETS_RELATIVE;
-  #endif
-  char *scroll_indicator_path = find_file(FILENAME_SCROLL_INDICATOR, 2, prefixes);
-
-  if (scroll_indicator_path == NULL) {
-    output_log(LOGLEVEL_ERROR, 
-               "Error: Could not find scroll indicator SVG, disabling feature\n");
-    free(scroll);
-    config.scroll_indicators = false;
-    return;
-  }
-  output_log(LOGLEVEL_DEBUG, "Scroll indicator found: %s\n", 
-              scroll_indicator_path);
-
-  // Render the SVG
-  scroll->texture = rasterize_svg_from_file(scroll_indicator_path,
-                      -1,
-                      scroll_indicator_height,
-                      &scroll->rect_right
-                    );
-  scroll->rect_left.w = scroll->rect_right.w;
-  scroll->rect_left.h = scroll->rect_right.h;
-  free(scroll_indicator_path);
-  if (scroll->texture == NULL) {
-    output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
-    free(scroll);
-    config.scroll_indicators = false;
-    return;
-  }
-  // Calculate screen position
-  scroll->rect_right.y = geo.screen_height - geo.screen_margin - scroll->rect_right.h;
-  scroll->rect_right.x = geo.screen_width - geo.screen_margin - scroll->rect_right.w;
-  scroll->rect_left.y = scroll->rect_right.y;
-  scroll->rect_left.x = geo.screen_margin;
-
-  // Set color
-  SDL_SetTextureColorMod(scroll->texture,
-                          config.scroll_indicator_color.r,
-                          config.scroll_indicator_color.g,
-                          config.scroll_indicator_color.b);
-  SDL_SetTextureAlphaMod(scroll->texture,
-                          config.scroll_indicator_color.a);
 }
 
 // A function to load a menu
@@ -1277,7 +1223,10 @@ int main(int argc, char *argv[])
 
   // Render scroll indicators
   if (config.scroll_indicators) {
-    render_scroll_indicators();
+    scroll = malloc(sizeof(scroll_t));
+    scroll->texture = NULL;
+    int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT);
+    render_scroll_indicators(scroll, scroll_indicator_height, &geo);
   }
 
   // Render background overlay

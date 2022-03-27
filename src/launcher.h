@@ -22,8 +22,9 @@
 #define GAMEPAD_REPEAT_DELAY 500
 #define GAMEPAD_REPEAT_INTERVAL 25
 #define CLOCK_UPDATE_PERIOD 1000
-#define SCROLL_INDICATOR_HEIGHT 0.1F
-#define SCREEN_MARGIN 0.06F
+#define SCROLL_INDICATOR_HEIGHT 0.11F
+#define MAX_SCROLL_INDICATOR_OUTLINE 0.01F
+#define SCREEN_MARGIN 0.05F
 #define MAX_CLOCK_MARGIN 0.1F
 #define MIN_BUTTON_CENTERLINE 0.25F
 #define MAX_BUTTON_CENTERLINE 0.75F
@@ -234,7 +235,9 @@ typedef struct {
   int highlight_hpadding;
   char button_centerline[PERCENT_MAX_CHARS];
   bool scroll_indicators;
-  SDL_Color scroll_indicator_color;
+  SDL_Color scroll_indicator_fill_color;
+  int scroll_indicator_outline_size;
+  SDL_Color scroll_indicator_outline_color;
   char scroll_indicator_opacity[PERCENT_MAX_CHARS];
   bool reset_on_back;
   bool mouse_select;
@@ -297,6 +300,5 @@ static void execute_command(const char *command);
 static void launch_application(char *cmd);
 static void poll_gamepad(void);
 static void connect_gamepad(int device_index);
-static void render_scroll_indicators(void);
 void quit(int status);
 static void cleanup(void);
