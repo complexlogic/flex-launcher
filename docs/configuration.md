@@ -1,36 +1,20 @@
+---
+layout: default
+title: Configuration
+---
 # Configuring Flex Launcher
+## Table of Contents
 
-<details open>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#overview">Overview</a>
-    </li>
-    <li>
-      <a href="#settings">Settings</a>
-    </li>
-    <li>
-      <a href="#creating-menus">Creating Menus</a>
-      <ul>
-        <li><a href="#special-commands">Special Commands</a></li>
-        <li><a href="#desktop-files-linux-only">Desktop Files (Linux Only)</a></li>
-      </ul>
-    <li>
-      <a href="#clock">Clock</a>
-    </li>
-    <li>
-      <a href="#screensaver">Screensaver</a>
-    </li>
-    <li>
-      <a href="#hotkeys">Hotkeys</a>
-    </li>
-    <li>
-      <a href="#gamepad-controls">Gamepad Controls</a>
-    </li>
-  </ol>
-</details>
- 
- 
+1. [Overview](#overview)
+2. [Settings](#settings)
+3. [Creating Menus](#creating-menus)
+  - [Special Commands](#special-commands)
+  - [Desktop Files (Linux Only)](#desktop-files-linux-only)
+4. [Clock](#clock)
+5. [Screensaver](#screensaver)
+6. [Hotkeys](#hotkeys)
+7. [Gamepad Controls](#gamepad-controls)
+
 ## Overview
 Flex Launcher uses an [INI file](https://en.wikipedia.org/wiki/INI_file) to configure settings and menus. The INI file consists of sections enclosed in square brackets, and in each section there are entries which consist of a key and a value. Example:
 ```
@@ -46,99 +30,37 @@ A line can be commented out by using the # character at the beginning of the lin
 - Relative paths are evaluated with respect to the *current working directory*, which may not be the same as the directory that the config file is located in. It is recommended to use absolute paths whenever possible to eliminate any confusion.
 - Color is specified in 24 bit RGB HEX format, *without* a 0x or # prefix e.g. the color red should be FF0000. HEX color pickers can be easily found online to assist color choices.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
+
 ## Settings
 Every config file must have a section titled "Settings". Within this section, the following keys may be used to control the behavior of Flex Launcher:
-
-
-<details open>
-  <summary>List of settings</summary>
-  <ul>
-    <li>
-      <a href="#defaultmenu">DefaultMenu</a>
-    </li>
-    <li>
-      <a href="#maxbuttons">MaxButtons</a>
-    </li>
-    <li>
-      <a href="#backgroundmode">BackgroundMode</a>
-    </li>
-    <li>
-      <a href="#backgroundcolor">BackgroundColor</a>
-    </li>
-    <li>
-      <a href="#backgroundimage">BackgroundImage</a>
-    </li>
-    <li>
-      <a href="#slideshowdirectory">SlideshowDirectory</a>
-    </li>
-    <li>
-      <a href="#slideshowimageduration">SlideshowImageDuration</a>
-    </li>
-     <li>
-      <a href="#slideshowtransitiontime">SlideshowTransitionTime</a>
-    </li>
-    <li>
-      <a href="#iconsize">IconSize</a>
-    </li>
-    <li>
-      <a href="#iconspacing">IconSpacing</a>
-    </li>
-    <li>
-      <a href="#titlefont">TitleFont</a>
-    </li>
-    <li>
-      <a href="#titlefontsize">TitleFontSize</a>
-    </li>
-    <li>
-      <a href="#titlecolor">TitleColor</a>
-    </li>
-    <li>
-      <a href="#titleopacity">TitleOpacity</a>
-    </li>
-    <li>
-      <a href="#titleoversizemode">TilteOversizeMode</a>
-    </li>
-    <li>
-      <a href="#titlepadding">TitlePadding</a>
-    </li>
-    <li>
-      <a href="#highlightcolor">HighlightColor</a>
-    </li>
-    <li>
-      <a href="#highlightopacity">HighlightOpacity</a>
-    </li>
-    <li>
-      <a href="#highlightcornerradius">HighlightCornerRadius</a>
-    </li>
-    <li>
-      <a href="#highlightvpadding">HighlightVPadding</a>
-    </li>
-    <li>
-      <a href="#highlighthpadding">HighlightHPadding</a>
-    </li>
-    <li>
-      <a href="#buttoncenterline">ButtonCenterline</a>
-    </li>
-    <li>
-      <a href="#scrollindicators">ScrollIndicators</a>
-    </li>
-    <li>
-      <a href="#scrollindicatorcolor">ScrollIndicatorColor</a>
-    </li>
-    <li>
-      <a href="#scrollindicatoropacity">ScrollIndicatorOpacity</a>
-    </li>
-    <li>
-      <a href="#onlaunch">OnLaunch</a>
-    </li>
-    <li>
-      <a href="#resetonback">ResetOnBack</a>
-    </li>
-    <li>
-      <a href="#mouseselect">MouseSelect</a>
-    </li>
-  </ul>
-</details>
+- [DefaultMenu](#defaultmenu)
+- [MaxButtons](#maxbuttons)
+- [BackgroundMode](#backgroundmode)
+- [BackgroundColor](#backgroundcolor)
+- [BackgroundImage](#backgroundimage)
+- [SlideshowDirectory](#slideshowdirectory)
+- [SlideshowImageDuration](#slideshowimageduration)
+- [SlideshowTransitionTime](#slideshowtransitiontime)
+- [IconSize](#iconsize)
+- [IconSpacing](#iconspacing)
+- [TitleFont](#titlefont)
+- [TitleFontSize](#titlefontsize)
+- [TitleColor](#titlecolor)
+- [TitleOpacity](#titleopacity)
+- [TilteOversizeMode](#titleoversizemode)
+- [TitlePadding](#titlepadding)
+- [HighlightColor](#highlightcolor)
+- [HighlightOpacity](#highlightopacity)
+- [HighlightCornerRadius](#highlightcornerradius)
+- [HighlightVPadding](#highlightvpadding)
+- [HighlightHPadding](#highlighthpadding)
+- [ButtonCenterline](#buttoncenterline)
+- [ScrollIndicators](#scrollindicators)
+- [ScrollIndicatorColor](#scrollindicatorcolor)
+- [ScrollIndicatorOpacity](#scrollindicatoropacity)
+- [OnLaunch](#onlaunch)
+- [ResetOnBack](#resetonback)
+- [MouseSelect](#mouseselect)
 
 #### DefaultMenu
 This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the [Creating Menus](#creating-menus) section for more information.

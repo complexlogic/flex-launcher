@@ -1,17 +1,12 @@
- # Compiling Flex Launcher
- <details open>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#overview">Overview</a>
-    </li>
-    <li>
-      <a href="#linux">Linux</a>
-    </li>
-    <li>
-      <a href="#windows">Windows</a>
-  </ol>
-</details>
+---
+layout: default
+title: Compilation Guide
+---
+# Compilation Guide
+## Table of Contents
+1. [Overview](#overview)
+2. [Linux](#linux)
+3. [Windows](#windows)
 
 ## Overview
  Flex Launcher builds natively on Linux and Windows, and features a cross-platform CMake build system. The following external dependencies are required:

@@ -361,8 +361,8 @@ if (UNIX)
   configure_file("${PROJECT_SOURCE_DIR}/config/launcher.desktop.in" "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop")
   install(FILES "${PROJECT_BINARY_DIR}/install/${EXECUTABLE_TITLE}.desktop" DESTINATION "${INSTALL_DIR_DESKTOP}")
   set(INSTALL_DIR_ICONS "${CMAKE_INSTALL_PREFIX}/share/icons")
-  install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.png" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/48x48/apps")
-  install(FILES "${PROJECT_SOURCE_DIR}/extra/flex-launcher.svg" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/scalable/apps")
+  install(FILES "${PROJECT_SOURCE_DIR}/docs/flex-launcher.png" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/48x48/apps")
+  install(FILES "${PROJECT_SOURCE_DIR}/docs/flex-launcher.svg" DESTINATION "${INSTALL_DIR_ICONS}/hicolor/scalable/apps")
 endif ()
   
 # Set paths for config files

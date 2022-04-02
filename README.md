@@ -39,11 +39,11 @@ Flex Launcher is a customizable application launcher designed with a [10 foot us
 Flex Launcher is compatible with both Windows and Linux (including Raspberry Pi devices).
 
 ## Screenshots
-![Screenshot 1](extra/screenshots/screenshot1.png "Screenshot 1")
-![Screenshot 1](extra/screenshots/screenshot2.png "Screenshot 2")
+![Screenshot 1](docs/assets/screenshots/screenshot1.png "Screenshot 1")
+![Screenshot 1](docs/assets/screenshots/screenshot2.png "Screenshot 2")
 
 ## Installation
-Compiled binaries are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. Alternatively, you may also choose to compile the program yourself using the [compilation guide](extra/docs/compilation_guide.md).
+Compiled binaries are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. Alternatively, you may also choose to compile the program yourself using the [compilation guide](docs/compilation.md).
 
 ### Windows
 A win64 zip file is provided on the [release page](https://github.com/complexlogic/flex-launcher/releases). Simply download the file and extract the contents to a directory of your choosing. Flex Launcher should be run on an up-to-date Windows 10 system, or Windows 11.
@@ -89,7 +89,7 @@ If your config file is in one of the above locations, Flex Launcher can be start
 ```
 flex-launcher -c /path/to/config.ini
 ```
-Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](extra/docs/configuration.md) for instuctions on how to change the menus and settings.
+Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](docs/configuration.md) for instuctions on how to change the menus and settings.
 
 ### Controls
 The keyboard arrow keys move the highlight cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. 
@@ -98,7 +98,7 @@ The keyboard arrow keys move the highlight cursor left and right. Enter selects 
 Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher. You can also use a hardware-based solution, such as the FLIRC USB device 
 
 #### Gamepads
-Gamepad controls are built-in to the program, but are disabled by default. To enable them, open your configuration file, and, under the "Gamepad" section, change the "Enabled" setting from false to true. After that, the gamepad controls should "Just Work" for most users. If your gamepad is not recognized automatically, or you want to change the default controls, see the [gamepad controls documentation](extra/docs/configuration.md#gamepad-controls).
+Gamepad controls are built-in to the program, but are disabled by default. To enable them, open your configuration file, and, under the "Gamepad" section, change the "Enabled" setting from false to true. After that, the gamepad controls should "Just Work" for most users. If your gamepad is not recognized automatically, or you want to change the default controls, see the [gamepad controls documentation](docs/configuration.md#gamepad-controls).
 
 ### Debugging
 Flex Launcher has a debug mode which may be enabled as follows:
@@ -112,8 +112,8 @@ Contributions are welcome for bugfixes and new features. Please keep code format
 
 ## Documentation
 Here is a list of available documentation:
-- [Configuration File](extra/docs/configuration.md)
-- [Compilation Guide](extra/docs/compilation_guide.md)
+- [Configuration File](docs/configuration.md)
+- [Compilation Guide](docs/compilation_guide.md)
 
 ## Credits
 Flex Launcher is made possible by the following projects:
