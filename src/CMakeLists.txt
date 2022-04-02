@@ -8,9 +8,6 @@ if (WIN32)
   add_executable(${EXECUTABLE_TITLE} WIN32 "launcher.c" "util.c" "image.c" "debug.c" "clock.c" ${MANIFEST_FILE} ${APP_ICON_RESOURCE_WINDOWS})
 endif()
 
-# Configure main header file  
-configure_file("launcher_config.h.in" "${PROJECT_BINARY_DIR}/launcher_config.h")
-
 # Build libraries
 add_subdirectory("external")
 add_subdirectory("platform")

@@ -301,6 +301,9 @@ set(TIME_STRING_24HR "%H:%M")
 set(DATE_STRING_LITTLE "%d %b")
 set(DATE_STRING_BIG "%b %${REMOVE_ZERO}d")
 
+# Configure main header file  
+configure_file("${PROJECT_SOURCE_DIR}/config/launcher_config.h.in" "${PROJECT_BINARY_DIR}/launcher_config.h")
+
 #Build source files
 add_subdirectory("src")
 
