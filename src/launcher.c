@@ -22,21 +22,37 @@ config_t config = {
   .background_image                 = NULL,
   .slideshow_directory              = NULL,
   .title_font_path                  = NULL,
-  .font_size                        = DEFAULT_FONT_SIZE,
-  .title_color.r                    = DEFAULT_TITLE_COLOR_R,
-  .title_color.g                    = DEFAULT_TITLE_COLOR_G,
-  .title_color.b                    = DEFAULT_TITLE_COLOR_B,
-  .title_color.a                    = DEFAULT_TITLE_COLOR_A,
+  .title_font_size                  = DEFAULT_FONT_SIZE,
+  .title_font_color.r               = DEFAULT_TITLE_FONT_COLOR_R,
+  .title_font_color.g               = DEFAULT_TITLE_FONT_COLOR_G,
+  .title_font_color.b               = DEFAULT_TITLE_FONT_COLOR_B,
+  .title_font_color.a               = DEFAULT_TITLE_FONT_COLOR_A,
+  .title_shadows                    = DEFAULT_TITLE_SHADOWS,
+  .title_shadow_color.r             = DEFAULT_TITLE_SHADOW_COLOR_R,
+  .title_shadow_color.g             = DEFAULT_TITLE_SHADOW_COLOR_G,
+  .title_shadow_color.b             = DEFAULT_TITLE_SHADOW_COLOR_B,
+  .title_shadow_color.a             = DEFAULT_TITLE_SHADOW_COLOR_A,
   .background_mode                  = MODE_COLOR,
   .background_color.r               = DEFAULT_BACKGROUND_COLOR_R,
   .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
   .background_color.b               = DEFAULT_BACKGROUND_COLOR_B,
   .background_color.a               = 0xFF,
+  .background_overlay               = DEFAULT_BACKGROUND_OVERLAY,
+  .background_overlay_color.r       = DEFAULT_BACKGROUND_OVERLAY_COLOR_R,
+  .background_overlay_color.g       = DEFAULT_BACKGROUND_OVERLAY_COLOR_G,
+  .background_overlay_color.b       = DEFAULT_BACKGROUND_OVERLAY_COLOR_B,
+  .background_overlay_color.a       = DEFAULT_BACKGROUND_OVERLAY_COLOR_A,
+  .background_overlay_opacity[0]    = '\0',
   .icon_size                        = DEFAULT_ICON_SIZE,
-  .highlight_color.r                = DEFAULT_HIGHLIGHT_COLOR_R,
-  .highlight_color.g                = DEFAULT_HIGHLIGHT_COLOR_G,
-  .highlight_color.b                = DEFAULT_HIGHLIGHT_COLOR_B,
-  .highlight_color.a                = DEFAULT_HIGHLIGHT_COLOR_A,
+  .highlight_fill_color.r           = DEFAULT_HIGHLIGHT_FILL_COLOR_R,
+  .highlight_fill_color.g           = DEFAULT_HIGHLIGHT_FILL_COLOR_G,
+  .highlight_fill_color.b           = DEFAULT_HIGHLIGHT_FILL_COLOR_B,
+  .highlight_fill_color.a           = DEFAULT_HIGHLIGHT_FILL_COLOR_A,
+  .highlight_outline_color.r        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_R,
+  .highlight_outline_color.g        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_G,
+  .highlight_outline_color.b        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_B,
+  .highlight_outline_color.a        = DEFAULT_HIGHLIGHT_OUTLINE_COLOR_A,
+  .highlight_outline_size           = DEFAULT_HIGHLIGHT_OUTLINE_SIZE,
   .highlight_rx                     = DEFAULT_HIGHLIGHT_CORNER_RADIUS,
   .title_padding                    = -1,
   .max_buttons                      = DEFAULT_MAX_BUTTONS,
@@ -44,16 +60,22 @@ config_t config = {
   .highlight_vpadding               = -1,
   .highlight_hpadding               = -1,
   .title_opacity[0]                 = '\0',
-  .highlight_opacity[0]             = '\0',
+  .highlight_fill_opacity[0]        = '\0',
+  .highlight_outline_opacity[0]     = '\0',
   .button_centerline[0]             = '\0',
   .icon_spacing_str[0]              = '\0',
   .scroll_indicators                = DEFAULT_SCROLL_INDICATORS,
-  .scroll_indicator_color.r         = DEFAULT_SCROLL_INDICATOR_COLOR_R,
-  .scroll_indicator_color.g         = DEFAULT_SCROLL_INDICATOR_COLOR_G,
-  .scroll_indicator_color.b         = DEFAULT_SCROLL_INDICATOR_COLOR_B,
-  .scroll_indicator_color.a         = DEFAULT_SCROLL_INDICATOR_COLOR_A,
+  .scroll_indicator_fill_color.r    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_R,
+  .scroll_indicator_fill_color.g    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_G,
+  .scroll_indicator_fill_color.b    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_B,
+  .scroll_indicator_fill_color.a    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_A,
+  .scroll_indicator_outline_size    = DEFAULT_SCROLL_INDICATOR_OUTLINE_SIZE,
+  .scroll_indicator_outline_color.r = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_R,
+  .scroll_indicator_outline_color.g = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_G,
+  .scroll_indicator_outline_color.b = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_B,
+  .scroll_indicator_outline_color.a = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_A,
   .scroll_indicator_opacity[0]      = '\0',
-  .title_oversize_mode              = MODE_TEXT_TRUNCATE,
+  .title_oversize_mode              = MODE_TRUNCATE,
   .reset_on_back                    = DEFAULT_RESET_ON_BACK,
   .mouse_select                     = DEFAULT_MOUSE_SELECT,
   .screensaver_enabled              = false,
@@ -63,7 +85,7 @@ config_t config = {
   .gamepad_enabled                  = DEFAULT_GAMEPAD_ENABLED,
   .gamepad_device                   = DEFAULT_GAMEPAD_DEVICE,
   .gamepad_mappings_file            = NULL,
-  .on_launch                        = MODE_ON_LAUNCH_HIDE,
+  .on_launch                        = MODE_HIDE,
   .debug                            = false,
   .exe_path                         = NULL,
   .first_menu                       = NULL,
@@ -74,10 +96,15 @@ config_t config = {
   .clock_font_path                  = NULL,
   .clock_margin_str[0]              = '\0',
   .clock_margin                     = -1,
-  .clock_color.r                    = DEFAULT_CLOCK_COLOR_R,
-  .clock_color.g                    = DEFAULT_CLOCK_COLOR_G,
-  .clock_color.b                    = DEFAULT_CLOCK_COLOR_B,
-  .clock_color.a                    = DEFAULT_CLOCK_COLOR_A,
+  .clock_font_color.r               = DEFAULT_CLOCK_FONT_COLOR_R,
+  .clock_font_color.g               = DEFAULT_CLOCK_FONT_COLOR_G,
+  .clock_font_color.b               = DEFAULT_CLOCK_FONT_COLOR_B,
+  .clock_font_color.a               = DEFAULT_CLOCK_FONT_COLOR_A,
+  .clock_shadows                    = DEFAULT_CLOCK_SHADOWS,
+  .clock_shadow_color.r             = DEFAULT_CLOCK_SHADOW_COLOR_R,
+  .clock_shadow_color.g             = DEFAULT_CLOCK_SHADOW_COLOR_G,
+  .clock_shadow_color.b             = DEFAULT_CLOCK_SHADOW_COLOR_B,
+  .clock_shadow_color.a             = DEFAULT_CLOCK_SHADOW_COLOR_A,
   .clock_opacity[0]                 = '\0',
   .clock_font_size                  = DEFAULT_CLOCK_FONT_SIZE,
   .clock_time_format                = DEFAULT_CLOCK_TIME_FORMAT,
@@ -102,6 +129,7 @@ state_t state = {
 SDL_Window *window                  = NULL;
 SDL_Renderer *renderer              = NULL;
 SDL_Texture *background_texture     = NULL;
+SDL_Texture *background_overlay     = NULL;
 menu_t *default_menu                = NULL;
 menu_t *current_menu                = NULL;
 entry_t *current_entry              = NULL;
@@ -129,11 +157,10 @@ int repeat_period;
 
 
 // A function to initialize SDL
-static int init_sdl()
+static void init_sdl()
 {  
   // Set flags, hints
   int sdl_flags = SDL_INIT_VIDEO;
-  int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
   #ifdef __unix__
   SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
   #endif
@@ -149,10 +176,21 @@ static int init_sdl()
       "Fatal Error: Could not initialize SDL\n%s\n", 
       SDL_GetError()
     );
-    return 1;
   }
+  int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
+  geo.screen_width = display_mode.w;
+  geo.screen_height = display_mode.h;
+  refresh_period = 1000 / display_mode.refresh_rate;
+  if (config.gamepad_enabled) {
+    delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
+    repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
+  }
+  geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
+}
 
-  // Create window, hide mouse cursor
+// A function to create the window and renderer
+static void create_window()
+{
   window = SDL_CreateWindow(PROJECT_NAME, 
              SDL_WINDOWPOS_UNDEFINED,
              SDL_WINDOWPOS_UNDEFINED,
@@ -165,46 +203,38 @@ static int init_sdl()
       "Fatal Error: Could not create SDL Window\n%s\n", 
       SDL_GetError()
     );
-    return 1;
   }
   SDL_ShowCursor(SDL_DISABLE);
 
   // Create HW accelerated renderer, get screen resolution for geometry calculations
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  SDL_GetCurrentDisplayMode(0, &display_mode);
-  geo.screen_width = display_mode.w;
-  geo.screen_height = display_mode.h;
-  refresh_period = 1000 / display_mode.refresh_rate;
-  if (config.gamepad_enabled) {
-    delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
-    repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
-  }
-  geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   if (renderer == NULL) {
     output_log(LOGLEVEL_FATAL, 
       "Fatal Error: Could not initialize renderer\n%s\n", 
       SDL_GetError()
     );
-    return 1;
   }
 
   // Set background color
   set_draw_color();
 
+  #ifdef _WIN32
+  SDL_VERSION(&wm_info.version);
+  SDL_GetWindowWMInfo(window, &wm_info);
+  #endif
+}
+
+static void init_sdl_image()
+{
+  int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
   // Initialize SDL_image
   if (!(IMG_Init(img_flags) & img_flags)) {
     output_log(LOGLEVEL_FATAL, 
       "Fatal Error: Could not initialize SDL_image\n%s\n", 
       IMG_GetError()
     );
-    return 1;
   }
-  #ifdef _WIN32
-  SDL_VERSION(&wm_info.version);
-  SDL_GetWindowWMInfo(window, &wm_info);
-  #endif
-  return 0;
 }
 
 // A function to set the color of the renderer
@@ -224,7 +254,7 @@ void set_draw_color()
 }
 
 // A function to initialize SDL's TTF subsystem
-static int init_ttf()
+static void init_sdl_ttf()
 {
   // Initialize SDL_ttf
   if (TTF_Init() == -1) {
@@ -232,22 +262,28 @@ static int init_ttf()
       "Fatal Error: Could not initialize SDL_ttf\n%s\n", 
       TTF_GetError()
     );
-    return 1;
    }
 
-  title_info.font_size = config.font_size;
+  title_info.font_size = config.title_font_size;
+  title_info.shadow = config.title_shadows;
   title_info.font_path = &config.title_font_path;
   title_info.max_width = config.icon_size,
   title_info.oversize_mode = config.title_oversize_mode;
-  title_info.color = &config.title_color;
-  
+  title_info.color = &config.title_font_color;
+  if (config.title_shadows) {
+    title_info.shadow_color = &config.title_shadow_color;
+    calculate_shadow_alpha(title_info);
+  }
+  else {
+    title_info.shadow_color = NULL;
+  }
+
   int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
   if (error) {
-    return error;
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load title font\n");
   }
 
   TTF_SizeUTF8(title_info.font, "TEST STRING", NULL, &geo.font_height);
-  return 0;
 }
 
 // A function to close subsystems and free memory before quitting
@@ -328,7 +364,6 @@ static void cleanup()
   gamepad_control_t *tmp_gamepad = NULL;
   for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
     free(tmp_gamepad);
-    free(i->label);
     free(i->cmd);
     tmp_gamepad = i;
   }
@@ -422,9 +457,8 @@ static void init_slideshow()
       "Changing background mode to color\n", 
       config.slideshow_directory
     );
-    quit_slideshow();
     config.background_mode = MODE_COLOR;
-    set_draw_color();
+    quit_slideshow();
   } 
   else if (num_images == 1) {
     output_log(LOGLEVEL_ERROR, 
@@ -432,16 +466,15 @@ static void init_slideshow()
       "Changing background mode to single image\n", 
       config.slideshow_directory
     );
-    background_texture = load_texture_from_file(slideshow->images[0]);
-    quit_slideshow();
+    free(config.background_image);
+    copy_string_alloc(&config.background_image, slideshow->images[0]);
     config.background_mode = MODE_IMAGE;
+    quit_slideshow();
   }
 
   // Generate array of random numbers for image order, load first image
   else {
     random_array(slideshow->order, slideshow->num_images);
-    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
-    background_texture = load_texture(surface);
     if (config.debug) {
       debug_slideshow(slideshow);
     }
@@ -499,65 +532,6 @@ static void init_screensaver()
 static void resume_slideshow()
 {
   ticks.slideshow_load = ticks.main;
-}
-
-// A function to render the scroll indicators
-static void render_scroll_indicators()
-{
-  // Calcuate the geometry
-  scroll = malloc(sizeof(scroll_t));
-  scroll->texture = NULL;
-  int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT);
-
-  // Find scroll indicator file
-  char *prefixes[2];
-  char assets_exe_buffer[MAX_PATH_CHARS + 1];
-  prefixes[0] = join_paths(assets_exe_buffer, sizeof(assets_exe_buffer), 2, config.exe_path, PATH_ASSETS_EXE);
-  #ifdef __unix__
-  prefixes[1] = PATH_ASSETS_SYSTEM;
-  #else
-  prefixes[1] = PATH_ASSETS_RELATIVE;
-  #endif
-  char *scroll_indicator_path = find_file(FILENAME_SCROLL_INDICATOR, 2, prefixes);
-
-  if (scroll_indicator_path == NULL) {
-    output_log(LOGLEVEL_ERROR, 
-               "Error: Could not find scroll indicator SVG, disabling feature\n");
-    free(scroll);
-    config.scroll_indicators = false;
-    return;
-  }
-  output_log(LOGLEVEL_DEBUG, "Scroll indicator found: %s\n", 
-              scroll_indicator_path);
-
-  // Render the SVG
-  scroll->texture = rasterize_svg_from_file(scroll_indicator_path,
-                      -1,
-                      scroll_indicator_height,
-                      &scroll->rect_right
-                    );
-  scroll->rect_left.w = scroll->rect_right.w;
-  scroll->rect_left.h = scroll->rect_right.h;
-  free(scroll_indicator_path);
-  if (scroll->texture == NULL) {
-    output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
-    free(scroll);
-    config.scroll_indicators = false;
-    return;
-  }
-  // Calculate screen position
-  scroll->rect_right.y = geo.screen_height - geo.screen_margin - scroll->rect_right.h;
-  scroll->rect_right.x = geo.screen_width - geo.screen_margin - scroll->rect_right.w;
-  scroll->rect_left.y = scroll->rect_right.y;
-  scroll->rect_left.x = geo.screen_margin;
-
-  // Set color
-  SDL_SetTextureColorMod(scroll->texture,
-                          config.scroll_indicator_color.r,
-                          config.scroll_indicator_color.g,
-                          config.scroll_indicator_color.b);
-  SDL_SetTextureAlphaMod(scroll->texture,
-                          config.scroll_indicator_color.a);
 }
 
 // A function to load a menu
@@ -655,7 +629,7 @@ static void render_buttons(menu_t *menu)
                              &title_info, 
                              &entry->text_rect,
                              &h);
-    if (config.title_oversize_mode == MODE_TEXT_SHRINK && h != geo.font_height) {
+    if (config.title_oversize_mode == MODE_SHRINK && h != geo.font_height) {
       entry->title_offset = (geo.font_height - h) / 2;
     }
   }
@@ -747,6 +721,11 @@ static void draw_screen()
 
   if (config.background_mode == MODE_SLIDESHOW && state.slideshow_transition) {
     SDL_RenderCopy(renderer, slideshow->transition_texture, NULL, NULL);
+  }
+
+  // Draw background overlay
+  if (config.background_overlay) {
+    SDL_RenderCopy(renderer, background_overlay, NULL, NULL);
   }
 
   // Draw scroll indicators
@@ -841,10 +820,10 @@ static void execute_command(const char *command)
   else {
 
     // Perform prelaunch behavior from OnLaunch setting
-    if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+    if (config.on_launch == MODE_HIDE) {
       SDL_HideWindow(window);
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+    else if (config.on_launch == MODE_BLANK) {
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
@@ -865,10 +844,10 @@ static void execute_command(const char *command)
     if (config.background_mode == MODE_SLIDESHOW) {
       resume_slideshow();
     }
-    if (config.on_launch == MODE_ON_LAUNCH_HIDE) {
+    if (config.on_launch == MODE_HIDE) {
       SDL_ShowWindow(window);
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLANK) {
+    else if (config.on_launch == MODE_BLANK) {
       set_draw_color();
     }
   
@@ -920,10 +899,10 @@ static void launch_application(char *cmd)
     }
 
     // Keep drawing the screen until the application has created its window
-    if (config.on_launch == MODE_ON_LAUNCH_NONE && has_focus) {
+    if (config.on_launch == MODE_NONE && has_focus) {
       draw_screen();
     }
-    else if (config.on_launch == MODE_ON_LAUNCH_BLANK && has_focus) {
+    else if (config.on_launch == MODE_BLANK && has_focus) {
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
      }
@@ -1166,17 +1145,24 @@ int main(int argc, char *argv[])
   parse_config_file(config_file_path);
   free(config_file_path);
 
-  // Initialize libraries
-  if (init_sdl() || init_ttf() || init_svg()) {
-    quit(EXIT_FAILURE);
+  // Initialize SDL, verify all settings are in their allowable range
+  init_sdl();
+  init_sdl_image();
+  init_sdl_ttf();
+  validate_settings(&geo);
+  
+  // Initialize slideshow
+  if (config.background_mode == MODE_SLIDESHOW) {
+    init_slideshow();
   }
+
+  // Initialize Nanosvg, create window and renderer
+  init_svg();
+  create_window();
 
   // Initialize timing
   ticks.main = SDL_GetTicks();
   ticks.last_input = ticks.main;
-
-  // Check settings against requirements
-  validate_settings(&geo);
 
   // Load gamepad overrides
   if (config.gamepad_enabled && config.gamepad_mappings_file != NULL) {
@@ -1207,9 +1193,10 @@ int main(int argc, char *argv[])
     }
   }
 
-  // Initialize slideshow
+  // Render first slideshow image
   else if (config.background_mode == MODE_SLIDESHOW) {
-    init_slideshow();
+    SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
+    background_texture = load_texture(surface);
   }
 
   // Initialize screensaver
@@ -1227,17 +1214,37 @@ int main(int argc, char *argv[])
   // Render highlight
   int button_height = config.icon_size + config.title_padding + geo.font_height;
   highlight = malloc(sizeof(highlight_t));
-  highlight->rect.w = config.icon_size + 2*config.highlight_hpadding;
-  highlight->rect.h = button_height + 2*config.highlight_vpadding;
-  highlight->texture = render_highlight(highlight->rect.w,
-                         highlight->rect.h,
+  highlight->texture = render_highlight(config.icon_size + 2*config.highlight_hpadding,
+                         button_height + 2*config.highlight_vpadding,
                          config.highlight_rx,
-                         NULL
+                         &highlight->rect
                        );
 
   // Render scroll indicators
   if (config.scroll_indicators) {
-    render_scroll_indicators();
+    scroll = malloc(sizeof(scroll_t));
+    scroll->texture = NULL;
+    int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT);
+    render_scroll_indicators(scroll, scroll_indicator_height, &geo);
+  }
+
+  // Render background overlay
+  if (config.background_overlay) {
+    SDL_Surface *overlay_surface = NULL;
+    overlay_surface = SDL_CreateRGBSurfaceWithFormat(0, 
+                        geo.screen_width, 
+                        geo.screen_height, 
+                        32,
+                        SDL_PIXELFORMAT_ARGB8888
+                      );
+    Uint32 overlay_color = SDL_MapRGBA(overlay_surface->format, 
+                             config.background_overlay_color.r, 
+                             config.background_overlay_color.g, 
+                             config.background_overlay_color.b, 
+                             config.background_overlay_color.a
+                           );
+    SDL_FillRect(overlay_surface, NULL, overlay_color);
+    background_overlay = load_texture(overlay_surface);
   }
 
   // Register exit hotkey with Windows
@@ -1259,16 +1266,14 @@ int main(int argc, char *argv[])
   // Load the default menu and display it
   if (config.default_menu == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
-    quit(EXIT_FAILURE);
   }
   default_menu = get_menu(config.default_menu);
   if (default_menu == NULL) {
-    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu\n");
-    quit(EXIT_FAILURE);
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Default menu %s not found in config file\n", config.default_menu);
   }
   error = load_menu(default_menu, false, true);
   if (error) {
-    quit(EXIT_FAILURE);
+    output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu %s\n", config.default_menu);
   }
    
   // Main program loop
@@ -1292,7 +1297,7 @@ int main(int argc, char *argv[])
             execute_command(current_entry->cmd);
           }
           break;
-          
+
         case SDL_JOYDEVICEADDED:
           if (SDL_IsGameController(event.jdevice.which) == SDL_TRUE) {
             output_log(LOGLEVEL_DEBUG, "Gamepad connected with device index %i\n", event.jdevice.which);

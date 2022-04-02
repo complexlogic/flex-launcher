@@ -12,11 +12,11 @@
 #include "platform/platform.h"
 #include "external/ini.h"
 
-extern config_t config;
+extern config_t          config;
 extern gamepad_control_t *gamepad_controls;
-extern hotkey_t *hotkeys;
-menu_t *menu       = NULL;
-entry_t *entry     = NULL;
+extern hotkey_t          *hotkeys;
+menu_t                   *menu  = NULL;
+entry_t                  *entry = NULL;
 
 // A function to handle the arguments from the command line
 void handle_arguments(int argc, char *argv[], char **config_file_path)
@@ -35,7 +35,6 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
         }
         else {
           output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", argv[i]);
-          quit(EXIT_FAILURE);
         }
       }
       if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
@@ -54,7 +53,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
       #endif
       else if (i != config_file_index) {
         #ifdef __unix__
-        printf("Unrecognized option %s\n",argv[i]);
+        fprintf(stderr, "Unrecognized option %s\n",argv[i]);
         print_usage();
         #endif
         quit(EXIT_FAILURE);
@@ -93,10 +92,6 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
 
     if (*config_file_path == NULL) {
       output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
-      #ifdef __unix__
-      print_usage();
-      #endif
-      quit(EXIT_FAILURE);
     }
   }
   output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", *config_file_path);
@@ -108,14 +103,12 @@ void parse_config_file(const char *config_file_path)
   FILE *file = fopen(config_file_path, "r");
   if (file == NULL) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file\n");
-    quit(EXIT_FAILURE);
   }
   int error = ini_parse_file(file, config_handler, &config);
   fclose(file);
   
   if (error < 0) {
     output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
-    quit(EXIT_FAILURE);
   }
 }
 
@@ -135,10 +128,16 @@ int config_handler(void *user, const char *section, const char *name, const char
       clean_path(pconfig->title_font_path);
     }
     else if (!strcmp(name,SETTING_TITLE_FONT_SIZE)) {
-      pconfig->font_size = (unsigned int) atoi(value);
+      pconfig->title_font_size = (unsigned int) atoi(value);
     }
-    else if (!strcmp(name,SETTING_TITLE_COLOR)) {
-      hex_to_color(value, &pconfig->title_color);
+    else if (!strcmp(name,SETTING_TITLE_FONT_COLOR)) {
+      hex_to_color(value, &pconfig->title_font_color);
+    }
+    else if (!strcmp(name, SETTING_TITLE_SHADOWS)) {
+      pconfig->title_shadows = convert_bool(value, DEFAULT_TITLE_SHADOWS);
+    }
+    else if (!strcmp(name, SETTING_TITLE_SHADOW_COLOR)) {
+      hex_to_color(value, &pconfig->title_shadow_color);
     }
     else if (!strcmp(name,SETTING_BACKGROUND_MODE)) {
       if (!strcmp(value, "Image")) {
@@ -158,17 +157,37 @@ int config_handler(void *user, const char *section, const char *name, const char
       copy_string_alloc(&pconfig->slideshow_directory, value);
       clean_path(pconfig->slideshow_directory);
     }
+    else if (!strcmp(name, SETTING_BACKGROUND_OVERLAY)) {
+      pconfig->background_overlay = convert_bool(value, DEFAULT_BACKGROUND_OVERLAY);
+    }
+    else if (!strcmp(name,SETTING_BACKGROUND_OVERLAY_COLOR)) {
+      hex_to_color(value, &pconfig->background_overlay_color);
+    }
+    else if (!strcmp(name, SETTING_BACKGROUND_OVERLAY_OPACITY)) {
+      if (is_percent(value)) {
+        copy_string(pconfig->background_overlay_opacity, value, sizeof(pconfig->background_overlay_opacity));
+      }
+    }
     else if (!strcmp(name,SETTING_ICON_SIZE)) {
       Uint16 icon_size = (Uint16) atoi(value);
       if (icon_size >= MIN_ICON_SIZE && icon_size <= MAX_ICON_SIZE) {
         pconfig->icon_size = icon_size;
       }
     }
-    else if (!strcmp(name,SETTING_DEFAULT_MENU)) {
+    else if (!strcmp(name, SETTING_DEFAULT_MENU)) {
       copy_string_alloc(&pconfig->default_menu, value);
     }
-    else if (!strcmp(name,SETTING_HIGHLIGHT_COLOR)) {
-      hex_to_color(value, &pconfig->highlight_color);
+    else if (!strcmp(name, SETTING_HIGHLIGHT_FILL_COLOR)) {
+      hex_to_color(value, &pconfig->highlight_fill_color);
+    }
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OUTLINE_COLOR)) {
+      hex_to_color(value, &pconfig->highlight_outline_color);
+    }
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OUTLINE_SIZE)) {
+      int highlight_outline_size = atoi(value);
+      if (highlight_outline_size >= 0) {
+        pconfig->highlight_outline_size = highlight_outline_size;
+      }
     }
     else if (!strcmp(name,SETTING_HIGHLIGHT_CORNER_RADIUS)) {
       Uint16 rx = (Uint16) atoi(value);
@@ -230,9 +249,14 @@ int config_handler(void *user, const char *section, const char *name, const char
         copy_string(pconfig->title_opacity, value, sizeof(pconfig->title_opacity));
       }
     }
-    else if (!strcmp(name, SETTING_HIGHLIGHT_OPACITY)) {
+    else if (!strcmp(name, SETTING_HIGHLIGHT_FILL_OPACITY)) {
       if (is_percent(value)) {
-        copy_string(pconfig->highlight_opacity, value, sizeof(pconfig->highlight_opacity));
+        copy_string(pconfig->highlight_fill_opacity, value, sizeof(pconfig->highlight_fill_opacity));
+      }
+    }
+    else if (!strcmp(name, SETTING_HIGHLIGHT_OUTLINE_OPACITY)) {
+      if (is_percent(value)) {
+        copy_string(pconfig->highlight_outline_opacity, value, sizeof(pconfig->highlight_outline_opacity));
       }
     }
     else if (!strcmp(name, SETTING_BUTTON_CENTERLINE)) {
@@ -243,8 +267,17 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (!strcmp(name,SETTING_SCROLL_INDICATORS)) {
       pconfig->scroll_indicators = convert_bool(value, DEFAULT_SCROLL_INDICATORS);
     }
-    else if (!strcmp(name,SETTING_SCROLL_INDICATOR_COLOR)) {
-      hex_to_color(value, &pconfig->scroll_indicator_color);
+    else if (!strcmp(name,SETTING_SCROLL_INDICATOR_FILL_COLOR)) {
+      hex_to_color(value, &pconfig->scroll_indicator_fill_color);
+    }
+    else if (!strcmp(name, SETTING_SCROLL_INDICATOR_OUTLINE_SIZE)) {
+      int scroll_indicator_outline_size = atoi(value);
+      if (scroll_indicator_outline_size >= 0) {
+        pconfig->scroll_indicator_outline_size = scroll_indicator_outline_size;
+      }
+    }
+    else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OUTLINE_COLOR)) {
+      hex_to_color(value, &pconfig->scroll_indicator_outline_color);
     }
     else if (!strcmp(name,SETTING_SCROLL_INDICATOR_OPACITY)) {
       if (is_percent(value)) {
@@ -253,21 +286,21 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     else if (!strcmp(name,SETTING_TITLE_OVERSIZE_MODE)) {
       if (!strcmp(value,"Shrink")) {
-        pconfig->title_oversize_mode = MODE_TEXT_SHRINK;
+        pconfig->title_oversize_mode = MODE_SHRINK;
       }
       else if (!strcmp(value,"None")) {
-        pconfig->title_oversize_mode = MODE_TEXT_NONE;
+        pconfig->title_oversize_mode = MODE_NONE;
       }
     }
     else if (!strcmp(name, SETTING_ON_LAUNCH)) {
       if (!strcmp(value, "None")) {
-        pconfig->on_launch = MODE_ON_LAUNCH_NONE;
+        pconfig->on_launch = MODE_NONE;
       }
       else if (!strcmp(value, "Blank")) {
-        pconfig->on_launch = MODE_ON_LAUNCH_BLANK;
+        pconfig->on_launch = MODE_BLANK;
       }
       else {
-        pconfig->on_launch = MODE_ON_LAUNCH_HIDE;
+        pconfig->on_launch = MODE_HIDE;
       }
     }
     else if (!strcmp(name, SETTING_RESET_ON_BACK)) {
@@ -309,8 +342,14 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
       }
     }
-    else if (!strcmp(name, SETTING_CLOCK_COLOR)) {
-      hex_to_color(value, &pconfig->clock_color);
+    else if (!strcmp(name, SETTING_CLOCK_FONT_COLOR)) {
+      hex_to_color(value, &pconfig->clock_font_color);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_SHADOW_COLOR)) {
+      hex_to_color(value, &pconfig->clock_shadow_color);
+    }
+    else if (!strcmp(name, SETTING_CLOCK_SHADOWS)) {
+      pconfig->clock_shadows = convert_bool(value, DEFAULT_CLOCK_SHADOWS);
     }
     else if (!strcmp(name, SETTING_CLOCK_OPACITY)) {
       if (is_percent(value)) {
@@ -392,80 +431,10 @@ int config_handler(void *user, const char *section, const char *name, const char
       copy_string_alloc(&pconfig->gamepad_mappings_file, value);
       clean_path(pconfig->gamepad_mappings_file);
     }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_XP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_YM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LSTICK_YP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_XM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_XP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTX, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_YM)) {
-      add_gamepad_control(TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RSTICK_YP)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTY, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_LTRIGGER)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERLEFT, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_RTRIGGER)) {
-      add_gamepad_control(TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_A)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_A, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_B)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_B, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_X)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_X, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_Y)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_Y, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_BACK)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_BACK, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_GUIDE)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_GUIDE, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_START)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_START, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_LEFT_STICK)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSTICK, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_RIGHT_STICK)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSTICK, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_UP)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_UP, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_DOWN)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_DOWN, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_LEFT)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_LEFT, name, value);
-    }
-    else if (!strcmp(name, SETTING_GAMEPAD_BUTTON_DPAD_RIGHT)) {
-      add_gamepad_control(TYPE_BUTTON, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, name, value);
+
+    // Parse gamepad controls
+    else {
+      add_gamepad_control(name, value);
     }
   }
 
@@ -865,14 +834,54 @@ void add_hotkey(const char *keycode, const char *cmd)
 }
 
 // A function to add a gamepad control to the linked list
-void add_gamepad_control(int type, int index, const char *label, const char *cmd)
+static void add_gamepad_control(const char *label, const char *cmd)
 {
-  static gamepad_control_t *current_gamepad_control = NULL;
   if (cmd[0] == '\0') {
+    return;
+  }
+  
+  // Table of gamepad info
+  static const struct gamepad_info info[] = {
+    {SETTING_GAMEPAD_LSTICK_XM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTX},
+    {SETTING_GAMEPAD_LSTICK_XP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTX},
+    {SETTING_GAMEPAD_LSTICK_YM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_LEFTY},
+    {SETTING_GAMEPAD_LSTICK_YP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_LEFTY},
+    {SETTING_GAMEPAD_RSTICK_XM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTX},
+    {SETTING_GAMEPAD_RSTICK_XP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTX},
+    {SETTING_GAMEPAD_RSTICK_YM,             TYPE_AXIS_NEG, SDL_CONTROLLER_AXIS_RIGHTY},
+    {SETTING_GAMEPAD_RSTICK_YP,             TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_RIGHTY},
+    {SETTING_GAMEPAD_LTRIGGER,              TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERLEFT},
+    {SETTING_GAMEPAD_RTRIGGER,              TYPE_AXIS_POS, SDL_CONTROLLER_AXIS_TRIGGERRIGHT},
+    {SETTING_GAMEPAD_BUTTON_A,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_A},
+    {SETTING_GAMEPAD_BUTTON_B,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_B},
+    {SETTING_GAMEPAD_BUTTON_X,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_X},
+    {SETTING_GAMEPAD_BUTTON_Y,              TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_Y},
+    {SETTING_GAMEPAD_BUTTON_BACK,           TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_BACK},
+    {SETTING_GAMEPAD_BUTTON_GUIDE,          TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_GUIDE},
+    {SETTING_GAMEPAD_BUTTON_START,          TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_START},
+    {SETTING_GAMEPAD_BUTTON_LEFT_STICK,     TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_LEFTSTICK},
+    {SETTING_GAMEPAD_BUTTON_RIGHT_STICK,    TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_RIGHTSTICK},
+    {SETTING_GAMEPAD_BUTTON_LEFT_SHOULDER,  TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_LEFTSHOULDER},
+    {SETTING_GAMEPAD_BUTTON_RIGHT_SHOULDER, TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_RIGHTSHOULDER},
+    {SETTING_GAMEPAD_BUTTON_DPAD_UP,        TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_UP},
+    {SETTING_GAMEPAD_BUTTON_DPAD_DOWN,      TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_DOWN},
+    {SETTING_GAMEPAD_BUTTON_DPAD_LEFT,      TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_LEFT},
+    {SETTING_GAMEPAD_BUTTON_DPAD_RIGHT,     TYPE_BUTTON,   SDL_CONTROLLER_BUTTON_DPAD_RIGHT}
+  };
+
+  // Find correct gamepad info for label, return if none found
+  int i;
+  for (i = 0; i < sizeof(info) / sizeof(info[0]); i++) {
+    if (!strcmp(info[i].label, label)) {
+      break;
+    }
+  }
+  if (i == sizeof(info) / sizeof(info[0])) {
     return;
   }
 
   // Begin the linked list if none exists
+  static gamepad_control_t *current_gamepad_control = NULL;
   if (current_gamepad_control == NULL) {
     gamepad_controls = malloc(sizeof(gamepad_control_t));
     current_gamepad_control = gamepad_controls;
@@ -885,12 +894,14 @@ void add_gamepad_control(int type, int index, const char *label, const char *cmd
   }
 
   // Copy the parameters in the struct
-  current_gamepad_control->type = type;
-  current_gamepad_control->index = index;
-  current_gamepad_control->repeat = 0;
-  copy_string_alloc(&current_gamepad_control->label, label);
+  *current_gamepad_control = (gamepad_control_t) { 
+    .type   = info[i].type,
+    .index  = info[i].index,
+    .label  = info[i].label,
+    .repeat = 0,
+    .next   = NULL
+  };
   copy_string_alloc(&current_gamepad_control->cmd, cmd);
-  current_gamepad_control->next = NULL;
 }
 
 // A function to convert a string percent setting to an int value
@@ -924,28 +935,44 @@ void validate_settings(geometry_t *geo)
     int title_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.title_opacity, &title_opacity, 255);
     if (title_opacity != INVALID_PERCENT_VALUE) {
-      config.title_color.a = (Uint8) title_opacity;
+      config.title_font_color.a = (Uint8) title_opacity;
     }
   }
-  if (config.highlight_opacity[0] != '\0') {
-    int highlight_opacity = INVALID_PERCENT_VALUE;
-    convert_percent_to_int(config.highlight_opacity, &highlight_opacity, 255);
-    if (highlight_opacity != INVALID_PERCENT_VALUE) {
-      config.highlight_color.a = (Uint8) highlight_opacity;
+  if (config.background_overlay_opacity[0] != '\0') {
+    int background_overlay_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.background_overlay_opacity, &background_overlay_opacity, 255);
+    if (background_overlay_opacity != INVALID_PERCENT_VALUE) {
+      config.background_overlay_color.a = (Uint8) background_overlay_opacity;
+    }
+  }
+
+  if (config.highlight_fill_opacity[0] != '\0') {
+    int highlight_fill_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.highlight_fill_opacity, &highlight_fill_opacity, 255);
+    if (highlight_fill_opacity != INVALID_PERCENT_VALUE) {
+      config.highlight_fill_color.a = (Uint8) highlight_fill_opacity;
+    }
+  }
+  if (config.highlight_outline_opacity[0] != '\0') {
+    int highlight_outline_opacity = INVALID_PERCENT_VALUE;
+    convert_percent_to_int(config.highlight_outline_opacity, &highlight_outline_opacity, 255);
+    if (highlight_outline_opacity != INVALID_PERCENT_VALUE) {
+      config.highlight_outline_color.a = (Uint8) highlight_outline_opacity;
     }
   }
   if (config.scroll_indicator_opacity[0] != '\0') {
     int scroll_indicator_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.scroll_indicator_opacity, &scroll_indicator_opacity, 255);
     if (scroll_indicator_opacity != INVALID_PERCENT_VALUE) {
-      config.scroll_indicator_color.a = (Uint8) scroll_indicator_opacity;
+      config.scroll_indicator_fill_color.a = (Uint8) scroll_indicator_opacity;
+      config.scroll_indicator_outline_color.a = config.scroll_indicator_fill_color.a;
     }
   }
   if (config.clock_opacity[0] != '\0') {
     int clock_opacity = INVALID_PERCENT_VALUE;
     convert_percent_to_int(config.clock_opacity, &clock_opacity, 255);
     if (clock_opacity != INVALID_PERCENT_VALUE) {
-      config.clock_color.a = (Uint8) clock_opacity;
+      config.clock_font_color.a = (Uint8) clock_opacity;
     }
   }
 
@@ -1046,6 +1073,24 @@ void validate_settings(geometry_t *geo)
     button_centerline = upper_limit;
   }
   geo->y_margin = button_centerline - button_height / 2;
+
+  // Max highlight outline
+  int max_highlight_outline_size = (config.highlight_hpadding < config.highlight_vpadding) 
+                                   ? config.highlight_hpadding : config.highlight_vpadding;
+  if (config.highlight_outline_size > max_highlight_outline_size) {
+    config.highlight_outline_size = max_highlight_outline_size;
+  }
+
+  // Max scroll indicator outline
+  int max_scroll_indicator_outline_size = (int) ((float) geo->screen_height * MAX_SCROLL_INDICATOR_OUTLINE);
+  if (config.scroll_indicator_outline_size > max_scroll_indicator_outline_size) {
+    config.scroll_indicator_outline_size = max_scroll_indicator_outline_size;
+  }
+
+  // Don't allow rounded rectangle with outline due to Nanosvg bug
+  if (config.highlight_rx && config.highlight_outline_size) {
+    config.highlight_rx = 0;
+  }
 }
 
 // A function to retreive menu struct from the linked list via the menu name
@@ -1081,7 +1126,7 @@ menu_t *create_menu(char *menu_name, int *num_menus)
 }
 
 // A function to advance X spaces in the entry linked list (left or right)
-entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
+entry_t *advance_entries(entry_t *entry, int spaces, direction_t direction)
 {
   if (direction == DIRECTION_LEFT) {
     for (int i = 0; i < spaces; i++) {
@@ -1097,6 +1142,7 @@ entry_t *advance_entries(entry_t *entry, int spaces, mode direction)
 }
 
 // A function to read a file into a null-terminated buffer
+/* No longer used, reserved for future re-use
 void read_file(const char *path, char **buffer)
 {
   FILE *file = fopen(path, "rb");
@@ -1131,4 +1177,21 @@ void read_file(const char *path, char **buffer)
     *buffer = NULL;
   }
   *(*buffer + total_bytes_read) = '\0';
+}
+*/
+
+// A function to dynamically allocate a buffer for and copy a formatted string
+void sprintf_alloc(char **buffer, const char *format, ...)
+{
+  va_list args1, args2;
+  va_start(args1, format);
+  va_copy(args2, args1);
+  
+  int length = vsnprintf(NULL, 0, format, args1);
+  if (length) {
+    *buffer = malloc(length + 1);
+    vsnprintf(*buffer, length + 1, format, args2);
+  }
+  va_end(args1);
+  va_end(args2);
 }

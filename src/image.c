@@ -210,6 +210,7 @@ SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
 }
 
 // A function to rasterize an SVG from a file
+/* No longer used, reserved for future re-use
 SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *rect)
 {
   SDL_Texture *texture = NULL;
@@ -224,24 +225,70 @@ SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *r
   }
   return texture;
 }
+*/
 
 // A function to render the highlight for the buttons
 SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
 {
   // Insert user config variables into SVG-formatted text buffer
-  char buffer[500];
-  sprintf(buffer, SVG_HIGHLIGHT, width, height, width, height, rx);
-  
+  char *buffer = NULL;
+  char *outline_buffer = NULL;
+  if (config.highlight_outline_size) {
+    float stroke_opacity = ((float) config.highlight_outline_color.a) / 255.0f;
+    format_highlight_outline(&outline_buffer, config.highlight_outline_size, config.highlight_outline_color, stroke_opacity);
+  }
+  else {
+    outline_buffer = "";
+  }
+  float fill_opacity = ((float) config.highlight_fill_color.a) / 255.0f;
+  format_highlight(&buffer, width, height, config.highlight_rx, config.highlight_fill_color, fill_opacity, outline_buffer);
+
   // Rasterize the SVG
   SDL_Texture *texture = rasterize_svg(buffer, -1, -1, rect);
   
-  // Set color
-  SDL_SetTextureColorMod(texture,
-                         config.highlight_color.r,
-                         config.highlight_color.g,
-                         config.highlight_color.b);
-  SDL_SetTextureAlphaMod(texture,config.highlight_color.a);
+  // Cleanup
+  free(buffer);
+  if (config.highlight_outline_size) {
+    free(outline_buffer);
+  }
+
   return texture;
+}
+
+// A function to render the scroll indicators
+void render_scroll_indicators(scroll_t *scroll, int height, geometry_t *geo)
+{
+  // Format the SVG
+  char *buffer = NULL;
+  float opacity = (float) config.scroll_indicator_fill_color.a / 255.0f;
+  format_scroll_indicator(&buffer, 
+    config.scroll_indicator_fill_color, 
+    config.scroll_indicator_outline_size, 
+    config.scroll_indicator_outline_color, 
+    opacity
+  );
+
+  // Rasterize the SVG
+  scroll->texture = rasterize_svg(buffer,
+                      -1,
+                      height,
+                      &scroll->rect_right
+                    );
+  free(buffer);
+  scroll->rect_left.w = scroll->rect_right.w;
+  scroll->rect_left.h = scroll->rect_right.h;
+  if (scroll->texture == NULL) {
+    output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
+    free(scroll);
+    config.scroll_indicators = false;
+    return;
+  }
+
+  // Calculate screen position
+  scroll->rect_right.y = geo->screen_height - geo->screen_margin - scroll->rect_right.h;
+  scroll->rect_right.x = geo->screen_width - geo->screen_margin - scroll->rect_right.w;
+  scroll->rect_left.y = scroll->rect_right.y;
+  scroll->rect_left.x = geo->screen_margin;
 }
 
 // A function to render text
@@ -260,16 +307,16 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
   TTF_SizeUTF8(info->font, text_buffer, &w, &h);
 
   // If title is too large to fit
-  if (info->oversize_mode != MODE_TEXT_NONE && w > info->max_width) {
+  if (info->oversize_mode != MODE_NONE && w > info->max_width) {
 
     // Truncate mode:
-    if (info->oversize_mode == MODE_TEXT_TRUNCATE) {
+    if (info->oversize_mode == MODE_TRUNCATE) {
       utf8_truncate(text_buffer, w, info->max_width);
       TTF_SizeUTF8(info->font, text_buffer, &w, &h);
     }
 
     // Shrink mode:
-    else if (info->oversize_mode == MODE_TEXT_SHRINK) {
+    else if (info->oversize_mode == MODE_SHRINK) {
       int reduced_font_size = info->font_size - 1;
       reduced_font = TTF_OpenFont(*info->font_path, reduced_font_size);
       TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
@@ -283,8 +330,6 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
         TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
       }
 
-      // Set vertical offset so reduced font title remains vertically centered
-      // with other titles
       if (reduced_font_size) {
         output_font = reduced_font;
       }
@@ -293,26 +338,59 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
       }
     }
   }
-
-  // Set geometry
-  rect->w = w;
-  rect->h = h;
-  if (info->oversize_mode == MODE_TEXT_SHRINK && text_height != NULL) {
-    *text_height = h;
-  }
   if (reduced_font == NULL) {
     output_font = info->font;
   }
 
   // Render surface
-  SDL_Surface *surface = TTF_RenderUTF8_Blended(output_font,
-                           text_buffer,
-                           *info->color
-                         );
+  SDL_Surface *surface = NULL;
+  if (info->shadow) {
+    int shadow_offset = h / 40;
+    if (shadow_offset < 2)
+      shadow_offset = 2;
+    SDL_Surface *foreground = TTF_RenderUTF8_Blended(output_font,
+                               text_buffer,
+                               *info->color
+                             );
+    SDL_Surface *shadow    = TTF_RenderUTF8_Blended(output_font, 
+                               text_buffer, 
+                               *info->shadow_color
+                             );
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 
+                foreground->w + shadow_offset, 
+                foreground->h + shadow_offset, 
+                32,
+                SDL_PIXELFORMAT_ARGB8888
+              );
+    Uint32 color = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
+    SDL_FillRect(surface, NULL, color);
+    SDL_Rect shadow_rect = {shadow_offset, shadow_offset, shadow->w, shadow->h};
+    SDL_BlitSurface(shadow, NULL, surface, &shadow_rect);
+    SDL_Rect rect = {0, 0, foreground->w, foreground->h};
+    SDL_BlitSurface(foreground, NULL, surface, &rect);
+    SDL_FreeSurface(foreground);
+    SDL_FreeSurface(shadow);
+  }
+  else {
+    surface = TTF_RenderUTF8_Blended(output_font,
+                text_buffer,
+                *info->color
+              );
+  }
+
+  // Set geometry
+  rect->w = surface->w;
+  rect->h = surface->h;
+  if (info->oversize_mode == MODE_SHRINK && text_height != NULL) {
+    *text_height = h;
+  }
+
+  // Clean up
   if (reduced_font != NULL) {
     TTF_CloseFont(reduced_font);
   }
   free(text_buffer);
+  
   return surface;
 }
 

@@ -265,7 +265,7 @@ bool start_process(char *cmd, bool application)
     }
 
     // Go down in the window stack so the launched application can take focus
-    if (config.on_launch == MODE_ON_LAUNCH_NONE || config.on_launch == MODE_ON_LAUNCH_BLANK) {
+    if (config.on_launch == MODE_NONE || config.on_launch == MODE_BLANK) {
       HWND hwnd = wm_info.info.win.window;
       SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
     }
