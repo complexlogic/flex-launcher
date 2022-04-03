@@ -1,6 +1,6 @@
 <div align="center">
   <a>
-    <img src="extra/flex-launcher.svg" alt="Logo" width="150" height="150">
+    <img src="docs/flex-launcher.svg" alt="Logo" width="150" height="150">
   </a>
 
 
