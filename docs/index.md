@@ -7,8 +7,8 @@ Flex Launcher is a customizable application launcher designed with a [10 foot us
 Flex Launcher is compatible with both Windows and Linux (including Raspberry Pi devices).
 
 ## Screenshots
-<p><img src="/assets/screenshots/screenshot1.png"></p>
-<p><img src="/assets/screenshots/screenshot2.png"></p>
+<p><img src="/flex-launcher/assets/screenshots/screenshot1.png"></p>
+<p><img src="/flex-launcher/assets/screenshots/screenshot2.png"></p>
 
 ## About
 Flex Launcher was initially released in 2021. Its creation was motivated by the puzzling lack of HTPC control options at the time. Flex Launcher is designed with the following principles in mind:
