@@ -26,7 +26,7 @@
             <nav>
               <ul> 
                {% for item in site.data.menu %}
-               {% if page.title == item.title or (page.url == "/flex-launcher/" and item.title == "Home") %}
+               {% if page.title == item.title or (page.url == "/flex-launcher" and item.title == "Home") %}
                <li class="menu_no_link">{{item.title}}</li>
                {% else %}
                <li class="menu_link"><a href="{{item.link}}" class="menu_link">{{item.title}}</a></li>

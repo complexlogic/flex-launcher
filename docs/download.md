@@ -13,7 +13,7 @@ Binary packages are available for Windows 64 bit, Linux x86-64, and Raspberry Pi
 <table style="border: none" width="75%">
   <tbody>
     <tr>
-      <td class="download" width="170"><img src="/assets/icons/windows.svg" class="download" style="width:128px"></td>
+      <td class="download" width="170"><img src="/flex-launcher/assets/icons/windows.svg" class="download" style="width:128px"></td>
       <td class="download">
         <h4>Windows 10/11:</h4>
         <ul><li><a href="https://github.com/complexlogic/flex-launcher/releases/download/v{{site.launcher_version}}/flex-launcher-{{site.launcher_version}}-win64.zip">Flex Launcher v{{site.launcher_version}} x64 package (.zip)</a></li>
@@ -21,7 +21,7 @@ Binary packages are available for Windows 64 bit, Linux x86-64, and Raspberry Pi
       </td>
     </tr>
     <tr>
-      <td class="download" width="170"><img src="/assets/icons/linux.svg" class="download" style="width:128px"></td>
+      <td class="download" width="170"><img src="/flex-launcher/assets/icons/linux.svg" class="download" style="width:128px"></td>
       <td class="download">
         <h4>APT-based (Debian, Ubuntu):</h4>
         <ul><li><a href="https://github.com/complexlogic/flex-launcher/releases/download/v{{site.launcher_version}}/flex-launcher_{{site.launcher_version}}_amd64.deb">Flex Launcher v{{site.launcher_version}} amd64 package (.deb)</a></li>
@@ -32,7 +32,7 @@ Binary packages are available for Windows 64 bit, Linux x86-64, and Raspberry Pi
       </td>
     </tr>
     <tr>
-      <td class="download" width="170"><img src="/assets/icons/raspberry_pi.svg" class="download" style="width:128px"></td>
+      <td class="download" width="170"><img src="/flex-launcher/assets/icons/raspberry_pi.svg" class="download" style="width:128px"></td>
       <td class="download">
         <h4>Raspberry Pi</h4>
         <ul><li><a href="https://github.com/complexlogic/flex-launcher/releases/download/v{{site.launcher_version}}/flex-launcher_{{site.launcher_version}}_armhf.deb">Flex Launcher v{{site.launcher_version}} armhf package (.deb)</a></li>
@@ -51,7 +51,7 @@ If your platform is not listed above, you're interested in development, or you s
 <table style="border: none" width="75%">
   <tbody>
     <tr>
-      <td class="download" width="170"><img src="/assets/icons/source.svg" class="download" style="width:128px"></td>
+      <td class="download" width="170"><img src="/flex-launcher/assets/icons/source.svg" class="download" style="width:128px"></td>
       <td class="download">
         <h4>Source Packages:</h4>
         <ul>
