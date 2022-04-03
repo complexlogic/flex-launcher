@@ -13,8 +13,8 @@ title: Setup Guide
 
 ## Overview
 This page contains tips for setting up Flex Launcher, and HTPCs in general. The recommendations herein are broadly applicable to all platforms supported by Flex Launcher. Additionally, see the platform setup guides for platform-specfic advice:
-- [Windows Setup Guide](setup_windows)
-- [Linux Setup Guide](setup_linux)
+- [Windows Setup Guide](https://complexlogic.github.io/flex-launcher/setup_windows)
+- [Linux Setup Guide](https://complexlogic.github.io/flex-launcher/setup_linux)
 
 Make that you are generally familiar with the [configuration options](configuration) as well.
 
