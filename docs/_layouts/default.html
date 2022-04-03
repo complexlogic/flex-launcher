@@ -26,10 +26,10 @@
             <nav>
               <ul> 
                {% for item in site.data.menu %}
-               {% if page.title == item.title or (page.url == "/flex-launcher/" and item.title == "Home") %}
-               <li class="menu_no_link">{{item.title}} {{page.url}}</li>
+               {% if page.title == item.title or (page.url == "/" and item.title == "Home") %}
+               <li class="menu_no_link">{{item.title}}</li>
                {% else %}
-               <li class="menu_link"><a href="{{item.link}}" class="menu_link">{{item.title}} {{page.url}}</a></li>
+               <li class="menu_link"><a href="{{item.link}}" class="menu_link">{{item.title}}</a></li>
                {% endif %}
                {% unless forloop.last %}
                <li class="menu_no_link">|</li>
