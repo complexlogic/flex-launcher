@@ -1,4 +1,4 @@
-Unreleased
+v1.6 (2022-4-2)
 - Added background overlay feature
 - Added text shadows feature
 - Added outline configuration option for highlight
