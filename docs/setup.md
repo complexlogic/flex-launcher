@@ -16,7 +16,7 @@ This page contains tips for setting up Flex Launcher, and HTPCs in general. The 
 - [Windows Setup Guide](https://complexlogic.github.io/flex-launcher/setup_windows)
 - [Linux Setup Guide](https://complexlogic.github.io/flex-launcher/setup_linux)
 
-Make that you are generally familiar with the [configuration options](configuration) as well.
+Make that you are generally familiar with the [configuration options](https://complexlogic.github.io/flex-launcher/configuration) as well.
 
 ## Selecting Menu Icons
 Transparency is essential for menu icons. Therefore, you should not use JPEG images for icons, since the JPEG format does not support transparency. Use PNG or WebP instead. PNG icons for most popular applications are easily found online in common sizes up to 256x256.
