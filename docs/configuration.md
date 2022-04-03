@@ -41,22 +41,32 @@ Every config file must have a section titled "Settings". Within this section, th
 - [SlideshowDirectory](#slideshowdirectory)
 - [SlideshowImageDuration](#slideshowimageduration)
 - [SlideshowTransitionTime](#slideshowtransitiontime)
+- [BackgroundOverlay](#backgroundoverlay)
+- [BackgroundOverlayColor](#backgroundoverlaycolor)
+- [BackgroundOverlayOpacity](#backgroundoverlayopacity)
 - [IconSize](#iconsize)
 - [IconSpacing](#iconspacing)
 - [TitleFont](#titlefont)
 - [TitleFontSize](#titlefontsize)
 - [TitleColor](#titlecolor)
+- [TitleShadows](#titleshadows)
+- [TitleShadowColor](#titleshadowcolor)
 - [TitleOpacity](#titleopacity)
 - [TilteOversizeMode](#titleoversizemode)
 - [TitlePadding](#titlepadding)
-- [HighlightColor](#highlightcolor)
-- [HighlightOpacity](#highlightopacity)
+- [HighlightFillColor](#highlightfillcolor)
+- [HighlightFillOpacity](#highlightfillopacity)
+- [HighlightOutlineSize](#highlightoutlinesize)
+- [HighlightOutlineColor](#highlightoutlinecolor)
+- [HighlightOutlineOpacity](#highlightoutlineopacity)
 - [HighlightCornerRadius](#highlightcornerradius)
 - [HighlightVPadding](#highlightvpadding)
 - [HighlightHPadding](#highlighthpadding)
 - [ButtonCenterline](#buttoncenterline)
 - [ScrollIndicators](#scrollindicators)
-- [ScrollIndicatorColor](#scrollindicatorcolor)
+- [ScrollIndicatorFillColor](#scrollindicatorfillcolor)
+- [ScrollIndicatorOutlineSize](#scrollindicatoroutlinesize)
+- [ScrollIndicatorOutlineColor](#scrollindicatoroutlinecolor)
 - [ScrollIndicatorOpacity](#scrollindicatoropacity)
 - [OnLaunch](#onlaunch)
 - [ResetOnBack](#resetonback)
@@ -69,6 +79,7 @@ This is the title of the main menu that shows when Flex Launcher is started. The
 The maximum number of buttons that can be displayed on the screen. If a menu has more entries than this value, it will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
 
 Default: 4
+
 #### BackgroundMode
 Defines what mode the background will be. Possible values: "Color", "Image", and "Slideshow"
 - Color: The background will be a solid color.
@@ -76,6 +87,7 @@ Defines what mode the background will be. Possible values: "Color", "Image", and
 - Slideshow: The background will be a series of images displayed in random order, with a fading transition between each image.
 
 Default: Color
+
 #### BackgroundColor
 When ```BackgroundMode``` is set to "Color", this setting defines the color of the background.
 
@@ -96,6 +108,21 @@ Default: 30
 When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images. Decimal values are acceptable.
 
 Default: 1.5
+
+#### BackgroundOverlay
+Defines whether the background overlay feature is enabled. The background overlay is a solid color that is painted over your background, typically used improve the contrast between the background and the text/icons. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### BackgroundOverlayColor
+Defines the color of the background overlay.
+
+Default: 000000 (Black)
+
+#### BackgroundOverlayOpacity
+Defines the opacity of the background overlay. Must be a percent value.
+
+Default: 50%
 
 #### IconSize
 The width and height of icons on the screen in pixels. If an icon is not the same resolution, it will be stretched accordingly.
@@ -122,6 +149,16 @@ Defines the color of the menu entry titles.
 
 Default: FFFFFF (White)
 
+#### TitleShadows
+Defines whether shadows are enabled for the menu titles. Shadows give a 3D textured appearance to the text to improve the contrast from the background. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### TitleShadowColor
+Defines the color of the title shadows.
+
+Default: 000000 (Black)
+
 #### TitleOpacity
 Defines the opacity of the menu entry titles. Must be a percent value.
 
@@ -140,18 +177,33 @@ Defines the vertical spacing between an icon and its title, in pixels.
 
 Default: 20
 
-#### HighlightColor
-Defines the color of the highlight cursor.
+#### HighlightFillColor
+Defines the fill color of the highlight cursor.
 
 Default: FFFFFF (White)
 
-#### HighlightOpacity
-Defines the opacity of the highlight cursor. Must be a percent value.
+#### HighlightFillOpacity
+Defines the fill opacity of the highlight cursor. Must be a percent value.
 
 Default: 25%
 
+#### HighlightOutlineSize
+Defines the stroke width in pixels of the outline of the highlight cursor. Setting this to 0 will disable the outline.
+
+Default: 0
+
+#### HighlightOutlineColor
+Defines the outline color of the highlight cursor.
+
+Default: 0000FF (Blue)
+
+#### HighlightOutlineOpacity
+Defines the outline opacity of the highlight cursor. Must be a percent value.
+
+Default: 100%
+
 #### HighlightCornerRadius
-Defines the corner radius of the highlight cursor, in pixels. A value of 0 will yield a plain rectangle. Increasing the value will yield a rounded rectangle with increasingly round corners.
+Defines the corner radius of the highlight cursor, in pixels. A value of 0 will yield a plain rectangle. Increasing the value will yield a rounded rectangle with increasingly round corners. The value of ```HighlightOutlineSize``` must be 0, otherwise this setting will be ignored.
 
 Default: 0
 
@@ -175,10 +227,20 @@ Defines whether scroll indicators will be enabled in the event that a menu has m
 
 Default: true
 
-#### ScrollIndicatorColor
-Defines the color of the scroll indicators.
+#### ScrollIndicatorFillColor
+Defines the fill color of the scroll indicators.
 
 Default: FFFFFF (White)
+
+#### ScrollIndicatorOutlineSize
+Defines the stroke width in pixels of the scroll indicator outline. Setting this to 0 will disable the outline.
+
+Default: 0
+
+#### ScrollIndicatorOutlineColor
+Defines the color of the scroll indicator outline.
+
+Default: 000000 (Black)
 
 #### ScrollIndicatorOpacity
 Defines the opacity of the scroll indicators. Must be a percent value.
@@ -316,10 +378,20 @@ Defines the distance of the clock text from the top and side of the screen, in p
 
 Default: 5%
 
-#### Color
+#### FontColor
 Defines the color of the clock text.
 
 Default: FFFFFF (White)
+
+#### Shadows
+Defines whether shadows are enabled for the clock text. Shadows give a 3D textured appearance to the text to improve the contrast from the background. This setting is a boolean "true" or "false".
+
+Default: false
+
+#### ShadowColor
+Defines the color of the clock text shadows.
+
+Default: 000000 (Black)
 
 #### Opacity
 Defines the opacity of the clock text. Must be a percent value.

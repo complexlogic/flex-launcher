@@ -82,8 +82,8 @@ sed -i "s|/usr/share/flex-launcher|$HOME/.config/flex-launcher|g" ~/.config/flex
 Flex Launcher uses an INI file to configure the menus and settings. Upon  startup, the program will search for a file named ```config.ini``` in the following locations in order:
 1. The current working directory
 2. The directory containing the ```flex-launcher``` executable
-3. Linux only: ~/.config/flex-launcher
-4. Linux only: /usr/share/flex-launcher
+3. Linux only: ```~/.config/flex-launcher```
+4. Linux only: ```/usr/share/flex-launcher```
 
 If your config file is in one of the above locations, Flex Launcher can be started simply by double clicking the executable file or adding it to autostart. If your config file is in a non-standard location, you must specify the path via command line argument:
 ```
@@ -105,14 +105,17 @@ Flex Launcher has a debug mode which may be enabled as follows:
 ```
 flex-launcher -d
 ```
-This will output a logfile named ```flex-launcher.log``` in the same directory as ```flex-launcher.exe``` on Windows, and in ~/.local/share/flex-launcher on Linux. 
+This will output a logfile named ```flex-launcher.log``` in the same directory as ```flex-launcher.exe``` on Windows, and in ```~/.local/share/flex-launcher``` on Linux. 
 
 ## Contributing
 Contributions are welcome for bugfixes and new features. Please keep code formatted to [2 space K&R style](https://gist.github.com/jesseschalken/0f47a2b5a738ced9c845).
 
 ## Documentation
 Here is a list of available documentation:
-- [Configuration File](docs/configuration.md)
+- [Configuration](docs/configuration.md)
+- [General Setup Guide](docs/setup.md)
+  - [Windows-specific Setup Guide](docs/setup_windows.md)
+  - [Linux-specific Setup Guide](docs/setup_linux.md)
 - [Compilation Guide](docs/compilation_guide.md)
 
 ## Credits
