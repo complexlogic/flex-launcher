@@ -227,18 +227,6 @@ endif ()
 # Build configuration - Windows
 if (WIN32)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") # Workaround for Nanosvg and SDL_image header conflicts
-  
-  #Force static linking for C Runtime
-  set(CompilerFlags
-        CMAKE_C_FLAGS
-        CMAKE_C_FLAGS_DEBUG
-        CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL
-        CMAKE_C_FLAGS_RELWITHDEBINFO)
-  foreach(CompilerFlag ${CompilerFlags})
-    string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-    set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
-  endforeach()
  endif ()
  
  # Configure default applications - Linux
@@ -344,6 +332,18 @@ if (WIN32)
   set(INSTALL_DIR_CONFIGFILE "./")
   set(INSTALL_DIR_ASSETS "./")
   install(FILES "${PROJECT_SOURCE_DIR}/CHANGELOG.txt" DESTINATION "${INSTALL_DIR_BIN}")
+  
+  # Copy the VC Runtime DLL in case user doesn't have it installed
+  set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+  include(InstallRequiredSystemLibraries)
+  foreach(lib ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
+    string(FIND ${lib} "vcruntime140.dll" vcruntime)
+    if (NOT vcruntime EQUAL -1)
+      install(FILES ${lib} DESTINATION "./")
+    endif ()
+  endforeach()
+  
+  # Set package
   if (NOT PACKAGE)
     set(PACKAGE "ZIP")
   endif ()
