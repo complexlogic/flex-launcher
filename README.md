@@ -40,7 +40,7 @@ Flex Launcher is compatible with both Windows and Linux (including Raspberry Pi 
 
 ## Screenshots
 ![Screenshot 1](docs/assets/screenshots/screenshot1.png "Screenshot 1")
-![Screenshot 1](docs/assets/screenshots/screenshot2.png "Screenshot 2")
+![Screenshot 2](docs/assets/screenshots/screenshot2.png "Screenshot 2")
 
 ## Installation
 Compiled binaries are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. Alternatively, you may also choose to compile the program yourself using the [compilation guide](docs/compilation.md).
@@ -54,20 +54,20 @@ Binary packages are available on the [release page](https://github.com/complexlo
 #### APT-based x86-64 Distributions (Debian, Ubuntu, etc.)
 This package is compatible with Debian Bullseye and later, Ubuntu 21.04 and later.
 ```
-VERSION=1.5
+VERSION=1.6
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
 sudo apt install ./flex-launcher_${VERSION}_amd64.deb
 ```
 #### Pacman-based x86-64 Distributions (Arch, Manjaro, etc.)
 ```
-VERSION=1.5
+VERSION=1.6
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
 This package is compatible with Raspbian Bullseye and later.
 ```
-VERSION=1.5
+VERSION=1.6
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_armhf.deb
 sudo apt install ./flex-launcher_${VERSION}_armhf.deb
 ```
