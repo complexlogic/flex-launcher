@@ -89,7 +89,7 @@ If your config file is in one of the above locations, Flex Launcher can be start
 ```
 flex-launcher -c /path/to/config.ini
 ```
-Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](docs/configuration.md) for instuctions on how to change the menus and settings.
+Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](docs/configuration.md#configuring-flex-launcher) for instuctions on how to change the menus and settings.
 
 ### Controls
 The keyboard arrow keys move the highlight cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. 
@@ -112,11 +112,11 @@ Contributions are welcome for bugfixes and new features. Please keep code format
 
 ## Documentation
 Here is a list of available documentation:
-- [Configuration](docs/configuration.md)
-- [General Setup Guide](docs/setup.md)
-  - [Windows-specific Setup Guide](docs/setup_windows.md)
-  - [Linux-specific Setup Guide](docs/setup_linux.md)
-- [Compilation Guide](docs/compilation_guide.md)
+- [Configuration](docs/configuration.md#configuring-flex-launcher)
+- [General Setup Guide](docs/setup.md#setup-guide)
+  - [Windows-specific Setup Guide](docs/setup_windows.md#windows-setup-guide)
+  - [Linux-specific Setup Guide](docs/setup_linux.md#linux-setup-guide)
+- [Compilation Guide](docs/compilation.md#compilation-guide)
 
 ## Credits
 Flex Launcher is made possible by the following projects:
