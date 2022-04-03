@@ -1,5 +1,5 @@
 # @PROJECT_NAME@ v@PROJECT_VERSION@ sample configuration file
-# For documentation of these settings, visit: https://github.com/complexlogic/flex-launcher/blob/master/extra/docs/configuration.md
+# For documentation of these settings, visit: https://complexlogic.github.io/flex-launcher/configuration
 [Settings]
 @SETTING_DEFAULT_MENU@=@DEFAULT_MENU@
 @SETTING_MAX_BUTTONS@=@DEFAULT_MAX_BUTTONS@
