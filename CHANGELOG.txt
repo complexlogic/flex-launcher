@@ -1,3 +1,6 @@
+Unreleased
+- Windows: Disable system DPI scaling
+
 v1.6 (2022-4-2)
 - Added background overlay feature
 - Added text shadows feature
