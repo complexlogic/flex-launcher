@@ -98,7 +98,7 @@ The keyboard arrow keys move the highlight cursor left and right. Enter selects 
 Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher. You can also use a hardware-based solution, such as the FLIRC USB device 
 
 #### Gamepads
-Gamepad controls are built-in to the program, but are disabled by default. To enable them, open your configuration file, and, under the "Gamepad" section, change the "Enabled" setting from false to true. After that, the gamepad controls should "Just Work" for most users. If your gamepad is not recognized automatically, or you want to change the default controls, see the [gamepad controls documentation](docs/configuration.md#gamepad-controls).
+Gamepad controls are built-in to the program, but are disabled by default. To enable them, open your configuration file and, under the "Gamepad" section, change the "Enabled" setting from false to true. After that, the gamepad controls should "Just Work" for most users. If your gamepad is not recognized automatically, or you want to change the default controls, see the [gamepad controls documentation](docs/configuration.md#gamepad-controls).
 
 ### Debugging
 Flex Launcher has a debug mode which may be enabled as follows:
