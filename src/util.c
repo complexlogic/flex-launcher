@@ -590,10 +590,10 @@ bool hex_to_color(const char *string, SDL_Color *color)
 // A function to convert a string into a bool
 bool convert_bool(const char *string, bool default_setting)
 {
-  if (!strcmp(string, "true")) {
+  if (!strcmp(string, "true") || !strcmp(string, "True")) {
     return true;
   }
-  else if (!strcmp(string, "false")) {
+  else if (!strcmp(string, "false") || !strcmp(string, "False")) {
     return false;
   }
   else {
