@@ -3,7 +3,7 @@ description: A customizable HTPC application launcher and front-end interface
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username: complexlogic
 repository: complexlogic/flex-launcher
-launcher_version: 1.6
+launcher_version: 1.6.1
 
 # Build settings
 remote_theme: pages-themes/slate@v0.2.0
