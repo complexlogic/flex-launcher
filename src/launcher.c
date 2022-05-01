@@ -829,7 +829,7 @@ static void execute_command(const char *command)
       SDL_RenderPresent(renderer);
     }
     if (gamepad != NULL) {
-      SDL_GameControllerClose(config.gamepad_device);
+      SDL_GameControllerClose(gamepad);
       gamepad = NULL;
     }
 
