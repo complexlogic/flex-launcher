@@ -828,6 +828,10 @@ static void execute_command(const char *command)
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);
     }
+    if (gamepad != NULL) {
+      SDL_GameControllerClose(gamepad);
+      gamepad = NULL;
+    }
 
     // Launch application
     SDL_Delay(50);
@@ -838,6 +842,9 @@ static void execute_command(const char *command)
     ticks.last_input = ticks.main;
     
     // Post-application updates
+    if (config.gamepad_enabled) {
+      connect_gamepad(config.gamepad_device);
+    }
     if (config.clock_enabled) {
       update_clock(true);
     }
