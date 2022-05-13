@@ -625,6 +625,7 @@ static void render_buttons(menu_t *menu)
   int h;
   for (entry = menu->first_entry; entry != NULL; entry = entry->next) {
     entry->icon = load_texture_from_file(entry->icon_path);
+    entry->icon_selected = (entry->icon_selected_path != NULL) ? load_texture_from_file(entry->icon_selected_path) : NULL;
     entry->title_texture = render_text_texture(entry->title,
                              &title_info, 
                              &entry->text_rect,
@@ -634,16 +635,6 @@ static void render_buttons(menu_t *menu)
     }
   }
   menu->rendered = true;
-}
-
-// A function to output all visible buttons to the renderer
-static void draw_buttons(entry_t *entry)
-{
-  for (int i = 0; i < geo.num_buttons; i++) {
-    SDL_RenderCopy(renderer,entry->icon,NULL,&entry->icon_rect);
-    SDL_RenderCopy(renderer,entry->title_texture,NULL,&entry->text_rect);
-    entry = entry-> next;
-  }
 }
 
 // A function to move the selection left when clicked by user
@@ -753,7 +744,14 @@ static void draw_screen()
   );
 
   // Draw buttons
-  draw_buttons(current_menu->root_entry);
+  entry_t *entry = current_menu->root_entry;
+  SDL_Texture *icon;
+  for (int i = 0; i < geo.num_buttons; i++) {
+    icon = (entry->icon_selected != NULL && i == current_menu->highlight_position) ? entry->icon_selected : entry->icon;
+    SDL_RenderCopy(renderer, icon, NULL, &entry->icon_rect);
+    SDL_RenderCopy(renderer, entry->title_texture, NULL, &entry->text_rect);
+    entry = entry-> next;
+  }
 
   // Draw screensaver
   if (state.screensaver_active) {

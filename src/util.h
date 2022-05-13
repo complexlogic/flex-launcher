@@ -8,6 +8,9 @@
 #define PATH_SEPARATOR "/"
 #endif
 
+#define SELECTED_SUFFIX "_selected"
+#define LEN(x) ((sizeof(x)/sizeof(x[0])) - sizeof(x[0]))
+
 struct gamepad_info {
   const char *label;
   int type;
@@ -22,6 +25,7 @@ bool hex_to_color(const char *string, SDL_Color *color);
 bool convert_bool(const char *string, bool default_setting);
 bool is_percent(const char *string);
 static bool ends_with(const char *string, const char *phrase);
+char *selected_path(const char *path);
 char *join_paths(char *buffer, size_t bytes, int num_paths, ...);
 char *find_file(const char *file, int num_prefixes, const char **prefixes);
 void handle_arguments(int argc, char *argv[], char **config_file_path);

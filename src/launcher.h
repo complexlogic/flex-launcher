@@ -117,8 +117,10 @@ typedef struct {
 typedef struct entry {
   char         *title;
   char         *icon_path;
+  char         *icon_selected_path;
   char         *cmd;
   SDL_Texture  *icon;
+  SDL_Texture  *icon_selected;
   SDL_Rect     icon_rect;
   SDL_Texture  *title_texture;
   SDL_Rect     text_rect;
@@ -289,7 +291,6 @@ void set_draw_color(void);
 static void get_display_info(void);
 static void calculate_button_geometry(entry_t *entry, int buttons);
 static void render_buttons(menu_t *menu);
-static void draw_buttons(entry_t *entry);
 static void move_left(void);
 static void move_right(void);
 static void load_submenu(const char *submenu);

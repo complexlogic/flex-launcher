@@ -18,6 +18,7 @@ extern hotkey_t          *hotkeys;
 menu_t                   *menu  = NULL;
 entry_t                  *entry = NULL;
 
+
 // A function to handle the arguments from the command line
 void handle_arguments(int argc, char *argv[], char **config_file_path)
 {
@@ -526,6 +527,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         entry->previous = previous_entry;
       }
       menu->num_entries++;
+      entry->icon_selected_path = selected_path(entry->icon_path);
     }
   }
   return 0;
@@ -547,6 +549,7 @@ bool is_percent(const char *string)
 // because SDL cannot handle them
 void clean_path(char *path)
 {
+  char *out = NULL;
   int length = strlen(path);
   if (length >= 3 && path[0] == '"' && path[length - 1] == '"') {
     path[length - 1] = '\0';
@@ -554,6 +557,38 @@ void clean_path(char *path)
       *(path + i - 1) = *(path + i);
     }
   }  
+}
+
+// A function to get the selected path 
+char *selected_path(const char *path)
+{
+  char buffer[MAX_PATH_CHARS + 1];
+  int length = strlen(path);
+  char *out = NULL;
+
+  // Find file extension
+  if (length + LEN(SELECTED_SUFFIX) + 1 > sizeof(buffer)) {
+    return out;
+  }
+  char *p = path + length - 1;
+  while (*p != '.' && p > path) {
+    p--;
+  }
+  if (p == path) {
+    return out;
+  }
+
+  // Assemble path with suffix
+  strcpy(buffer, path);
+  buffer[p - path] = '\0';
+  strcat(buffer, SELECTED_SUFFIX);
+  strcat(buffer, p);
+
+  if (file_exists(buffer)) {
+    copy_string_alloc(&out, buffer);
+  }
+
+  return out;
 }
 
 // A function to convert a hex-formatted string into a color struct
