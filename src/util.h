@@ -12,9 +12,9 @@
 #define LEN(x) ((sizeof(x)/sizeof(x[0])) - sizeof(x[0]))
 
 struct gamepad_info {
-  const char *label;
-  int type;
-  int index;
+    const char *label;
+    int type;
+    int index;
 };
 
 int config_handler(void *user, const char *section, const char *name, const char *value);

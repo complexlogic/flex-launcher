@@ -3,25 +3,25 @@
 
 // Clock
 typedef struct {
-  SDL_Surface *time_surface;
-  SDL_Surface *date_surface;
-  SDL_Texture *time_texture;
-  SDL_Texture *date_texture;
-  SDL_Rect time_rect;
-  SDL_Rect date_rect;
-  text_info_t text_info;
-  time_t current_time;
-  struct tm *time_info;
-  int x_offset_time;
-  int x_offset_date;
-  int y_offset;
-  int y_advance;
-  char time_string[MAX_CLOCK_CHARS + 1];
-  char date_string[MAX_CLOCK_CHARS + 1];
-  time_format_t time_format;
-  date_format_t date_format;
-  bool render_time;
-  bool render_date;
+    SDL_Surface *time_surface;
+    SDL_Surface *date_surface;
+    SDL_Texture *time_texture;
+    SDL_Texture *date_texture;
+    SDL_Rect time_rect;
+    SDL_Rect date_rect;
+    text_info_t text_info;
+    time_t current_time;
+    struct tm *time_info;
+    int x_offset_time;
+    int x_offset_date;
+    int y_offset;
+    int y_advance;
+    char time_string[MAX_CLOCK_CHARS + 1];
+    char date_string[MAX_CLOCK_CHARS + 1];
+    time_format_t time_format;
+    date_format_t date_format;
+    bool render_time;
+    bool render_date;
 } launcher_clock_t;
 
 static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int *x_offset);

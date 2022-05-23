@@ -1,7 +1,7 @@
 typedef enum {
-	LOGLEVEL_DEBUG = 0,
-	LOGLEVEL_ERROR,
-	LOGLEVEL_FATAL
+    LOGLEVEL_DEBUG = 0,
+    LOGLEVEL_ERROR,
+    LOGLEVEL_FATAL
 } log_level_t;
 
 static int init_log(void);

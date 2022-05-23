@@ -9,8 +9,8 @@
 #define MAX_INI_SECTION 100
 
 typedef struct {
-  char section[MAX_INI_SECTION + 1];
-  char *exec;
+    char section[MAX_INI_SECTION + 1];
+    char *exec;
 } desktop_t;
 
 static int desktop_handler(void *user, const char *section, const char *name, const char *value);

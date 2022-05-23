@@ -108,7 +108,9 @@ flex-launcher -d
 This will output a logfile named ```flex-launcher.log``` in the same directory as ```flex-launcher.exe``` on Windows, and in ```~/.local/share/flex-launcher``` on Linux. 
 
 ## Contributing
-Contributions are welcome for bugfixes and new features. Please keep code formatted to [2 space K&R style](https://gist.github.com/jesseschalken/0f47a2b5a738ced9c845).
+Contributions are welcome. For new features, create a discussion thread before starting work. Pull requests for bugfixes can be submitted without any prior coordination.
+
+Please keep code formatted to 4 space K&R style for consistency.
 
 ## Documentation
 Here is a list of available documentation:

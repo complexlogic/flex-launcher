@@ -54,223 +54,223 @@
 
 // Enum definitions
 typedef enum {
-  MODE_NONE,
-  MODE_COLOR,
-  MODE_IMAGE,
-  MODE_SLIDESHOW,
-  MODE_TRUNCATE,
-  MODE_SHRINK,
-  MODE_HIDE,
-  MODE_BLANK,
+    MODE_NONE,
+    MODE_COLOR,
+    MODE_IMAGE,
+    MODE_SLIDESHOW,
+    MODE_TRUNCATE,
+    MODE_SHRINK,
+    MODE_HIDE,
+    MODE_BLANK,
 } launcher_mode_t;
 
 typedef enum {
-  ALIGNMENT_LEFT,
-  ALIGNMENT_RIGHT,
+    ALIGNMENT_LEFT,
+    ALIGNMENT_RIGHT,
 } launcher_alignment_t;
 
 typedef enum {
-  TYPE_BUTTON,
-  TYPE_AXIS_POS,
-  TYPE_AXIS_NEG,
+    TYPE_BUTTON,
+    TYPE_AXIS_POS,
+    TYPE_AXIS_NEG,
 } control_type_t;
 
 typedef enum {
-  DIRECTION_LEFT,
-  DIRECTION_RIGHT,
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT,
 } direction_t;
 
 typedef enum {
-  FORMAT_TIME_AUTO,
-  FORMAT_TIME_12HR,
-  FORMAT_TIME_24HR
+    FORMAT_TIME_AUTO,
+    FORMAT_TIME_12HR,
+    FORMAT_TIME_24HR
 } time_format_t;
 
 typedef enum {
-  FORMAT_DATE_AUTO,
-  FORMAT_DATE_LITTLE,
-  FORMAT_DATE_BIG
+    FORMAT_DATE_AUTO,
+    FORMAT_DATE_LITTLE,
+    FORMAT_DATE_BIG
 } date_format_t;
 
 // Program states
 typedef struct {
-  bool slideshow_transition;
-  bool slideshow_background_rendering;
-  bool slideshow_background_ready;
-  bool slideshow_paused;
-  bool screensaver_active;
-  bool screensaver_transition;
-  bool clock_rendering;
-  bool clock_ready;
+    bool slideshow_transition;
+    bool slideshow_background_rendering;
+    bool slideshow_background_ready;
+    bool slideshow_paused;
+    bool screensaver_active;
+    bool screensaver_transition;
+    bool clock_rendering;
+    bool clock_ready;
 } state_t;
 
 // Timing information
 typedef struct {
-  Uint32 main;
-  Uint32 slideshow_load;
-  Uint32 last_input;
-  Uint32 clock_update;
-  Uint32 application_exited;
+    Uint32 main;
+    Uint32 slideshow_load;
+    Uint32 last_input;
+    Uint32 clock_update;
+    Uint32 application_exited;
 } ticks_t;
 
 // Linked list for menu entries
 typedef struct entry {
-  char         *title;
-  char         *icon_path;
-  char         *icon_selected_path;
-  char         *cmd;
-  SDL_Texture  *icon;
-  SDL_Texture  *icon_selected;
-  SDL_Rect     icon_rect;
-  SDL_Texture  *title_texture;
-  SDL_Rect     text_rect;
-  int          title_offset;
-  struct entry *next;
-  struct entry *previous;
+    char           *title;
+    char           *icon_path;
+    char           *icon_selected_path;
+    char           *cmd;
+    SDL_Texture    *icon;
+    SDL_Texture    *icon_selected;
+    SDL_Rect       icon_rect;
+    SDL_Texture    *title_texture;
+    SDL_Rect       text_rect;
+    int            title_offset;
+    struct entry   *next;
+    struct entry   *previous;
 } entry_t;
 
 // Linked list for menus
 typedef struct menu {
-  char        *name;
-  int         num_entries;
-  bool        rendered;
-  int         page;
-  int         highlight_position;
-  entry_t     *first_entry;
-  entry_t     *root_entry;
-  entry_t     *last_selected_entry;
-  struct menu *next;
-  struct menu *back;
+    char         *name;
+    int          num_entries;
+    bool         rendered;
+    int          page;
+    int          highlight_position;
+    entry_t      *first_entry;
+    entry_t      *root_entry;
+    entry_t      *last_selected_entry;
+    struct menu  *next;
+    struct menu  *back;
 } menu_t;
 
 // Linked list of gamepad controls
 typedef struct gamepad_control {
-  control_type_t         type;
-  int                    index;
-  int                    repeat;
-  const char             *label;
-  char                   *cmd;
-  struct gamepad_control *next;
+    control_type_t         type;
+    int                    index;
+    int                    repeat;
+    const char             *label;
+    char                   *cmd;
+    struct gamepad_control *next;
 } gamepad_control_t;
 
 // Linked list of hotkeys
 typedef struct hotkey {
-  SDL_Keycode   keycode;
-  char          *cmd;
-  struct hotkey *next;
+    SDL_Keycode   keycode;
+    char          *cmd;
+    struct hotkey *next;
 } hotkey_t;
 
 // Struct for the geometry parameters of the onscreen buttons
 typedef struct {
-  int screen_width;
-  int screen_height;
-  int screen_margin;
-  int font_height;
-  int x_margin; // Distance between left edge of screen and x coordinate of root_entry icon
-  int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
-  int x_advance; // Distance between icon x coordinate of adjacent entries
-  int num_buttons; // Number of buttons shown on the screen
+    int screen_width;
+    int screen_height;
+    int screen_margin;
+    int font_height;
+    int x_margin; // Distance between left edge of screen and x coordinate of root_entry icon
+    int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
+    int x_advance; // Distance between icon x coordinate of adjacent entries
+    int num_buttons; // Number of buttons shown on the screen
 } geometry_t;
 
 // Struct for highlight 
 typedef struct {
-  SDL_Texture *texture;
-  SDL_Rect rect;
+    SDL_Texture *texture;
+    SDL_Rect rect;
 } highlight_t;
 
 //Struct for scroll indicators
 typedef struct {
-  SDL_Texture *texture;
-  SDL_Rect rect_right;
-  SDL_Rect rect_left;
+    SDL_Texture *texture;
+    SDL_Rect rect_right;
+    SDL_Rect rect_left;
 } scroll_t;
 
 // Slideshow
 typedef struct {
-  char *images[MAX_SLIDESHOW_IMAGES];
-  int order[MAX_SLIDESHOW_IMAGES];
-  int i;
-  int num_images;
-  float transition_alpha;
-  float transition_change_rate;
-  SDL_Surface *transition_surface;
-  SDL_Texture *transition_texture;
+    char *images[MAX_SLIDESHOW_IMAGES];
+    int order[MAX_SLIDESHOW_IMAGES];
+    int i;
+    int num_images;
+    float transition_alpha;
+    float transition_change_rate;
+    SDL_Surface *transition_surface;
+    SDL_Texture *transition_texture;
 } slideshow_t;
 
 // Screensaver
 typedef struct {
-  float alpha;
-  float alpha_end_value;
-  float transition_change_rate;
-  SDL_Texture *texture;
+    float alpha;
+    float alpha_end_value;
+    float transition_change_rate;
+    SDL_Texture *texture;
 } screensaver_t;
 
 // Configuration settings
 typedef struct {
-  char *default_menu;
-  unsigned int max_buttons;
-  launcher_mode_t background_mode; // Defines image or color background mode
-  SDL_Color background_color; // Background color
-  char *background_image; // Path to background image
-  char *slideshow_directory;
-  bool background_overlay;
-  SDL_Color background_overlay_color;
-  char background_overlay_opacity[PERCENT_MAX_CHARS];
-  Uint16 icon_size;
-  int icon_spacing;
-  char icon_spacing_str[PERCENT_MAX_CHARS];
-  char *title_font_path; // Path to title TTF font file
-  unsigned int title_font_size;
-  SDL_Color title_font_color; // Color struct for title text
-  bool title_shadows;
-  SDL_Color title_shadow_color;
-  char title_opacity[PERCENT_MAX_CHARS];
-  launcher_mode_t title_oversize_mode; 
-  unsigned int title_padding;  
-  SDL_Color highlight_fill_color;
-  SDL_Color highlight_outline_color;
-  int highlight_outline_size;
-  char highlight_fill_opacity[PERCENT_MAX_CHARS];
-  char highlight_outline_opacity[PERCENT_MAX_CHARS];
-  unsigned int highlight_rx;
-  int highlight_vpadding;
-  int highlight_hpadding;
-  char button_centerline[PERCENT_MAX_CHARS];
-  bool scroll_indicators;
-  SDL_Color scroll_indicator_fill_color;
-  int scroll_indicator_outline_size;
-  SDL_Color scroll_indicator_outline_color;
-  char scroll_indicator_opacity[PERCENT_MAX_CHARS];
-  bool reset_on_back;
-  bool mouse_select;
-  launcher_mode_t on_launch;
-  bool screensaver_enabled;
-  Uint32 screensaver_idle_time;
-  char screensaver_intensity_str[PERCENT_MAX_CHARS];
-  bool screensaver_pause_slideshow;
-  bool gamepad_enabled;
-  int gamepad_device;
-  char *gamepad_mappings_file;
-  bool debug;
-  char *exe_path;
-  menu_t *first_menu;
-  int num_menus;
-  bool clock_enabled;
-  bool clock_show_date;
-  launcher_alignment_t clock_alignment;
-  char *clock_font_path;
-  char clock_margin_str[PERCENT_MAX_CHARS];
-  int clock_margin;
-  SDL_Color clock_font_color;
-  char clock_opacity[PERCENT_MAX_CHARS];
-  unsigned int clock_font_size;
-  bool clock_shadows;
-  SDL_Color clock_shadow_color;
-  time_format_t clock_time_format;
-  date_format_t clock_date_format;
-  bool clock_include_weekday;
-  Uint32 slideshow_image_duration;
-  Uint32 slideshow_transition_time;
+    char *default_menu;
+    unsigned int max_buttons;
+    launcher_mode_t background_mode; // Defines image or color background mode
+    SDL_Color background_color; // Background color
+    char *background_image; // Path to background image
+    char *slideshow_directory;
+    bool background_overlay;
+    SDL_Color background_overlay_color;
+    char background_overlay_opacity[PERCENT_MAX_CHARS];
+    Uint16 icon_size;
+    int icon_spacing;
+    char icon_spacing_str[PERCENT_MAX_CHARS];
+    char *title_font_path; // Path to title TTF font file
+    unsigned int title_font_size;
+    SDL_Color title_font_color; // Color struct for title text
+    bool title_shadows;
+    SDL_Color title_shadow_color;
+    char title_opacity[PERCENT_MAX_CHARS];
+    launcher_mode_t title_oversize_mode; 
+    unsigned int title_padding;
+    SDL_Color highlight_fill_color;
+    SDL_Color highlight_outline_color;
+    int highlight_outline_size;
+    char highlight_fill_opacity[PERCENT_MAX_CHARS];
+    char highlight_outline_opacity[PERCENT_MAX_CHARS];
+    unsigned int highlight_rx;
+    int highlight_vpadding;
+    int highlight_hpadding;
+    char button_centerline[PERCENT_MAX_CHARS];
+    bool scroll_indicators;
+    SDL_Color scroll_indicator_fill_color;
+    int scroll_indicator_outline_size;
+    SDL_Color scroll_indicator_outline_color;
+    char scroll_indicator_opacity[PERCENT_MAX_CHARS];
+    bool reset_on_back;
+    bool mouse_select;
+    launcher_mode_t on_launch;
+    bool screensaver_enabled;
+    Uint32 screensaver_idle_time;
+    char screensaver_intensity_str[PERCENT_MAX_CHARS];
+    bool screensaver_pause_slideshow;
+    bool gamepad_enabled;
+    int gamepad_device;
+    char *gamepad_mappings_file;
+    bool debug;
+    char *exe_path;
+    menu_t *first_menu;
+    int num_menus;
+    bool clock_enabled;
+    bool clock_show_date;
+    launcher_alignment_t clock_alignment;
+    char *clock_font_path;
+    char clock_margin_str[PERCENT_MAX_CHARS];
+    int clock_margin;
+    SDL_Color clock_font_color;
+    char clock_opacity[PERCENT_MAX_CHARS];
+    unsigned int clock_font_size;
+    bool clock_shadows;
+    SDL_Color clock_shadow_color;
+    time_format_t clock_time_format;
+    date_format_t clock_date_format;
+    bool clock_include_weekday;
+    Uint32 slideshow_image_duration;
+    Uint32 slideshow_transition_time;
 } config_t;
 
 // Function prototypes
