@@ -75,9 +75,9 @@ static void calculate_clock_geometry(launcher_clock_t *launcher_clock)
             &h_date,
             &launcher_clock->x_offset_date
         );
-        int h_avg = (h_time + h_date) / 2;
-        int spacing = (int) (CLOCK_SPACING_FACTOR * (float) h_avg);
-        launcher_clock->y_advance = spacing + h_avg;
+
+        int spacing = (int) (CLOCK_SPACING_FACTOR * (float) h_time);
+        launcher_clock->y_advance = spacing + h_time;
     }
 
     // Calculate y offset from margin

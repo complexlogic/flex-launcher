@@ -1,5 +1,5 @@
 #define MAX_CLOCK_CHARS 20
-#define CLOCK_SPACING_FACTOR 0.4F
+#define CLOCK_SPACING_FACTOR 0.5F
 
 // Clock
 typedef struct {
