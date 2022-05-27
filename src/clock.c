@@ -13,9 +13,9 @@
 #include "clock.h"
 #include "debug.h"
 
-extern config_t config;
-extern state_t state;
-extern geometry_t geo;
+extern Config config;
+extern State state;
+extern Geometry geo;
 
 // A function to calculate height and x offset of text
 static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int *x_offset)
@@ -290,7 +290,7 @@ int render_clock_async(void *data)
 } 
 
 // A function to get the time format for a region
-time_format_t get_time_format(const char *region)
+TimeFormat get_time_format(const char *region)
 {
     const char *countries[] = {"US",
         "CA",
@@ -299,7 +299,7 @@ time_format_t get_time_format(const char *region)
         "NZ",
         "IN"
     };
-    time_format_t format = FORMAT_TIME_24HR;
+    TimeFormat format = FORMAT_TIME_24HR;
     for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
         if (!strcmp(region, countries[i])) {
             format = FORMAT_TIME_12HR;
@@ -310,13 +310,13 @@ time_format_t get_time_format(const char *region)
 }
 
 // A function to get the date format for a region
-date_format_t get_date_format(const char *region)
+DateFormat get_date_format(const char *region)
 {
     const char *countries[] = {"US",
         "JP",
         "CN",
     };
-    date_format_t format = FORMAT_DATE_LITTLE;
+    DateFormat format = FORMAT_DATE_LITTLE;
     for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
         if (!strcmp(region, countries[i])) {
             format = FORMAT_DATE_BIG;

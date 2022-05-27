@@ -218,7 +218,7 @@ int image_filter(struct dirent *file)
 }
 
 // A function to scan a directory for images
-int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
+int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
 {
     struct dirent **files;
     int n = scandir(directory, &files, image_filter, NULL);

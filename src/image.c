@@ -16,8 +16,8 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "external/nanosvgrast.h"
 
-extern config_t config;
-extern state_t state;
+extern Config config;
+extern State state;
 extern SDL_Renderer *renderer;
 extern SDL_Texture *background_texture;
 NSVGrasterizer *rasterizer = NULL;
@@ -40,7 +40,7 @@ void quit_svg()
 }
 
 // A function to load the next slideshow background from the struct
-SDL_Surface *load_next_slideshow_background(slideshow_t *slideshow, bool transition)
+SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transition)
 {
     SDL_Surface *surface = NULL;
     int initial_index = slideshow->i;
@@ -100,7 +100,7 @@ SDL_Surface *load_next_slideshow_background(slideshow_t *slideshow, bool transit
 // A function to load a new slideshow background in a separate thread
 int load_next_slideshow_background_async(void *data)
 {
-    slideshow_t *slideshow = (slideshow_t*) data;
+    Slideshow *slideshow = (Slideshow*) data;
     slideshow->transition_surface = load_next_slideshow_background(slideshow, true);
     state.slideshow_background_rendering = false;
     state.slideshow_background_ready = true;
@@ -268,7 +268,7 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
 }
 
 // A function to render the scroll indicators
-void render_scroll_indicators(scroll_t *scroll, int height, geometry_t *geo)
+void render_scroll_indicators(Scroll *scroll, int height, Geometry *geo)
 {
     // Format the SVG
     char *buffer = NULL;

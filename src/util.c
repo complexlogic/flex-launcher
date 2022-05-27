@@ -12,11 +12,11 @@
 #include "platform/platform.h"
 #include "external/ini.h"
 
-extern config_t          config;
-extern gamepad_control_t *gamepad_controls;
-extern hotkey_t          *hotkeys;
-menu_t                   *menu    = NULL;
-entry_t                  *entry = NULL;
+extern Config          config;
+extern GamepadControl *gamepad_controls;
+extern Hotkey          *hotkeys;
+Menu                   *menu    = NULL;
+Entry                  *entry = NULL;
 
 
 // A function to handle the arguments from the command line
@@ -116,7 +116,7 @@ void parse_config_file(const char *config_file_path)
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
 {
-    config_t *pconfig = (config_t*) user;
+    Config *pconfig = (Config*) user;
 
     // Parse settings
     if (!strcmp(section,"Settings")) {
@@ -441,7 +441,7 @@ int config_handler(void *user, const char *section, const char *name, const char
 
     // Parse menus/entries
     else {
-        entry_t *previous_entry;
+        Entry *previous_entry;
 
         // Check if menu struct exists for current section
         if (pconfig->first_menu == NULL) {
@@ -450,7 +450,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
         else {
             bool menu_exists = false;
-            for (menu_t *tmp = pconfig->first_menu; tmp != NULL;
+            for (Menu *tmp = pconfig->first_menu; tmp != NULL;
             tmp = tmp->next) {
                 if (!strcmp(tmp->name,section)) {
                     menu_exists = true;
@@ -474,7 +474,7 @@ int config_handler(void *user, const char *section, const char *name, const char
 
             // Create first entry in the menu if none exists
             if (menu->first_entry == NULL) {
-                menu->first_entry = malloc(sizeof(entry_t));
+                menu->first_entry = malloc(sizeof(Entry));
                 entry = menu->first_entry;
                 entry->next = NULL;
             }
@@ -483,7 +483,7 @@ int config_handler(void *user, const char *section, const char *name, const char
             else {
                 previous_entry = entry;
                 entry = entry->next;
-                entry = malloc(sizeof(entry_t));
+                entry = malloc(sizeof(Entry));
                 previous_entry->next = entry;
                 entry->next = NULL;
             }
@@ -843,7 +843,7 @@ unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int h
 void add_hotkey(const char *keycode, const char *cmd)
 {
     // Convert hex string to binary
-    static hotkey_t *current_hotkey = NULL;
+    static Hotkey *current_hotkey = NULL;
     SDL_Keycode code = (SDL_Keycode) strtol(keycode, NULL, 16);
 
     // Check if exit hotkey for Windows
@@ -856,11 +856,11 @@ void add_hotkey(const char *keycode, const char *cmd)
 
     // Create first node if not initialized, else add to end of linked list
     if (current_hotkey == NULL) {
-        hotkeys = malloc(sizeof(hotkey_t));
+        hotkeys = malloc(sizeof(Hotkey));
         current_hotkey = hotkeys;
     }
     else {
-        current_hotkey->next = malloc(sizeof(hotkey_t));
+        current_hotkey->next = malloc(sizeof(Hotkey));
         current_hotkey = current_hotkey->next;
     }
     current_hotkey->keycode = code;
@@ -916,20 +916,20 @@ static void add_gamepad_control(const char *label, const char *cmd)
     }
 
     // Begin the linked list if none exists
-    static gamepad_control_t *current_gamepad_control = NULL;
+    static GamepadControl *current_gamepad_control = NULL;
     if (current_gamepad_control == NULL) {
-        gamepad_controls = malloc(sizeof(gamepad_control_t));
+        gamepad_controls = malloc(sizeof(GamepadControl));
         current_gamepad_control = gamepad_controls;
     }
 
     // Add another node to the linked list
     else {
-        current_gamepad_control->next = malloc(sizeof(gamepad_control_t));
+        current_gamepad_control->next = malloc(sizeof(GamepadControl));
         current_gamepad_control = current_gamepad_control->next;
     }
 
     // Copy the parameters in the struct
-    *current_gamepad_control = (gamepad_control_t) { 
+    *current_gamepad_control = (GamepadControl) { 
         .type     = info[i].type,
         .index    = info[i].index,
         .label    = info[i].label,
@@ -953,7 +953,7 @@ void convert_percent_to_int(char *string, int *result, int max_value)
 }
 
 // A function to make sure all settings are in their correct range
-void validate_settings(geometry_t *geo)
+void validate_settings(Geometry *geo)
 {
     // Reduce number of buttons if they can't all fit on screen
     if (config.icon_size * config.max_buttons > geo->screen_width) {
@@ -1135,9 +1135,9 @@ void validate_settings(geometry_t *geo)
 }
 
 // A function to retreive menu struct from the linked list via the menu name
-menu_t *get_menu(char *menu_name)
+Menu *get_menu(char *menu_name)
 {
-    for (menu_t *menu = config.first_menu; menu != NULL; menu = menu->next) {
+    for (Menu *menu = config.first_menu; menu != NULL; menu = menu->next) {
         if (!strcmp(menu_name, menu->name)) {
             return menu;
         }
@@ -1150,9 +1150,9 @@ menu_t *get_menu(char *menu_name)
 }
 
 // A function to allocate memory to and initialize a menu struct
-menu_t *create_menu(char *menu_name, int *num_menus)
+Menu *create_menu(char *menu_name, int *num_menus)
 {
-    menu_t *menu = malloc(sizeof(menu_t));
+    Menu *menu = malloc(sizeof(Menu));
     copy_string_alloc(&menu->name, menu_name);
     menu->first_entry = NULL;
     menu->next = NULL;
@@ -1167,7 +1167,7 @@ menu_t *create_menu(char *menu_name, int *num_menus)
 }
 
 // A function to advance X spaces in the entry linked list (left or right)
-entry_t *advance_entries(entry_t *entry, int spaces, direction_t direction)
+Entry *advance_entries(Entry *entry, int spaces, Direction direction)
 {
     if (direction == DIRECTION_LEFT) {
         for (int i = 0; i < spaces; i++) {

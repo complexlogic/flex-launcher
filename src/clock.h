@@ -18,8 +18,8 @@ typedef struct {
     int y_advance;
     char time_string[MAX_CLOCK_CHARS + 1];
     char date_string[MAX_CLOCK_CHARS + 1];
-    time_format_t time_format;
-    date_format_t date_format;
+    TimeFormat time_format;
+    DateFormat date_format;
     bool render_time;
     bool render_date;
 } launcher_clock_t;
@@ -33,5 +33,5 @@ void init_clock(launcher_clock_t *launcher_clock);
 void get_time(launcher_clock_t *launcher_clock);
 void render_clock(launcher_clock_t *launcher_clock);
 int render_clock_async(void *data);
-time_format_t get_time_format(const char *region);
-date_format_t get_date_format(const char *region);
+TimeFormat get_time_format(const char *region);
+DateFormat get_date_format(const char *region);

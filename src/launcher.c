@@ -17,7 +17,7 @@
 #include "platform/platform.h"
 
 // Initialize default settings
-config_t config = {
+Config config = {
     .default_menu                     = NULL,
     .background_image                 = NULL,
     .slideshow_directory              = NULL,
@@ -115,7 +115,7 @@ config_t config = {
 };
 
 // Initialize default states
-state_t state = {
+State state = {
     .slideshow_transition             = false,
     .slideshow_background_ready       = false,
     .slideshow_paused                 = false,
@@ -130,27 +130,27 @@ SDL_Window *window                    = NULL;
 SDL_Renderer *renderer                = NULL;
 SDL_Texture *background_texture       = NULL;
 SDL_Texture *background_overlay       = NULL;
-menu_t *default_menu                  = NULL;
-menu_t *current_menu                  = NULL;
-entry_t *current_entry                = NULL;
-highlight_t *highlight                = NULL;
-scroll_t *scroll                      = NULL;
-slideshow_t *slideshow                = NULL;
-screensaver_t *screensaver            = NULL;
+Menu *default_menu                    = NULL;
+Menu *current_menu                    = NULL;
+Entry *current_entry                  = NULL;
+Highlight *highlight                  = NULL;
+Scroll *scroll                        = NULL;
+Slideshow *slideshow                  = NULL;
+Screensaver *screensaver              = NULL;
 FILE *log_file                        = NULL;
 SDL_GameController *gamepad           = NULL;
-gamepad_control_t *gamepad_controls   = NULL;
-hotkey_t *hotkeys                     = NULL;
+GamepadControl *gamepad_controls      = NULL;
+Hotkey *hotkeys                       = NULL;
 launcher_clock_t *launcher_clock      = NULL;
 TTF_Font *clock_font                  = NULL;
-SDL_Thread *slideshow_thread          = NULL;
+SDL_Thread *Slideshowhread            = NULL;
 SDL_Thread *clock_thread              = NULL;
 SDL_Event event;
 SDL_SysWMinfo wm_info;
 SDL_DisplayMode display_mode;
 text_info_t title_info;
-ticks_t ticks;
-geometry_t geo;
+Ticks ticks;
+Geometry geo;
 int refresh_period;
 int delay_period;
 int repeat_period; 
@@ -291,7 +291,7 @@ static void init_sdl_ttf()
 static void cleanup()
 {
     // Wait until all threads have completed
-    SDL_WaitThread(slideshow_thread, NULL);
+    SDL_WaitThread(Slideshowhread, NULL);
     SDL_WaitThread(clock_thread, NULL);
     
     // Destroy renderer and window
@@ -332,10 +332,10 @@ static void cleanup()
     free(launcher_clock);
 
     // Free menu and entry linked lists
-    entry_t *entry = NULL;
-    entry_t *tmp_entry = NULL;
-    menu_t *menu = config.first_menu;
-    menu_t *tmp_menu = NULL;
+    Entry *entry = NULL;
+    Entry *tmp_entry = NULL;
+    Menu *menu = config.first_menu;
+    Menu *tmp_menu = NULL;
     for (int i = 0; i < config.num_menus; i++) {
         free(menu->name);
         entry = menu->first_entry;
@@ -354,8 +354,8 @@ static void cleanup()
     }
 
     // Free hotkey linked list
-    hotkey_t *tmp_hotkey = NULL;
-    for(hotkey_t *i = hotkeys; i != NULL; i = i->next) {
+    Hotkey *tmp_hotkey = NULL;
+    for(Hotkey *i = hotkeys; i != NULL; i = i->next) {
         free(tmp_hotkey);
         free(i->cmd);
         tmp_hotkey = i;
@@ -363,8 +363,8 @@ static void cleanup()
     free(tmp_hotkey);
 
     // Free gamepad control linked list
-    gamepad_control_t *tmp_gamepad = NULL;
-    for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
+    GamepadControl *tmp_gamepad = NULL;
+    for (GamepadControl *i = gamepad_controls; i != NULL; i = i->next) {
         free(tmp_gamepad);
         free(i->cmd);
         tmp_gamepad = i;
@@ -409,7 +409,7 @@ static void handle_keypress(SDL_Keysym *key)
 
     //Check hotkeys
     else {
-        for (hotkey_t *i = hotkeys; i != NULL; i = i->next) {
+        for (Hotkey *i = hotkeys; i != NULL; i = i->next) {
             if (key->sym == i->keycode) {
                 execute_command(i->cmd);
                 break;
@@ -442,7 +442,7 @@ static void init_slideshow()
         return;
     }
     // Allocate and initialize slideshow struct
-    slideshow = malloc(sizeof(slideshow_t));
+    slideshow = malloc(sizeof(Slideshow));
     slideshow->i = -1;
     slideshow->num_images = 0;
     slideshow->transition_texture = NULL;
@@ -487,7 +487,7 @@ static void init_slideshow()
 static void init_screensaver()
 {
     // Allocate memory for structure
-    screensaver = malloc(sizeof(screensaver_t));
+    screensaver = malloc(sizeof(Screensaver));
     
     // Convert intensity string to float
     char intensity[PERCENT_MAX_CHARS];
@@ -537,13 +537,13 @@ static void resume_slideshow()
 }
 
 // A function to load a menu
-static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position)
+static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
 {
     if (menu == NULL) {
         return 1;
     }
     int buttons;
-    menu_t *previous_menu = current_menu;
+    Menu *previous_menu = current_menu;
 
     current_menu = menu;
     output_log(LOGLEVEL_DEBUG, "Loading menu \"%s\"\n", current_menu->name);
@@ -592,12 +592,12 @@ static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position)
 // A function to load a menu by its name
 static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position)
 {
-    menu_t *menu = get_menu(menu_name);
+    Menu *menu = get_menu(menu_name);
     return load_menu(menu, set_back_menu, reset_position);
 }
 
 // A function to calculate the layout of the buttons
-static void calculate_button_geometry(entry_t *entry, int buttons)
+static void calculate_button_geometry(Entry *entry, int buttons)
 {
     // Calculate proper spacing
     int button_height = config.icon_size + config.title_padding + geo.font_height;
@@ -621,9 +621,9 @@ static void calculate_button_geometry(entry_t *entry, int buttons)
 }
 
 // A function to render all buttons (icon and text) for a menu
-static void render_buttons(menu_t *menu)
+static void render_buttons(Menu *menu)
 {
-    entry_t *entry;
+    Entry *entry;
     int h;
     for (entry = menu->first_entry; entry != NULL; entry = entry->next) {
         entry->icon = load_texture_from_file(entry->icon_path);
@@ -696,7 +696,7 @@ static void load_submenu(const char *submenu)
 }
 
 // A function to load the previous menu
-static void load_back_menu(menu_t *menu)
+static void load_back_menu(Menu *menu)
 {
     load_menu(menu->back, false, config.reset_on_back);
 }
@@ -745,7 +745,7 @@ static void draw_screen()
     );
 
     // Draw buttons
-    entry_t *entry = current_menu->root_entry;
+    Entry *entry = current_menu->root_entry;
     SDL_Texture *icon;
     for (int i = 0; i < geo.num_buttons; i++) {
         icon = (entry->icon_selected != NULL && i == current_menu->highlight_position) ? entry->icon_selected : entry->icon;
@@ -952,7 +952,7 @@ static void connect_gamepad(int device_index)
 static void poll_gamepad()
 {
     int value_multiplier; // Handles positive or negative axis
-    for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
+    for (GamepadControl *i = gamepad_controls; i != NULL; i = i->next) {
         
         // Check if axis value exceeds dead zone
         if (i->type == TYPE_AXIS_POS || i->type == TYPE_AXIS_NEG) {
@@ -1003,14 +1003,14 @@ static void update_slideshow()
         
         // Render the new background image in a separate thread so we don't block the main thread
         if (!state.slideshow_background_rendering && !state.slideshow_background_ready) {
-            slideshow_thread = SDL_CreateThread(load_next_slideshow_background_async, "Slideshow Thread", (void*) slideshow);
+            Slideshowhread = SDL_CreateThread(load_next_slideshow_background_async, "Slideshow Thread", (void*) slideshow);
             state.slideshow_background_rendering = true;
         }
 
         // Convert background to texture after the rendering thread has completed
         else if (state.slideshow_background_ready) {
-            SDL_WaitThread(slideshow_thread, NULL);
-            slideshow_thread = NULL;
+            SDL_WaitThread(Slideshowhread, NULL);
+            Slideshowhread = NULL;
             if (config.slideshow_transition_time > 0) {
                 slideshow->transition_texture = load_texture(slideshow->transition_surface);
                 SDL_SetTextureAlphaMod(slideshow->transition_texture, 0);
@@ -1220,7 +1220,7 @@ int main(int argc, char *argv[])
     
     // Render highlight
     int button_height = config.icon_size + config.title_padding + geo.font_height;
-    highlight = malloc(sizeof(highlight_t));
+    highlight = malloc(sizeof(Highlight));
     highlight->texture = render_highlight(config.icon_size + 2*config.highlight_hpadding,
                              button_height + 2*config.highlight_vpadding,
                              config.highlight_rx,
@@ -1229,7 +1229,7 @@ int main(int argc, char *argv[])
 
     // Render scroll indicators
     if (config.scroll_indicators) {
-        scroll = malloc(sizeof(scroll_t));
+        scroll = malloc(sizeof(Scroll));
         scroll->texture = NULL;
         int scroll_indicator_height = (int) ((float) geo.screen_height * SCROLL_INDICATOR_HEIGHT);
         render_scroll_indicators(scroll, scroll_indicator_height, &geo);

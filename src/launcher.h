@@ -62,35 +62,35 @@ typedef enum {
     MODE_SHRINK,
     MODE_HIDE,
     MODE_BLANK,
-} launcher_mode_t;
+} LauncherMode;
 
 typedef enum {
     ALIGNMENT_LEFT,
     ALIGNMENT_RIGHT,
-} launcher_alignment_t;
+} Alignment;
 
 typedef enum {
     TYPE_BUTTON,
     TYPE_AXIS_POS,
     TYPE_AXIS_NEG,
-} control_type_t;
+} ControlType;
 
 typedef enum {
     DIRECTION_LEFT,
     DIRECTION_RIGHT,
-} direction_t;
+} Direction;
 
 typedef enum {
     FORMAT_TIME_AUTO,
     FORMAT_TIME_12HR,
     FORMAT_TIME_24HR
-} time_format_t;
+} TimeFormat;
 
 typedef enum {
     FORMAT_DATE_AUTO,
     FORMAT_DATE_LITTLE,
     FORMAT_DATE_BIG
-} date_format_t;
+} DateFormat;
 
 // Program states
 typedef struct {
@@ -102,7 +102,7 @@ typedef struct {
     bool screensaver_transition;
     bool clock_rendering;
     bool clock_ready;
-} state_t;
+} State;
 
 // Timing information
 typedef struct {
@@ -111,7 +111,7 @@ typedef struct {
     Uint32 last_input;
     Uint32 clock_update;
     Uint32 application_exited;
-} ticks_t;
+} Ticks;
 
 // Linked list for menu entries
 typedef struct entry {
@@ -127,7 +127,7 @@ typedef struct entry {
     int            title_offset;
     struct entry   *next;
     struct entry   *previous;
-} entry_t;
+} Entry;
 
 // Linked list for menus
 typedef struct menu {
@@ -136,29 +136,29 @@ typedef struct menu {
     bool         rendered;
     int          page;
     int          highlight_position;
-    entry_t      *first_entry;
-    entry_t      *root_entry;
-    entry_t      *last_selected_entry;
+    Entry        *first_entry;
+    Entry        *root_entry;
+    Entry        *last_selected_entry;
     struct menu  *next;
     struct menu  *back;
-} menu_t;
+} Menu;
 
 // Linked list of gamepad controls
 typedef struct gamepad_control {
-    control_type_t         type;
+    ControlType            type;
     int                    index;
     int                    repeat;
     const char             *label;
     char                   *cmd;
     struct gamepad_control *next;
-} gamepad_control_t;
+} GamepadControl;
 
 // Linked list of hotkeys
 typedef struct hotkey {
     SDL_Keycode   keycode;
     char          *cmd;
     struct hotkey *next;
-} hotkey_t;
+} Hotkey;
 
 // Struct for the geometry parameters of the onscreen buttons
 typedef struct {
@@ -170,20 +170,20 @@ typedef struct {
     int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
     int x_advance; // Distance between icon x coordinate of adjacent entries
     int num_buttons; // Number of buttons shown on the screen
-} geometry_t;
+} Geometry;
 
 // Struct for highlight 
 typedef struct {
     SDL_Texture *texture;
     SDL_Rect rect;
-} highlight_t;
+} Highlight;
 
 //Struct for scroll indicators
 typedef struct {
     SDL_Texture *texture;
     SDL_Rect rect_right;
     SDL_Rect rect_left;
-} scroll_t;
+} Scroll;
 
 // Slideshow
 typedef struct {
@@ -195,7 +195,7 @@ typedef struct {
     float transition_change_rate;
     SDL_Surface *transition_surface;
     SDL_Texture *transition_texture;
-} slideshow_t;
+} Slideshow;
 
 // Screensaver
 typedef struct {
@@ -203,13 +203,13 @@ typedef struct {
     float alpha_end_value;
     float transition_change_rate;
     SDL_Texture *texture;
-} screensaver_t;
+} Screensaver;
 
 // Configuration settings
 typedef struct {
     char *default_menu;
     unsigned int max_buttons;
-    launcher_mode_t background_mode; // Defines image or color background mode
+    LauncherMode background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
     char *background_image; // Path to background image
     char *slideshow_directory;
@@ -225,7 +225,7 @@ typedef struct {
     bool title_shadows;
     SDL_Color title_shadow_color;
     char title_opacity[PERCENT_MAX_CHARS];
-    launcher_mode_t title_oversize_mode; 
+    LauncherMode title_oversize_mode; 
     unsigned int title_padding;
     SDL_Color highlight_fill_color;
     SDL_Color highlight_outline_color;
@@ -243,7 +243,7 @@ typedef struct {
     char scroll_indicator_opacity[PERCENT_MAX_CHARS];
     bool reset_on_back;
     bool mouse_select;
-    launcher_mode_t on_launch;
+    LauncherMode on_launch;
     bool screensaver_enabled;
     Uint32 screensaver_idle_time;
     char screensaver_intensity_str[PERCENT_MAX_CHARS];
@@ -253,11 +253,11 @@ typedef struct {
     char *gamepad_mappings_file;
     bool debug;
     char *exe_path;
-    menu_t *first_menu;
+    Menu *first_menu;
     int num_menus;
     bool clock_enabled;
     bool clock_show_date;
-    launcher_alignment_t clock_alignment;
+    Alignment clock_alignment;
     char *clock_font_path;
     char clock_margin_str[PERCENT_MAX_CHARS];
     int clock_margin;
@@ -266,19 +266,19 @@ typedef struct {
     unsigned int clock_font_size;
     bool clock_shadows;
     SDL_Color clock_shadow_color;
-    time_format_t clock_time_format;
-    date_format_t clock_date_format;
+    TimeFormat clock_time_format;
+    DateFormat clock_date_format;
     bool clock_include_weekday;
     Uint32 slideshow_image_duration;
     Uint32 slideshow_transition_time;
-} config_t;
+} Config;
 
 // Function prototypes
 static void init_sdl(void);
 static void init_sdl_image(void);
 static void create_window(void);
 static void init_sdl_ttf(void);
-static int load_menu(menu_t *menu, bool set_back_menu, bool reset_position);
+static int load_menu(Menu *menu, bool set_back_menu, bool reset_position);
 static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position);
 static void update_slideshow(void);
 static void resume_slideshow(void);
@@ -289,12 +289,12 @@ static void init_screensaver(void);
 void quit_slideshow(void);
 void set_draw_color(void);
 static void get_display_info(void);
-static void calculate_button_geometry(entry_t *entry, int buttons);
-static void render_buttons(menu_t *menu);
+static void calculate_button_geometry(Entry *entry, int buttons);
+static void render_buttons(Menu *menu);
 static void move_left(void);
 static void move_right(void);
 static void load_submenu(const char *submenu);
-static void load_back_menu(menu_t *menu);
+static void load_back_menu(Menu *menu);
 static void draw_screen(void);
 static void handle_keypress(SDL_Keysym *key);
 static void execute_command(const char *command);

@@ -15,7 +15,7 @@
 #include "../debug.h"
 #include "slideshow.h"
 
-extern config_t config;
+extern Config config;
 extern SDL_SysWMinfo wm_info;
 bool web_browser;
 bool browser_launched;
@@ -281,7 +281,7 @@ bool start_process(char *cmd, bool application)
 }
 
 // A function to scan the slideshow directory for image files
-int scan_slideshow_directory(slideshow_t *slideshow, const char *directory)
+int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
 {
     WIN32_FIND_DATAA data;
     HANDLE handle;

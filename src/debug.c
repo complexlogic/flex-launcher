@@ -13,7 +13,7 @@
 #include "platform/unix.h"
 #endif
 
-extern config_t config;
+extern Config config;
 extern FILE *log_file;
 
 // A function to initialize the logging subsystem
@@ -274,15 +274,15 @@ void debug_settings()
 }
 
 // A function to print the parsed menu entries to the command line
-void debug_menu_entries(menu_t *first_menu, int num_menus) 
+void debug_menu_entries(Menu *first_menu, int num_menus) 
 {
     if (first_menu == NULL) {
         output_log(LOGLEVEL_DEBUG, "No valid menus found\n");
         return;
     }
     output_log(LOGLEVEL_DEBUG, "======================= Menu Entries =======================\n");
-    menu_t *menu = first_menu;
-    entry_t *entry;
+    Menu *menu = first_menu;
+    Entry *entry;
     for (int i = 0; i < num_menus; i ++) {
         output_log(LOGLEVEL_DEBUG, "Menu Name: %s\n",menu->name);
         output_log(LOGLEVEL_DEBUG, "Number of Entries: %i\n",menu->num_entries);
@@ -304,7 +304,7 @@ void debug_menu_entries(menu_t *first_menu, int num_menus)
     output_log(LOGLEVEL_DEBUG, "\n");
 }
 
-void debug_gamepad(gamepad_control_t *gamepad_controls)
+void debug_gamepad(GamepadControl *gamepad_controls)
 {
     output_log(LOGLEVEL_DEBUG, "======================== Gamepad ========================\n");
     if (config.gamepad_enabled) {
@@ -317,12 +317,12 @@ void debug_gamepad(gamepad_control_t *gamepad_controls)
     if (config.gamepad_mappings_file != NULL) {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_GAMEPAD_MAPPINGS_FILE, config.gamepad_mappings_file);
     }
-    for (gamepad_control_t *i = gamepad_controls; i != NULL; i = i->next) {
+    for (GamepadControl *i = gamepad_controls; i != NULL; i = i->next) {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", i->label, i->cmd);
     }
 }
 
-void debug_hotkeys(hotkey_t *hotkeys)
+void debug_hotkeys(Hotkey *hotkeys)
 {
     if (hotkeys == NULL) {
         output_log(LOGLEVEL_DEBUG, "No hotkeys detected\n");
@@ -330,7 +330,7 @@ void debug_hotkeys(hotkey_t *hotkeys)
     }
     output_log(LOGLEVEL_DEBUG, "======================== Hotkeys =========================\n");
     int index = 0;
-    for (hotkey_t *i = hotkeys; i != NULL; i = i->next) {
+    for (Hotkey *i = hotkeys; i != NULL; i = i->next) {
         output_log(LOGLEVEL_DEBUG, "Hotkey %i Keycode: %X\n", index, i->keycode);
         output_log(LOGLEVEL_DEBUG, "Hotkey %i Command: %s\n", index, i->cmd);
         index++;
@@ -338,7 +338,7 @@ void debug_hotkeys(hotkey_t *hotkeys)
 }
 
 // A function to debug the parsed slideshow files
-void debug_slideshow(slideshow_t *slideshow)
+void debug_slideshow(Slideshow *slideshow)
 {
     output_log(LOGLEVEL_DEBUG, "======================== Slideshow ========================\n");
     output_log(LOGLEVEL_DEBUG, 
