@@ -342,6 +342,7 @@ static void cleanup()
         for(int j = 0; j < menu->num_entries; j++) {
             free(entry->title);
             free(entry->icon_path);
+            free(entry->icon_selected_path);
             free(entry->cmd);
             tmp_entry = entry;
             entry = entry->next;
