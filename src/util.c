@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <getopt.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include "launcher.h"
@@ -15,7 +16,7 @@
 extern Config          config;
 extern GamepadControl  *gamepad_controls;
 extern Hotkey          *hotkeys;
-Menu                   *menu    = NULL;
+Menu                   *menu  = NULL;
 Entry                  *entry = NULL;
 
 
@@ -26,38 +27,38 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
     if (argc > 1) {
         bool version = false;
         bool help = false;
-        int config_file_index = -1;
-        for (int i = 1; i < argc; i++) {
+        int rc;
+        const char *short_opts = "hvc:d";
+        static const struct option long_opts[] = {
+            { "help",         no_argument,       NULL, 'h' },
+            { "version",      no_argument,       NULL, 'v' },
+            { "config",       required_argument, NULL, 'c' },
+            { "debug",        no_argument,       NULL, 'd' },
+            { 0, 0, 0, 0 }
+        };
+    
+        while ((rc = getopt_long(argc, argv, short_opts, long_opts, NULL)) !=-1) {
+            switch (rc) {
+                case 'h':
+                    help = true;
+                    break;
 
-            // Current argument is config file path if -c or --config was previous argument
-            if (i == config_file_index && *config_file_path == NULL) {
-                if (file_exists(argv[i])) {
-                    copy_string_alloc(config_file_path, argv[i]);
-                }
-                else {
-                    output_log(LOGLEVEL_FATAL, "Fatal Error: Config file %s not found\n", argv[i]);
-                }
-            }
-            if (!strcmp(argv[i],"-c") || !strcmp(argv[i],"--config")) {
-                config_file_index = i + 1;
-            }
-            else if (!strcmp(argv[i],"-d") || !strcmp(argv[i],"--debug")) {
-                config.debug = true;
-            }
-#ifdef __unix__
-            else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"--help")) {
-                help = true;
-            }
-            else if (!strcmp(argv[i],"-v") || !strcmp(argv[i],"--version")) {
-                version = true;
-            }
-#endif
-            else if (i != config_file_index) {
-#ifdef __unix__
-                fprintf(stderr, "Unrecognized option %s\n",argv[i]);
-                print_usage();
-#endif
-                quit(EXIT_FAILURE);
+                case 'v':
+                    version = true;
+                    break;
+
+                case 'c':
+                    if (file_exists(optarg)) {
+                        copy_string_alloc(config_file_path, optarg);
+                    }
+                    else {
+                        output_log(LOGLEVEL_FATAL, "Fatal Error: Config file '%s' not found\n", optarg);
+                    }
+                    break;
+
+                case 'd':
+                    config.debug = true;
+                    break;
             }
         }
 

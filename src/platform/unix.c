@@ -274,11 +274,11 @@ void scmd_sleep()
 // A function to print usage to the command line
 void print_usage()
 {
-    printf("Usage: %s [OPTIONS]\n", EXECUTABLE_TITLE);
-    printf("-c, --config      Path to config file.\n");
-    printf("-d, --debug       Enable debug messages.\n");
-    printf("-h, --help        Show this help message.\n");
-    printf("-v, --version     Print version information.\n");
+    printf("Usage: " EXECUTABLE_TITLE " [OPTIONS]\n");
+    printf("  -c p, --config=p   Load config file from path p.\n");
+    printf("  -d,   --debug      Enable debug messages.\n");
+    printf("  -h,   --help       Show this help message.\n");
+    printf("  -v,   --version    Print version information.\n");
 }
 
 // A function to print the version and other info to command line

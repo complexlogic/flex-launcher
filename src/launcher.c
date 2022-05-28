@@ -1262,7 +1262,7 @@ int main(int argc, char *argv[])
         register_exit_hotkey();
     }
 #endif
-    
+
     // Print debug info to log
     if (config.debug) {
         debug_video(renderer, &display_mode);
