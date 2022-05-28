@@ -21,7 +21,7 @@ pid_t child_pid;
 // A function to handle .desktop lines
 static int desktop_handler(void *user, const char *section, const char *name, const char *value)
 {
-    desktop_t *pdesktop = (desktop_t*) user;
+    Desktop *pdesktop = (Desktop*) user;
     if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC)) {
         copy_string_alloc(&pdesktop->exec, value);
     }
@@ -116,7 +116,7 @@ bool start_process(char *cmd, bool application)
     copy_string_alloc(&tmp, cmd);
     char *file = strtok(tmp, DELIMITER_ACTION);
     if (ends_with(file, EXT_DESKTOP)) {
-        desktop_t desktop;
+        Desktop desktop;
         desktop.exec = NULL;
 
         // Parse the desktop action from the command (if any)

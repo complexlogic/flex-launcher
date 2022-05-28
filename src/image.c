@@ -304,7 +304,7 @@ void render_scroll_indicators(Scroll *scroll, int height, Geometry *geo)
 }
 
 // A function to render text
-SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
+SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *text_height)
 {
     TTF_Font *output_font = NULL;
     TTF_Font *reduced_font = NULL; // Font for Shrink text oversize mode
@@ -407,14 +407,14 @@ SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, in
 }
 
 // A function to render text into a texture
-SDL_Texture *render_text_texture(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height)
+SDL_Texture *render_text_texture(const char *text, TextInfo *info, SDL_Rect *rect, int *text_height)
 {
     SDL_Surface *surface = render_text(text, info, rect, text_height);
     return load_texture(surface);
 }
 
 // A function to load a font from a file
-int load_font(text_info_t *info, const char *default_font)
+int load_font(TextInfo *info, const char *default_font)
 {
     char *font_path = *info->font_path;
     // Load user specified font

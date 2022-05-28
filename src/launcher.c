@@ -141,14 +141,14 @@ FILE *log_file                        = NULL;
 SDL_GameController *gamepad           = NULL;
 GamepadControl *gamepad_controls      = NULL;
 Hotkey *hotkeys                       = NULL;
-launcher_clock_t *launcher_clock      = NULL;
+Clock *clk      = NULL;
 TTF_Font *clock_font                  = NULL;
 SDL_Thread *Slideshowhread            = NULL;
 SDL_Thread *clock_thread              = NULL;
 SDL_Event event;
 SDL_SysWMinfo wm_info;
 SDL_DisplayMode display_mode;
-text_info_t title_info;
+TextInfo title_info;
 Ticks ticks;
 Geometry geo;
 int refresh_period;
@@ -264,13 +264,15 @@ static void init_sdl_ttf()
             TTF_GetError()
         );
      }
-
-    title_info.font_size = config.title_font_size;
-    title_info.shadow = config.title_shadows;
-    title_info.font_path = &config.title_font_path;
-    title_info.max_width = config.icon_size,
-    title_info.oversize_mode = config.title_oversize_mode;
-    title_info.color = &config.title_font_color;
+    
+    title_info = (TextInfo) { 
+        .font_size = config.title_font_size,
+        .shadow = config.title_shadows,
+        .font_path = &config.title_font_path,
+        .max_width = config.icon_size,
+        .oversize_mode = config.title_oversize_mode,
+        .color = &config.title_font_color
+    };
     if (config.title_shadows) {
         title_info.shadow_color = &config.title_shadow_color;
         calculate_shadow_alpha(title_info);
@@ -329,7 +331,7 @@ static void cleanup()
     free(highlight);
     free(scroll);
     free(screensaver);
-    free(launcher_clock);
+    free(clk);
 
     // Free menu and entry linked lists
     Entry *entry = NULL;
@@ -731,9 +733,9 @@ static void draw_screen()
 
     // Draw clock
     if (config.clock_enabled) {
-        SDL_RenderCopy(renderer, launcher_clock->time_texture, NULL, &launcher_clock->time_rect);
+        SDL_RenderCopy(renderer, clk->time_texture, NULL, &clk->time_rect);
         if (config.clock_show_date) {
-            SDL_RenderCopy(renderer, launcher_clock->date_texture, NULL, &launcher_clock->date_rect);
+            SDL_RenderCopy(renderer, clk->date_texture, NULL, &clk->date_rect);
         }
     }
 
@@ -1095,14 +1097,14 @@ static void update_clock(bool block)
         if (!state.clock_rendering) {
 
             // Check to see if the time has changed
-            get_time(launcher_clock);
-            if (launcher_clock->render_time) {
+            get_time(clk);
+            if (clk->render_time) {
                 state.clock_rendering = true;
                 if (block) {
-                    render_clock(launcher_clock);
+                    render_clock(clk);
                 }
                 else {
-                    clock_thread = SDL_CreateThread(render_clock_async, "Clock Thread", (void*) launcher_clock);
+                    clock_thread = SDL_CreateThread(render_clock_async, "Clock Thread", (void*) clk);
                 }    
             }
             else {
@@ -1114,17 +1116,17 @@ static void update_clock(bool block)
         if (state.clock_ready) {
             SDL_WaitThread(clock_thread, NULL);
             clock_thread = NULL;
-            SDL_DestroyTexture(launcher_clock->time_texture);
-            launcher_clock->time_texture = load_texture(launcher_clock->time_surface);
-            launcher_clock->time_surface = NULL;
-            if (launcher_clock->render_date) {
-                SDL_DestroyTexture(launcher_clock->date_texture);
-                launcher_clock->date_texture = load_texture(launcher_clock->date_surface);
-                launcher_clock->date_surface = NULL;
+            SDL_DestroyTexture(clk->time_texture);
+            clk->time_texture = load_texture(clk->time_surface);
+            clk->time_surface = NULL;
+            if (clk->render_date) {
+                SDL_DestroyTexture(clk->date_texture);
+                clk->date_texture = load_texture(clk->date_surface);
+                clk->date_surface = NULL;
             }
             ticks.clock_update = ticks.main;
-            launcher_clock->render_time = false;
-            launcher_clock->render_date = false;
+            clk->render_time = false;
+            clk->render_date = false;
             state.clock_rendering = false;
             state.clock_ready = false;
         }
@@ -1213,8 +1215,8 @@ int main(int argc, char *argv[])
 
     // Initialize clock
     if (config.clock_enabled) {
-        launcher_clock = malloc(sizeof(launcher_clock_t));
-        init_clock(launcher_clock);
+        clk = malloc(sizeof(Clock));
+        init_clock(clk);
         ticks.clock_update = ticks.main;
     }
     

@@ -13,7 +13,7 @@
 #include "external/ini.h"
 
 extern Config          config;
-extern GamepadControl *gamepad_controls;
+extern GamepadControl  *gamepad_controls;
 extern Hotkey          *hotkeys;
 Menu                   *menu    = NULL;
 Entry                  *entry = NULL;
@@ -1153,16 +1153,19 @@ Menu *get_menu(char *menu_name)
 Menu *create_menu(char *menu_name, int *num_menus)
 {
     Menu *menu = malloc(sizeof(Menu));
+    *menu = (Menu) {
+        .first_entry = NULL,
+        .next = NULL,
+        .back = NULL,
+        .root_entry = NULL,
+        .num_entries = 0,
+        .page = 0,
+        .highlight_position = 0,
+        .rendered = false
+    };
     copy_string_alloc(&menu->name, menu_name);
-    menu->first_entry = NULL;
-    menu->next = NULL;
-    menu->back = NULL;
-    menu->root_entry = NULL;
-    menu->num_entries = 0;
-    menu->page = 0;
-    menu->highlight_position = 0;
-    menu->rendered = false;
     (*num_menus)++;
+    
     return menu;
 }
 

@@ -9,7 +9,7 @@ typedef struct {
     SDL_Texture *date_texture;
     SDL_Rect time_rect;
     SDL_Rect date_rect;
-    text_info_t text_info;
+    TextInfo text_info;
     time_t current_time;
     struct tm *time_info;
     int x_offset_time;
@@ -22,16 +22,16 @@ typedef struct {
     DateFormat date_format;
     bool render_time;
     bool render_date;
-} launcher_clock_t;
+} Clock;
 
 static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int *x_offset);
-static void calculate_clock_geometry(launcher_clock_t *launcher_clock);
-static void format_time(launcher_clock_t *launcher_clock);
-static void format_date(launcher_clock_t *launcher_clock);
-static void calculate_clock_positioning(launcher_clock_t *launcher_clock);
-void init_clock(launcher_clock_t *launcher_clock);
-void get_time(launcher_clock_t *launcher_clock);
-void render_clock(launcher_clock_t *launcher_clock);
+static void calculate_clock_geometry(Clock *clk);
+static void format_time(Clock *clk);
+static void format_date(Clock *clk);
+static void calculate_clock_positioning(Clock *clk);
+void init_clock(Clock *clk);
+void get_time(Clock *clk);
+void render_clock(Clock *clk);
 int render_clock_async(void *data);
 TimeFormat get_time_format(const char *region);
 DateFormat get_date_format(const char *region);

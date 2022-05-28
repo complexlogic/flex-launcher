@@ -57,80 +57,80 @@ static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int
 }
 
 // A function to calculate the spacing and offsets of the clock text
-static void calculate_clock_geometry(launcher_clock_t *launcher_clock)
+static void calculate_clock_geometry(Clock *clk)
 {
-    int line_skip = TTF_FontLineSkip(launcher_clock->text_info.font);
+    int line_skip = TTF_FontLineSkip(clk->text_info.font);
     int h_time, h_date;
 
     // Calculate text height and x offset
-    calculate_text_metrics(launcher_clock->text_info.font, 
-        launcher_clock->time_string,
+    calculate_text_metrics(clk->text_info.font, 
+        clk->time_string,
         &h_time,
-        &launcher_clock->x_offset_time
+        &clk->x_offset_time
     );
 
     if (config.clock_show_date) {
-        calculate_text_metrics(launcher_clock->text_info.font, 
-            launcher_clock->date_string,
+        calculate_text_metrics(clk->text_info.font, 
+            clk->date_string,
             &h_date,
-            &launcher_clock->x_offset_date
+            &clk->x_offset_date
         );
 
         int spacing = (int) (CLOCK_SPACING_FACTOR * (float) h_time);
-        launcher_clock->y_advance = spacing + h_time;
+        clk->y_advance = spacing + h_time;
     }
 
     // Calculate y offset from margin
-    launcher_clock->y_offset = (line_skip - h_time) / 2;
+    clk->y_offset = (line_skip - h_time) / 2;
 }
 
 // A function to get the current time from the operating system
-void get_time(launcher_clock_t *launcher_clock)
+void get_time(Clock *clk)
 {
     int previous_min = 0;
     int previous_day = 0;
-    if (launcher_clock->time_info != NULL) {
-        previous_min = launcher_clock->time_info->tm_min;
-        previous_day = launcher_clock->time_info->tm_mday;
+    if (clk->time_info != NULL) {
+        previous_min = clk->time_info->tm_min;
+        previous_day = clk->time_info->tm_mday;
     }
 
     // Get current time
-    time(&launcher_clock->current_time);
-    launcher_clock->time_info = localtime(&launcher_clock->current_time);
+    time(&clk->current_time);
+    clk->time_info = localtime(&clk->current_time);
     
     // Set render flags if time and/or date changed
-    if (launcher_clock->time_info == NULL || previous_min != launcher_clock->time_info->tm_min) {
-        launcher_clock->render_time = true;
-        if (launcher_clock->time_info == NULL || previous_day != launcher_clock->time_info->tm_mday) {
-            launcher_clock->render_date = true;
+    if (clk->time_info == NULL || previous_min != clk->time_info->tm_min) {
+        clk->render_time = true;
+        if (clk->time_info == NULL || previous_day != clk->time_info->tm_mday) {
+            clk->render_date = true;
         }
     }
 }
 
 // A function to format the current time according to user settings
-static void format_time(launcher_clock_t *launcher_clock)
+static void format_time(Clock *clk)
 {
     char *format = NULL;
-    if (launcher_clock->time_format == FORMAT_TIME_24HR) {
+    if (clk->time_format == FORMAT_TIME_24HR) {
         format = TIME_STRING_24HR;
     }
     else {
         format = TIME_STRING_12HR;
     }
-    strftime(launcher_clock->time_string, 
-        sizeof(launcher_clock->time_string), 
+    strftime(clk->time_string, 
+        sizeof(clk->time_string), 
         format, 
-        launcher_clock->time_info
+        clk->time_info
     );
 }
 
 // A function to format the current date according to user settings
-static void format_date(launcher_clock_t *launcher_clock)
+static void format_date(Clock *clk)
 {
     char *format = NULL;
  
     // Get date format
-    if (launcher_clock->date_format == FORMAT_DATE_LITTLE) {
+    if (clk->date_format == FORMAT_DATE_LITTLE) {
         format = DATE_STRING_LITTLE;
     }
     else {
@@ -138,22 +138,22 @@ static void format_date(launcher_clock_t *launcher_clock)
     } 
     char weekday[MAX_CLOCK_CHARS + 1];
     char date[MAX_CLOCK_CHARS + 1];
-    unsigned int bytes = sizeof(launcher_clock->date_string);
+    unsigned int bytes = sizeof(clk->date_string);
 
     // Get weekday name
     if (config.clock_include_weekday) {
         strftime(weekday, 
             sizeof(weekday), 
             "%a ", 
-            launcher_clock->time_info
+            clk->time_info
         );
     }
     else {
         weekday[0] = '\0';
     }
-    copy_string(launcher_clock->date_string, 
+    copy_string(clk->date_string, 
         weekday, 
-        sizeof(launcher_clock->date_string)
+        sizeof(clk->date_string)
     );
     bytes -= strlen(weekday);
     if (bytes) {
@@ -161,10 +161,10 @@ static void format_date(launcher_clock_t *launcher_clock)
         strftime(date, 
             sizeof(date), 
             format, 
-            launcher_clock->time_info
+            clk->time_info
         );
         bytes -= strlen(date);
-        strncat(launcher_clock->date_string, 
+        strncat(clk->date_string, 
             date,
             bytes
         );
@@ -172,31 +172,31 @@ static void format_date(launcher_clock_t *launcher_clock)
 }
 
 // A function to calculate the x and y coordinates of the clock text
-static void calculate_clock_positioning(launcher_clock_t *launcher_clock)
+static void calculate_clock_positioning(Clock *clk)
 {
     if (config.clock_alignment == ALIGNMENT_LEFT) {
-        launcher_clock->time_rect.x = config.clock_margin - launcher_clock->x_offset_time;
+        clk->time_rect.x = config.clock_margin - clk->x_offset_time;
         if (config.clock_show_date) {
-            launcher_clock->date_rect.x = config.clock_margin - launcher_clock->x_offset_date;
+            clk->date_rect.x = config.clock_margin - clk->x_offset_date;
         }
     }
     else {
-        launcher_clock->time_rect.x = geo.screen_width - config.clock_margin - launcher_clock->time_rect.w + launcher_clock->x_offset_time;
+        clk->time_rect.x = geo.screen_width - config.clock_margin - clk->time_rect.w + clk->x_offset_time;
         if (config.clock_show_date) {
-            launcher_clock->date_rect.x = geo.screen_width - config.clock_margin - launcher_clock->date_rect.w + launcher_clock->x_offset_date;
+            clk->date_rect.x = geo.screen_width - config.clock_margin - clk->date_rect.w + clk->x_offset_date;
         }
     }
-    launcher_clock->time_rect.y = config.clock_margin - launcher_clock->y_offset;
+    clk->time_rect.y = config.clock_margin - clk->y_offset;
     if (config.clock_show_date) {
-        launcher_clock->date_rect.y = launcher_clock->time_rect.y + launcher_clock->y_advance;
+        clk->date_rect.y = clk->time_rect.y + clk->y_advance;
     }
 }
 
 // A function to initialize the clock
-void init_clock(launcher_clock_t *launcher_clock)
+void init_clock(Clock *clk)
 {
     // Initialize clock structure
-    launcher_clock->text_info = (text_info_t) {
+    clk->text_info = (TextInfo) {
                                     .font = NULL,
                                     .font_size = config.clock_font_size,
                                     .font_path = &config.clock_font_path,
@@ -204,88 +204,88 @@ void init_clock(launcher_clock_t *launcher_clock)
                                     .shadow = config.clock_shadows,
                                     .oversize_mode = MODE_NONE
                                 };
-    launcher_clock->time_format = config.clock_time_format;
-    launcher_clock->date_format = config.clock_date_format;
-    launcher_clock->time_info = NULL;
+    clk->time_format = config.clock_time_format;
+    clk->date_format = config.clock_date_format;
+    clk->time_info = NULL;
     if (config.clock_shadows) {
-        launcher_clock->text_info.shadow_color = &config.clock_shadow_color;
-        calculate_shadow_alpha(launcher_clock->text_info);
+        clk->text_info.shadow_color = &config.clock_shadow_color;
+        calculate_shadow_alpha(clk->text_info);
     }
     else {
-        launcher_clock->text_info.shadow_color = NULL;
+        clk->text_info.shadow_color = NULL;
     }
     
     // Load the font
-    int error = load_font(&launcher_clock->text_info, FILENAME_DEFAULT_CLOCK_FONT);
+    int error = load_font(&clk->text_info, FILENAME_DEFAULT_CLOCK_FONT);
     if (error) {
         config.clock_enabled = false;
         return;
     }
 
     // Get time and format it into a string
-    get_time(launcher_clock);
-    if (launcher_clock->time_format == FORMAT_TIME_AUTO || launcher_clock->date_format == FORMAT_DATE_AUTO) {
+    get_time(clk);
+    if (clk->time_format == FORMAT_TIME_AUTO || clk->date_format == FORMAT_DATE_AUTO) {
         char region[3];
         memset(region, '\0', sizeof(region));
         get_region(region);
-        if (launcher_clock->time_format == FORMAT_TIME_AUTO) {
-            launcher_clock->time_format = get_time_format(region);
+        if (clk->time_format == FORMAT_TIME_AUTO) {
+            clk->time_format = get_time_format(region);
         }
-        if (config.clock_show_date && launcher_clock->date_format == FORMAT_DATE_AUTO) {
-            launcher_clock->date_format = get_date_format(region);
+        if (config.clock_show_date && clk->date_format == FORMAT_DATE_AUTO) {
+            clk->date_format = get_date_format(region);
         }
     }
 
     // Render the time and date
-    format_time(launcher_clock);
-    launcher_clock->time_texture = render_text_texture(launcher_clock->time_string,
-                                       &launcher_clock->text_info,
-                                       &launcher_clock->time_rect,
+    format_time(clk);
+    clk->time_texture = render_text_texture(clk->time_string,
+                                       &clk->text_info,
+                                       &clk->time_rect,
                                        NULL
                                    );
     if (config.clock_show_date) {
-        format_date(launcher_clock);
-        launcher_clock->date_texture = render_text_texture(launcher_clock->date_string,
-                                           &launcher_clock->text_info,
-                                           &launcher_clock->date_rect,
+        format_date(clk);
+        clk->date_texture = render_text_texture(clk->date_string,
+                                           &clk->text_info,
+                                           &clk->date_rect,
                                            NULL
                                        );
     }
 
     // Calculate geometry
-    calculate_clock_geometry(launcher_clock);
-    calculate_clock_positioning(launcher_clock);
-    launcher_clock->render_time = false;
-    launcher_clock->render_date = false;
+    calculate_clock_geometry(clk);
+    calculate_clock_positioning(clk);
+    clk->render_time = false;
+    clk->render_date = false;
 }
 
 // A function to render the time to image
-void render_clock(launcher_clock_t *launcher_clock)
+void render_clock(Clock *clk)
 {
-    format_time(launcher_clock);
-    launcher_clock->time_surface = render_text(launcher_clock->time_string,
-                                       &launcher_clock->text_info,
-                                       &launcher_clock->time_rect,
+    format_time(clk);
+    clk->time_surface = render_text(clk->time_string,
+                                       &clk->text_info,
+                                       &clk->time_rect,
                                        NULL
                                    );
-    if (launcher_clock->render_date) {
-        format_date(launcher_clock);
-        launcher_clock->date_surface = render_text(launcher_clock->date_string,
-                                           &launcher_clock->text_info,
-                                           &launcher_clock->date_rect,
+    if (clk->render_date) {
+        format_date(clk);
+        clk->date_surface = render_text(clk->date_string,
+                                           &clk->text_info,
+                                           &clk->date_rect,
                                            NULL
                                        );
-        calculate_clock_geometry(launcher_clock);
+        calculate_clock_geometry(clk);
     }
-    calculate_clock_positioning(launcher_clock);
+    calculate_clock_positioning(clk);
     state.clock_ready = true;
 }
 
 // A functio nto render the time to image in a separate thread
 int render_clock_async(void *data)
 {
-    launcher_clock_t *launcher_clock = (launcher_clock_t*) data;
-    render_clock(launcher_clock);
+    Clock *clk = (Clock*) data;
+    render_clock(clk);
     return 0;
 } 
 

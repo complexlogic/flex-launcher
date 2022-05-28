@@ -62,7 +62,7 @@ typedef enum {
     MODE_SHRINK,
     MODE_HIDE,
     MODE_BLANK,
-} LauncherMode;
+} Mode;
 
 typedef enum {
     ALIGNMENT_LEFT,
@@ -209,7 +209,7 @@ typedef struct {
 typedef struct {
     char *default_menu;
     unsigned int max_buttons;
-    LauncherMode background_mode; // Defines image or color background mode
+    Mode background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
     char *background_image; // Path to background image
     char *slideshow_directory;
@@ -225,7 +225,7 @@ typedef struct {
     bool title_shadows;
     SDL_Color title_shadow_color;
     char title_opacity[PERCENT_MAX_CHARS];
-    LauncherMode title_oversize_mode; 
+    Mode title_oversize_mode; 
     unsigned int title_padding;
     SDL_Color highlight_fill_color;
     SDL_Color highlight_outline_color;
@@ -243,7 +243,7 @@ typedef struct {
     char scroll_indicator_opacity[PERCENT_MAX_CHARS];
     bool reset_on_back;
     bool mouse_select;
-    LauncherMode on_launch;
+    Mode on_launch;
     bool screensaver_enabled;
     Uint32 screensaver_idle_time;
     char screensaver_intensity_str[PERCENT_MAX_CHARS];

@@ -18,11 +18,11 @@ typedef struct {
     bool shadow;
     SDL_Color *shadow_color;
     int max_width;
-    LauncherMode oversize_mode;
-} text_info_t;
+    Mode oversize_mode;
+} TextInfo;
 
 int init_svg(void);
-int load_font(text_info_t *info, const char *default_font);
+int load_font(TextInfo *info, const char *default_font);
 void quit_svg(void);
 void render_scroll_indicators(Scroll *scroll, int height, Geometry *geo);
 SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transition);
@@ -32,5 +32,5 @@ SDL_Texture *load_texture_from_file(const char *path);
 SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect);
 SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *rect);
 SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect);
-SDL_Surface *render_text(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height);
-SDL_Texture *render_text_texture(const char *text, text_info_t *info, SDL_Rect *rect, int *text_height);
+SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *text_height);
+SDL_Texture *render_text_texture(const char *text, TextInfo *info, SDL_Rect *rect, int *text_height);

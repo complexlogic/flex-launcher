@@ -11,7 +11,7 @@
 typedef struct {
     char section[MAX_INI_SECTION + 1];
     char *exec;
-} desktop_t;
+} Desktop;
 
 static int desktop_handler(void *user, const char *section, const char *name, const char *value);
 static void strip_field_codes(char *cmd);
