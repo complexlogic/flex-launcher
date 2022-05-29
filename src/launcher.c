@@ -1141,6 +1141,19 @@ void quit(int status)
     exit(status);
 }
 
+// A function to print the version and other info to command line
+void print_version(FILE *stream)
+{
+    SDL_version sdl_version;
+    SDL_GetVersion(&sdl_version);
+    SDL_version *img_version = IMG_Linked_Version();
+    SDL_version *ttf_version = TTF_Linked_Version();
+    fprintf(stream, PROJECT_NAME " version " PROJECT_VERSION ", using:\n");
+    fprintf(stream, "  SDL       %u.%u.%u\n", sdl_version.major, sdl_version.minor, sdl_version.patch);
+    fprintf(stream, "  SDL_image %u.%u.%u\n", img_version->major, img_version->minor, img_version->patch);
+    fprintf(stream, "  SDL_ttf   %u.%u.%u\n", ttf_version->major, ttf_version->minor, ttf_version->patch);
+}
+
 int main(int argc, char *argv[]) 
 {
     int error;

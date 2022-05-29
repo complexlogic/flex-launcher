@@ -6,6 +6,7 @@ typedef enum {
 
 static int init_log(void);
 void output_log(log_level_t log_level, const char *format, ...);
+void print_compiler_info(FILE *stream);
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode);
 void debug_settings(void);
 void debug_gamepad(GamepadControl *gamepad_controls);

@@ -38,6 +38,10 @@ static int init_log()
 #endif
         quit(EXIT_FAILURE);
     }
+print_version(log_file);
+fputs("\n", log_file);
+print_compiler_info(log_file);
+fputs("\n", log_file);
 #ifdef __unix__
     if (config.debug) {
         printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
@@ -77,6 +81,20 @@ void output_log(log_level_t log_level, const char *format, ...)
         quit(EXIT_FAILURE);
     }
 }
+
+void print_compiler_info(FILE *stream)
+{
+    fputs("Build date: " __DATE__ "\n", stream);
+#ifdef __GNUC__
+    fprintf(stream, "Compiler:   GCC %u.%u\n", __GNUC__, __GNUC_MINOR__);
+#endif
+#ifdef _MSC_VER
+    fprintf(stream, "Compiler:   MSVC %.2f\n", (float) _MSC_VER / 100.0f);
+#endif
+
+}
+
+
 // A function to print the parsed settings to the command line
 void debug_settings()
 {

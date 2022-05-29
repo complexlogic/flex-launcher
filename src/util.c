@@ -65,7 +65,9 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
         // Check version, help flags
 #ifdef __unix__
         if (version) {
-            print_version();
+            print_version(stdout);
+            fputs("\n", stdout);
+            print_compiler_info(stdout);
             quit(EXIT_SUCCESS);
         }
         if (help) {

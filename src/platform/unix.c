@@ -280,18 +280,3 @@ void print_usage()
     printf("  -h,   --help       Show this help message.\n");
     printf("  -v,   --version    Print version information.\n");
 }
-
-// A function to print the version and other info to command line
-void print_version()
-{
-#if (PROJECT_VERSION_PATCH + 0)
-    printf("%s version %i.%i.%i\n", 
-        PROJECT_NAME,
-        PROJECT_VERSION_MAJOR,
-        PROJECT_VERSION_MINOR,
-        PROJECT_VERSION_PATCH
-    );
-#else
-    printf("%s version %i.%i\n", PROJECT_NAME, PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR);
-#endif
-}
