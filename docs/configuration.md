@@ -17,7 +17,7 @@ title: Configuration
 
 ## Overview
 Flex Launcher uses an [INI file](https://en.wikipedia.org/wiki/INI_file) to configure settings and menus. The INI file consists of sections enclosed in square brackets, and in each section there are entries which consist of a key and a value. Example:
-```
+```INI
 [Section]
 Key1=value
 Key2=value
@@ -28,7 +28,7 @@ A line can be commented out by using the # character at the beginning of the lin
 - Full UTF-8 character set is supported for titles.
 - The following image formats are supported: JPEG, PNG, and WebP
 - Relative paths are evaluated with respect to the *current working directory*, which may not be the same as the directory that the config file is located in. It is recommended to use absolute paths whenever possible to eliminate any confusion.
-- Color is specified in 24 bit RGB HEX format, *without* a 0x or # prefix e.g. the color red should be FF0000. HEX color pickers can be easily found online to assist color choices.
+- Color is specified in 24 bit RGB HEX format, *without* a 0x or # prefix, e.g. the color red should be FF0000. HEX color pickers can be easily found online to assist color choices.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
 
 ## Settings
@@ -71,6 +71,8 @@ Every config file must have a section titled "Settings". Within this section, th
 - [OnLaunch](#onlaunch)
 - [ResetOnBack](#resetonback)
 - [MouseSelect](#mouseselect)
+- [StartupCmd](#startupcmd)
+- [QuitCmd](#quitcmd)
 
 #### DefaultMenu
 This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the [Creating Menus](#creating-menus) section for more information.
@@ -89,23 +91,23 @@ Defines what mode the background will be. Possible values: "Color", "Image", and
 Default: Color
 
 #### BackgroundColor
-When ```BackgroundMode``` is set to "Color", this setting defines the color of the background.
+When `BackgroundMode` is set to "Color", this setting defines the color of the background.
 
 Default: 000000 (Black)
 
 #### BackgroundImage
-When ```BackgroundMode``` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to an image file. If the image is not the same resolution as your desktop, it will be stretched accordingly.
+When `BackgroundMode` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to an image file. If the image is not the same resolution as your desktop, it will be stretched accordingly.
 
 #### SlideshowDirectory
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem. The number of images that may be scanned from the directory is limited to 250.
+When `BackgroundMode` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem. The number of images that may be scanned from the directory is limited to 250.
 
 #### SlideshowImageDuration
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds to display each image. Must be an integer value.
+When `BackgroundMode` is set to "Slideshow", this setting defines the amount of time in seconds to display each image. Must be an integer value.
 
 Default: 30
 
 #### SlideshowTransitionTime
-When ```BackgroundMode``` is set to "Slideshow", this setting defines the amount of time in seconds that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images. Decimal values are acceptable.
+When `BackgroundMode` is set to "Slideshow", this setting defines the amount of time in seconds that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images. Decimal values are acceptable.
 
 Default: 1.5
 
@@ -165,9 +167,9 @@ Defines the opacity of the menu entry titles. Must be a percent value.
 Default: 100%
 
 #### TitleOversizeMode
-Defines the behavior when the width of a menu entry title exceeds the width of its icon (which is defined in ```IconSize```). Possible values: "Truncate", "Shrink", and "None"
+Defines the behavior when the width of a menu entry title exceeds the width of its icon (which is defined in `IconSize`). Possible values: "Truncate", "Shrink", and "None"
 - Truncate: Truncates the title at the maximum width and adds "..." to the end.
-- Shrink: Shrinks oversized titles to a smaller font size than ```TitleFontSize``` so that the entire title fits within the maximum width.
+- Shrink: Shrinks oversized titles to a smaller font size than `TitleFontSize` so that the entire title fits within the maximum width.
 - None: No action is taken to limit the width of titles. Overlaps with other titles may occur, and it is the user's responsibility to manually handle any such case.
 
 Default: Truncate
@@ -203,7 +205,7 @@ Defines the outline opacity of the highlight cursor. Must be a percent value.
 Default: 100%
 
 #### HighlightCornerRadius
-Defines the corner radius of the highlight cursor, in pixels. A value of 0 will yield a plain rectangle. Increasing the value will yield a rounded rectangle with increasingly round corners. The value of ```HighlightOutlineSize``` must be 0, otherwise this setting will be ignored.
+Defines the corner radius of the highlight cursor, in pixels. A value of 0 will yield a plain rectangle. Increasing the value will yield a rounded rectangle with increasingly round corners. The value of `HighlightOutlineSize` must be 0, otherwise this setting will be ignored.
 
 Default: 0
 
@@ -265,8 +267,14 @@ Defines whether the left mouse button can be used to select the highlighted entr
 
 Default: false
 
+#### StartupCmd
+Defines a command that Flex Launcher will execute immediately upon startup. This can be used to autostart your favorite application.
+
+#### QuitCmd
+Defines a command that Flex Launcher will execute immediately before quitting. This can be used to do any mode switching or appplication starting to prepare your desktop, e.g. for maintenance.
+
 ## Creating Menus
-At least one menu must be defined in the configuration file, and the title must match the ```DefaultMenu``` setting value. The title of a menu is its section name. Any title may be used that is not reserved for another section, such as "Settings", "Gamepad", etc. The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
+At least one menu must be defined in the configuration file, and the title must match the `DefaultMenu` setting value. The title of a menu is its section name. Any title may be used that is not reserved for another section, such as "Settings", "Gamepad", etc. The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
 
 Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons:
 ```
@@ -279,7 +287,7 @@ The command is typically one of the following:
 4. A [special command](#special-commands)
 5. The path to an executable script, in the case that you want to perform multiple actions upon program launch.
 
- A simple example menu titled ```Media``` is shown below:
+ A simple example menu titled `Media` is shown below:
 ```
 [Media]
 Entry1=Kodi;C:\Pictures\Icons\kodi.png;"C:\Program Shortcuts\kodi.lnk"
@@ -288,11 +296,16 @@ Entry3=Plex;C:\Pictures\Icons\plex.png;"C:\Program Shortcuts\plex.lnk"
 Entry4=Back;C:\Pictures\Icons\back.png;:back
 ```
 
+### Selected Icon Overrides
+The Selected Icon Override feature allows the user to define a different icon for the launcher to display when an entry is highlighted. To use this feature, name the path of the selected icon the same as the default entry icon path, but with a suffix of `_selected` (not including the file extension).
+
+For example, if the icon path for an entry is defined as `C:\icons\kodi.png`, then the program will check for the existence of `C:\icons\kodi_selected.png` and, if it exists, this icon will be shown when the entry is selected instead of the default. This feature allows the user to implement custom highlight effects such as glowing, color changes, etc. Flex Launcher's built in highlight can be effectively disabled by changing the `HighlightFillOpacity` setting to 0%.
+
 ### Special Commands
 Special commands are commands that are internal to Flex Launcher and begin with a colon. The following is a list of special commands:
 
 #### :submenu
-Change to a different menu. Requires a menu title as an argument. For example, the command ```:submenu Games``` will change to the menu ```Games```. The argument must be a valid menu title that is defined elsewhere in the config file.
+Change to a different menu. Requires a menu title as an argument. For example, the command `:submenu Games``` will change to the menu `Games`. The argument must be a valid menu title that is defined elsewhere in the config file.
 
 #### :fork
 Forks a new process and executes a command in it without exiting the launcher. This is typically used in combination with a [hotkey](#hotkeys). Use this special command when you want to execute a command on your system for some reason other than launching a graphical application. Example use cases:
@@ -300,9 +313,9 @@ Forks a new process and executes a command in it without exiting the launcher. T
 - Pair or connect a Bluetooth device
 - Start or stop some system service/daemon
 
-The :fork special command requires a command as an argument. For example ```:fork command arguments``` will execute ```command arguments``` without leaving the launcher.
+The :fork special command requires a command as an argument. For example `:fork command arguments` will execute `command arguments` without leaving the launcher.
 
-Windows users should invoke a command line interpreter such as Command Prompt and pass the command to run as an argument, e.g. ```:fork cmd.exe /c "command arguments"```
+Windows users should invoke a command line interpreter such as Command Prompt and pass the command to run as an argument, e.g. `:fork cmd.exe /c "command arguments"`
 
 #### :exit
 Windows only. Quits the currently running application. This special command is only available as a hotkey command. See the [Exit Hotkey](#exit-hotkey-windows-only) section for more information.
@@ -311,7 +324,7 @@ Windows only. Quits the currently running application. This special command is o
 Go back to the previous menu.
 
 #### :home
-Change to the menu defined in the ```DefaultMenu``` setting.
+Change to the menu defined in the `DefaultMenu` setting.
 
 #### :quit
 Quit Flex Launcher.
@@ -436,7 +449,7 @@ Defines the amount to dim the screen. Must be a percent value.
 Default: 70%
 
 #### PauseSlideshow
-When ```BackgroundMode``` is set to "Slideshow", this setting defines whether or not the slideshow should be paused while the screensaver is active. This setting is a boolean "true" or "false".
+When `BackgroundMode` is set to "Slideshow", this setting defines whether or not the slideshow should be paused while the screensaver is active. This setting is a boolean "true" or "false".
 
 Default: true
 
@@ -466,10 +479,10 @@ Hotkey=40000043;:exit
 Linux users that desire similar functionality should check the documentation of their desktop environment and/or window manager. Most support global hotkeys that can be configured to close the active window.
 
 ## Gamepad Controls
-Flex Launcher has built-in support for gamepad controls through SDL. All settings for gamepads will be in a section titled ```Gamepad```. Within the section, there are key=value pairs which define the gamepad settings and the commands to be run when a button or axis is pressed.
+Flex Launcher has built-in support for gamepad controls through SDL. All settings for gamepads will be in a section titled `Gamepad`. Within the section, there are key=value pairs which define the gamepad settings and the commands to be run when a button or axis is pressed.
 
 ### Settings
-The following settings are available in the ```Gamepad``` section to define the behavior of gamepads
+The following settings are available in the `Gamepad` section to define the behavior of gamepads
 
 #### Enabled
 Defines whether or not gamepad controls are enabled. This setting is a boolean "true" or "false".
@@ -487,7 +500,7 @@ A path to a text file that contains 1 or more controller mappings to override th
 ### Controls
 The controls are defined in key=value pairs, where the key is the name of the axis or button that is pressed, and the value is the command that is to be run, which is typically a [special command](#special-commands). An axis is an analog stick or a trigger. For analog sticks, negative (-) represents left for the x axis and up for the y axis, and postive (+) represents right for the x axis and down for the y axis. 
 
-The [SDL GameController](https://wiki.libsdl.org/CategoryGameController) interface is an abstraction which conceptualizes a controller as having an Xbox-style layout. The mapping names in SDL are based on the *location* of the buttons on an Xbox controller, and may not correspond to the actual labelling of the buttons on your controller. For example, ```ButtonA``` is for the "bottom" button, ```ButtonB``` is for the "right" button of the 4 main control buttons. If you have a Playstation-style controller, those mapping names will correspond to the X button and the Circle button, respectively. 
+The [SDL GameController](https://wiki.libsdl.org/CategoryGameController) interface is an abstraction which conceptualizes a controller as having an Xbox-style layout. The mapping names in SDL are based on the *location* of the buttons on an Xbox controller, and may not correspond to the actual labelling of the buttons on your controller. For example, `ButtonA` is for the "bottom" button, `ButtonB` is for the "right" button of the 4 main control buttons. If you have a Playstation-style controller, those mapping names will correspond to the X button and the Circle button, respectively. 
 
 The default controls in Flex Launcher allow the user to move the highlight cursor left and right by using the left stick or the DPad, select an entry by pressing A, and go back to the previous menu by pressing B. These controls are simple and will suffice for the vast majority of use cases.
 

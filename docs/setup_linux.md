@@ -17,8 +17,8 @@ title: Linux Setup Guide
 This page contains tips for setting up Flex Launcher on Linux-based systems, as well as general HTPC setup tips.
 
 ## Autostarting
-In a typical HTPC setup, Flex Launcher is autostarted after boot. On Linux, this can be accomplished in multiple ways. The most widely implemented is [XDG Autostart](https://specifications.freedesktop.org/autostart-spec/autostart-spec-latest.html). Application .desktop files in ```~/.config/autostart``` will be autostarted upon user login. The .desktop file for Flex Launcher is installed to ```/usr/share/applications```. Copy it to your autostart directory:
-```
+In a typical HTPC setup, Flex Launcher is autostarted after boot. On Linux, this can be accomplished in multiple ways. The most widely implemented is [XDG Autostart](https://specifications.freedesktop.org/autostart-spec/autostart-spec-latest.html). Application .desktop files in `~/.config/autostart` will be autostarted upon user login. The .desktop file for Flex Launcher is installed to `/usr/share/applications`. Copy it to your autostart directory:
+```Shell
 mkdir -p ~/.config/autostart
 cp /usr/share/flex-launcher.desktop ~/.config/autostart
 ```
@@ -42,8 +42,8 @@ Being based on SDL, Flex Launcher has support for both X11 and Wayland display p
 ### Wayland in SDL
 If your HTPC is running Wayland, and the Wayland compositor has an XWayland connection available, SDL may try to use that over native Wayland. If you are unsure if Flex Launcher is running in native Wayland or XWayland, run it in debug mode, then check the log. Under "Video Information", check the "Video Driver" entry. If it's running under XWayland, the value will be "x11".
 
-To force Flex Launcher to run natively under Wayland, you can use the environment variable ```SDL_VIDEODRIVER``` like so:
-```
+To force Flex Launcher to run natively under Wayland, you can use the environment variable `SDL_VIDEODRIVER` like so:
+```Shell
 SDL_VIDEODRIVER=wayland flex-launcher
 ```
 
@@ -61,14 +61,14 @@ Before starting I assume that you have one of the following operating systems in
 I also assume that you can use the Linux command line at an intermediate level or higher.
 
 ### First Steps
-The first thing to do is configure a network connection and SSH server. On Raspberry Pi, both of those tasks are easily accomplished with the ```raspi-config``` utility. Otherwise, the exact steps will vary based on which operating system you are on (Arch/Debian) and what backends you choose. Refer to the [Arch Wiki](https://wiki.archlinux.org/) and [Debian Wiki](https://wiki.debian.org/) for more detailed help.
+The first thing to do is configure a network connection and SSH server. On Raspberry Pi, both of those tasks are easily accomplished with the `raspi-config` utility. Otherwise, the exact steps will vary based on which operating system you are on (Arch/Debian) and what backends you choose. Refer to the [Arch Wiki](https://wiki.archlinux.org/) and [Debian Wiki](https://wiki.debian.org/) for more detailed help.
 
 It is recommended to set up a static IP on your LAN. Since you will be doing most of your setup and maintenance remotely via SSH, you will want to have a consistent login.
 
 You will also need to install a terminal-based text editor, since we don't have any graphical interface yet. I recommend nano, and that is what will be used in subsequent sections. You can use a different text editor if you wish, just make sure to substitute commands where appropriate.
 
 ### Set Up Autologin
-Configure the TTY console to log you in automatically without user or password prompt. On Raspberry Pi, you can use ```raspi-config```, or you can also follow the instructions for Arch/Debian below which will also work.
+Configure the TTY console to log you in automatically without user or password prompt. On Raspberry Pi, you can use `raspi-config`, or you can also follow the instructions for Arch/Debian below which will also work.
 
 Create a systemd drop-in file for the getty TTY1 service:
 ```
@@ -76,12 +76,12 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 ```
 Paste the following into the file:
 
-```
+```INI
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty --autologin <your_username> --noclear %I $TERM
 ```
-Replace ```<your_username>``` with your username, then save the file. Reboot your HTPC and verify that it logs you into the console automatically.
+Replace `<your_username>` with your username, then save the file. Reboot your HTPC and verify that it logs you into the console automatically.
 
 
 
@@ -89,34 +89,34 @@ Replace ```<your_username>``` with your username, then save the file. Reboot you
 Install the necessary packages.
 
 **Arch:**
-```
+```Shell
 sudo pacman -S xorg xorg-xinit openbox unclutter pulseaudio wget
 ```
 **Debian/Raspberry Pi:**
-```
+```Shell
 sudo apt install xorg openbox pulseaudio wget
 ```
 Then, install Flex Launcher according to the instructions on the [README](https://github.com/complexlogic/flex-launcher#linux). Also, make sure to [copy the assets to your home directory](https://github.com/complexlogic/flex-launcher#copying-assets-to-home-directory).
 
 ### Configure Xorg
-Configure X to start after user login with ```.bash_profile``` and ```startx```:
-```
+Configure X to start after user login with `.bash_profile` and `startx`:
+```Shell
 nano ~/.bash_profile
 ```
 Paste the following into the file and save it:
-```
+```Shell
 if [ "x${SSH_TTY}" = "x" ]; then
   startx
 fi
 ```
-The ```.bash_profile``` script will execute every time the user logs in, *including remote logins via SSH*. The purpose of the if block is to ensure that ```startx``` will only be executed during a local login, not remote logins via SSH.
+The `.bash_profile` script will execute every time the user logs in, *including remote logins via SSH*. The purpose of the `if` block is to ensure that `startx` will only be executed during a local login, not remote logins via SSH.
 
-The ```startx``` program will look for an ```xinitrc``` script to run: first in the user's home directory, then in the system directory. We will define a basic user ```xinitrc``` script to configure X and start Openbox:
-```
+The `startx` program will look for an `xinitrc` script to run: first in the user's home directory, then in the system directory. We will define a basic user `xinitrc` script to configure X and start Openbox:
+```Shell
 nano ~/.xinitrc
 ```
 Paste the following into the file:
-```
+```Shell
 #!/bin/sh
 userresources=$HOME/.Xresources
 usermodmap=$HOME/.Xmodmap
@@ -151,13 +151,13 @@ fi
 unclutter --start-hidden &
 exec openbox-session
 ```
-You can make additions to this script if you wish. For example, the screen resolution can be forced using the ```xrandr``` utility. However, note that the ```exec openbox-session``` line of the script will never return. Therefore, any additions you make must come *before* this line.
+You can make additions to this script if you wish. For example, the screen resolution can be forced using the `xrandr` utility. However, note that the `exec openbox-session` line of the script will never return. Therefore, any additions you make must come *before* this line.
 
 #### Unclutter
-The ```unclutter``` program that starts in the second to last line of the ```xinitrc``` script makes the mouse cursor invisible by default, and it only becomes visible when it is being used. This prevents the user from seeing a mouse cursor when the Openbox root window is visible before Flex Launcher starts, and between applications.
+The `unclutter` program that starts in the second to last line of the `xinitrc` script makes the mouse cursor invisible by default, and it only becomes visible when it is being used. This prevents the user from seeing a mouse cursor when the Openbox root window is visible before Flex Launcher starts, and between applications.
 
-For Arch users, this program was already installed via pacman in a previous step. This program is also in the Debian/Raspbian package repos, but it is an outdated version that doesn't have the ```--start-hidden``` option. Therefore, I strongly recommend Debian/Raspberry Pi users build it from source rather than using the packaged version:
-```
+For Arch users, this program was already installed via pacman in a previous step. This program is also in the Debian/Raspbian package repos, but it is an outdated version that doesn't have the `--start-hidden` option. Therefore, I strongly recommend Debian/Raspberry Pi users build it from source rather than using the packaged version:
+```Shell
 sudo apt install libev-dev libx11-dev libxi-dev asciidoc-base git
 git clone https://github.com/Airblader/unclutter-xfixes
 cd unclutter-xfixes
@@ -166,29 +166,29 @@ sudo make install
 ```
 
 ### Configure Openbox
-Openbox ships with default configuration files installed to ```/etc/xdg/openbox```. These files should be copied to your home directory:
-```
+Openbox ships with default configuration files installed to `/etc/xdg/openbox`. These files should be copied to your home directory:
+```Shell
 mkdir -p ~/.config/openbox
 cp -a /etc/xdg/openbox/ ~/.config/
 ```
-Among these configuration files is ```autostart```, which Openbox will execute after initialization. This is the best way to autostart Flex Launcher:
-```
+Among these configuration files is `autostart`, which Openbox will execute after initialization. This is the best way to autostart Flex Launcher:
+```Shell
 nano ~/.config/openbox/autostart
 ```
-Add ```flex-launcher``` to the file, then save it.
+Add `flex-launcher` to the file, then save it.
 
 #### Application Menu
-You can access a basic application menu by right clicking anywhere on Openbox's root window. The menu entries are populated from ```~/.config/openbox/menu.xml```. On Arch, this is a static menu that was pre-populated with programs, most of which you won't have installed. See the [Openbox Wiki](http://openbox.org/wiki/Help:Menus#Static_menus) for editing instructions. On Debian/Raspberry Pi, this is a dynamic menu that is automatically populated from your installed .desktop files, so you shouldn't need to edit anything.
+You can access a basic application menu by right clicking anywhere on Openbox's root window. The menu entries are populated from `~/.config/openbox/menu.xml`. On Arch, this is a static menu that was pre-populated with programs, most of which you won't have installed. See the [Openbox Wiki](http://openbox.org/wiki/Help:Menus#Static_menus) for editing instructions. On Debian/Raspberry Pi, this is a dynamic menu that is automatically populated from your installed .desktop files, so you shouldn't need to edit anything.
 
 You can also install taskbars and various other graphical interfaces for Openbox, however, this is not recommended. The default interface is clean and the right-click menu provides enough basic functionality for maintenance of your HTPC.
 
 #### Keybinds
-[Keybinds](http://openbox.org/wiki/Help:Bindings) can be set in the ```rc.xml``` file, which maps a keypress to an [Action](http://openbox.org/wiki/Help:Actions). The "Close" action closes the active window, which is very useful for an HTPC. It allows you to quit the current application and return back to the launcher by using a button on your remote. For example, you can use the F10 key to quit the current application like so:
-```
+[Keybinds](http://openbox.org/wiki/Help:Bindings) can be set in the `rc.xml` file, which maps a keypress to an [Action](http://openbox.org/wiki/Help:Actions). The "Close" action closes the active window, which is very useful for an HTPC. It allows you to quit the current application and return back to the launcher by using a button on your remote. For example, you can use the F10 key to quit the current application like so:
+```Shell
 nano ~/.config/openbox/rc.xml
 ```
-In the ```<keyboard>``` section, paste the following:
-```
+In the `<keyboard>` section, paste the following:
+```XML
 <keybind key="F10">
   <action name="Close"/>
 </keybind>
@@ -196,15 +196,15 @@ In the ```<keyboard>``` section, paste the following:
 This assumes that you have a key on your TV remote that maps to F10.
 
 ### Install Applications
-The last step is to install your desired applications. Edit your Flex Launcher configuration file to add menu entries for each of the applications. See the [configuration file documentation](configuration) for more details.
+The last step is to install your desired applications. Edit your Flex Launcher configuration file to add menu entries for each of the applications. See the [configuration file documentation](https://complexlogic.github.io/flex-launcher/configuration) for more details.
 
 ## HTPC as Audio Receiver
 You can use your HTPC as a smart audio receiver for listening to music or podcasts on your living room speakers.
 
 ### Bluetooth
-If your HTPC has Bluetooth connectivity, you can use it as a receiver and play audio from your smartphone or other device. PulseAudio has support for the A2DP Bluetooth profile via the BlueZ stack. Make sure you have the module installed. It is packaged as ```pulseaudio-bluetooth``` on Arch and ```pulseaudio-module-bluetooth``` on Debian/Raspberry Pi. Also, make sure that the systemd bluetooth service is enabled.
+If your HTPC has Bluetooth connectivity, you can use it as a receiver and play audio from your smartphone or other device. PulseAudio has support for the A2DP Bluetooth profile via the BlueZ stack. Make sure you have the module installed. It is packaged as `pulseaudio-bluetooth` on Arch and `pulseaudio-module-bluetooth` on Debian/Raspberry Pi. Also, make sure that the systemd bluetooth service is enabled.
 
-You will need to pair your device with your HTPC. This is best done with the ```bluetoothctl``` utility while you are logged in via SSH. Instructions can be found on the [Arch Wiki](https://wiki.archlinux.org/title/Bluetooth#Pairing) (applicable to all distros, not just Arch).
+You will need to pair your device with your HTPC. This is best done with the `bluetoothctl` utility while you are logged in via SSH. Instructions can be found on the [Arch Wiki](https://wiki.archlinux.org/title/Bluetooth#Pairing) (applicable to all distros, not just Arch).
 
 The pairing only needs to be performed once. Subsequent connections can be initiated from the Bluetooth settings on your mobile device. Make sure to check on your device that audio output is enabled for the connection. Then, you can test playing some audio. PulseAudio should send the audio to your default sink without any additional configuration.
 
@@ -214,12 +214,12 @@ Spotify has a feature called Spotify Connect that allows Premium subscribers to 
 First, install Librespot. I recommend building it from source. The instructions are available on GitHub. 
 
 I manage Librespot with a systemd user service:
-```
+```Shell
 mkdir -p ~/.config/systemd/user
 nano ~/.config/systemd/user/librespot.service
 ```
 Paste the following into the file:
-```
+```INI
 [Unit]
 Description=Librespot Spotify Connect daemon
 After=network-online.target
@@ -238,19 +238,19 @@ ExecStart=/usr/bin/librespot \
 [Install]
 WantedBy=network-online.target
 ```
-Verify that the path of the ```librespot``` executable is the same on your system, or change it if necessary. The ```--bitrate``` controls the bitrate of the streamed audio in kbps. The ```--name``` controls which name your HTPC will show up as in the Spotify app devices menu. Change them if desired.
+Verify that the path of the `librespot` executable is the same on your system, or change it if necessary. The `--bitrate` controls the bitrate of the streamed audio in kbps. The `--name` controls which name your HTPC will show up as in the Spotify app devices menu. Change them if desired.
 
 If you want Librespot to always run, you can simply enable the service:
-```
+```Shell
 systemctl --user enable librespot
 ```
 If you want Librespot to stop when you launch an application, you will have to use scripts and manually start and stop it:
-```
+```Shell
 systemctl --user start librespot
 systemctl --user stop librespot
 ```
 Verify Librespot is running with:
-```
+```Shell
 systemctl --user status librespot
 ```
 Then, try to connect to it with the Spotify app on your phone.
@@ -258,8 +258,8 @@ Then, try to connect to it with the Spotify app on your phone.
 ## Using an IR Remote
 Some mini PCs have an integrated IR receiver, which can receive signals from a conventional TV remote. The Linux kernel has built-in support for decoding IR signals, which allows you to translate them into keyboard presses. Before starting, make sure the IR receiver is enabled in your motherboard settings.
 
-The IR signal decoding can be controlled with the ```ir-keytable``` utility. This program is packaged with ```v4l-utils``` on most distros. First, check to see that your IR receiver is recognized:
-```
+The IR signal decoding can be controlled with the `ir-keytable` utility. This program is packaged with `v4l-utils` on most distros. First, check to see that your IR receiver is recognized:
+```Shell
 sudo ir-keytable
 ```
 The result should look something like this:
@@ -275,13 +275,13 @@ Found /sys/class/rc/rc0/ with:
         bus: 25, vendor/product: 1283:0000, version: 0x0000
         Repeat delay = 500 ms, repeat period = 125 ms
 ```
-Take note of the supported kernel protocols. Test the receiving with ```-t```:
-```
+Take note of the supported kernel protocols. Test the receiving with `-t`:
+```Shell
 ir-keytable -v -t -p irc,rc-5,rc-5-sz,jvc,sony,nec,sanyo,mce_kbd,rc-6,sharp,xmp,imon,rc-mm
 ```
-The protocols specified with ```-p``` should be comma delimited, and must *not* contain a space. You should update the protocols of the above command based on your output of ```sudo ir-keytable``` in the previous step.
+The protocols specified with `-p` should be comma delimited, and must *not* contain a space. You should update the protocols of the above command based on your output of `sudo ir-keytable` in the previous step.
 
-The ```-t``` mode will output information for each received signal. Point your remote at the receiver and press various buttons to verify that the signals are being received. Take note of the protocol and the hex values for each button. You will need to create a mapping file that contains the corresponding hex value for each button name. Here is a simple example:
+The `-t` mode will output information for each received signal. Point your remote at the receiver and press various buttons to verify that the signals are being received. Take note of the protocol and the hex values for each button. You will need to create a mapping file that contains the corresponding hex value for each button name. Here is a simple example:
 ```
 #table RCA,  type: rc-6
 0x800f741e   KEY_UP
@@ -292,23 +292,23 @@ The ```-t``` mode will output information for each received signal. Point your r
 0x800f7423   KEY_BACKSPACE
 0x800f7425   KEY_ESC
 ```
-The table name is arbitrary, but the ```type``` must match one of the supported protocols from the previous step. You can find a comprehensive list of valid button names by running:
-```
+The table name is arbitrary, but the `type` must match one of the supported protocols from the previous step. You can find a comprehensive list of valid button names by running:
+```Shell
 irrecord -l
 ```
-Save your mapping file as ```/etc/rc_keymaps/default.txt```. Then, test the mapping:
-```
+Save your mapping file as `/etc/rc_keymaps/default.txt`. Then, test the mapping:
+```Shell
 sudo ir-keytable -c -w /etc/rc_keymaps/default.txt
 ```
 Open a program on your HTPC, press the mapped buttons on your remote, and verify that the proper keys are being triggered on the HTPC.
 
 ### Make the Mapping Persistent
-The mapping will not persist between reboots. Therefore, you will need to set up a way to run the ```ir-keytable``` command automatically after boot. One way to do that is with a systemd service.
-```
+The mapping will not persist between reboots. Therefore, you will need to set up a way to run the `ir-keytable` command automatically after boot. One way to do that is with a systemd service.
+```Shell
 sudo nano /etc/systemd/system/remote-setup.service
 ```
 Paste the following into the file:
-```
+```INI
 [Unit]
 Description=Set up IR remotes
 After=multi-user.target
@@ -321,7 +321,7 @@ ExecStart=/usr/bin/ir-keytable -c -w /etc/rc_keymaps/default.txt
 WantedBy=multi-user.target
 ```
 Save the file, then enable the service:
-```
+```Shell
 sudo systemctl enable remote-setup
 ```
 Reboot your HTPC and verify that the remote still works.
