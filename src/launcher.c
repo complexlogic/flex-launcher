@@ -78,6 +78,8 @@ Config config = {
     .title_oversize_mode              = MODE_TRUNCATE,
     .reset_on_back                    = DEFAULT_RESET_ON_BACK,
     .mouse_select                     = DEFAULT_MOUSE_SELECT,
+    .startup_cmd                      = NULL,
+    .quit_cmd                         = NULL,
     .screensaver_enabled              = false,
     .screensaver_idle_time            = DEFAULT_SCREENSAVER_IDLE_TIME*1000,
     .screensaver_intensity_str[0]     = '\0',
@@ -328,6 +330,7 @@ static void cleanup()
     free(config.slideshow_directory);
     free(config.clock_font_path);
     free(config.gamepad_mappings_file);
+    free(config.startup_cmd);
     free(highlight);
     free(scroll);
     free(screensaver);
@@ -1138,6 +1141,10 @@ void quit(int status)
 {
     output_log(LOGLEVEL_DEBUG, "Quitting program\n");
     cleanup();
+    if (config.quit_cmd != NULL) {
+        execute_command(config.quit_cmd);
+        free(config.quit_cmd);
+    }
     exit(status);
 }
 
@@ -1297,7 +1304,12 @@ int main(int argc, char *argv[])
     if (error) {
         output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu %s\n", config.default_menu);
     }
-     
+
+    // Execute startup command
+    if (config.startup_cmd != NULL) {
+        execute_command(config.startup_cmd);
+    }
+    
     // Main program loop
     output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
     while (1) {
@@ -1343,6 +1355,11 @@ int main(int argc, char *argv[])
                 case SDL_WINDOWEVENT:
                     if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
                         output_log(LOGLEVEL_DEBUG, "Lost keyboard focus\n");
+                        
+                        // Sometimes the launcher loses focus when autostarting on Windows
+#ifdef _WIN32
+                        set_foreground_window();
+#endif
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_LEAVE) {
                         output_log(LOGLEVEL_DEBUG, "Lost mouse focus\n");

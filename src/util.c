@@ -313,6 +313,12 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (!strcmp(name, SETTING_MOUSE_SELECT)) {
             pconfig->mouse_select = convert_bool(value, DEFAULT_MOUSE_SELECT);
         }
+        else if (!strcmp(name, SETTING_STARTUP_CMD)) {
+            copy_string_alloc(&pconfig->startup_cmd, value);
+        }
+        else if (!strcmp(name, SETTING_QUIT_CMD)) {
+            copy_string_alloc(&pconfig->quit_cmd, value);
+        }
     }
 
     // Parse clock settings

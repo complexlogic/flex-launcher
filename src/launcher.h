@@ -243,6 +243,8 @@ typedef struct {
     char scroll_indicator_opacity[PERCENT_MAX_CHARS];
     bool reset_on_back;
     bool mouse_select;
+    char *startup_cmd;
+    char *quit_cmd;
     Mode on_launch;
     bool screensaver_enabled;
     Uint32 screensaver_idle_time;

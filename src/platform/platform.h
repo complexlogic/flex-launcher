@@ -27,4 +27,5 @@ bool has_exit_hotkey(void);
 void set_exit_hotkey(SDL_Keycode keycode);
 void register_exit_hotkey(void);
 void check_exit_hotkey(SDL_SysWMmsg *msg);
+void set_foreground_window(void);
 #endif

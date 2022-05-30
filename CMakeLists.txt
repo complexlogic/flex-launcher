@@ -10,13 +10,18 @@ set(EXECUTABLE_TITLE "flex-launcher")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
 include_directories(${PROJECT_BINARY_DIR})
 
+# Set Visual Studio solution startup project
+if (WIN32)
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXECUTABLE_TITLE})
+endif ()
+
 # Minimum library versions for Linux
 set(MIN_SDL_VERSION "2.0.14")
 set(MIN_SDL_IMAGE_VERSION "2.0.5")
 set(MIN_SDL_TTF_VERSION "2.0.15")
 set(MIN_GLIBC_VERSION "2.31") # Enforced for .deb packages only
 
-#Generate PKGBUILD script for Arch packages
+# Generate PKGBUILD script for Arch packages
 if (PACKAGE STREQUAL "ARCH")
   configure_file("${PROJECT_SOURCE_DIR}/config/PKGBUILD.in" "${PROJECT_BINARY_DIR}/PKGBUILD")
   return()

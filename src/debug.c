@@ -208,6 +208,12 @@ void debug_settings()
     else {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_MOUSE_SELECT, "false");
     }
+    if (config.startup_cmd != NULL) {
+        output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_STARTUP_CMD, config.startup_cmd);
+    }
+    if (config.quit_cmd != NULL) {
+        output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_QUIT_CMD, config.quit_cmd);
+    }
     output_log(LOGLEVEL_DEBUG, "========================== Clock ==========================\n");
     if (config.clock_enabled) {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_CLOCK_ENABLED, "true");

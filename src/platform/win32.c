@@ -222,6 +222,11 @@ bool process_running()
     }
 }
 
+void set_foreground_window()
+{
+    SetForegroundWindow(wm_info.info.win.window);
+}
+
 // A function to launch an application
 bool start_process(char *cmd, bool application)
 {
