@@ -89,7 +89,7 @@ void print_compiler_info(FILE *stream)
     fprintf(stream, "Compiler:   GCC %u.%u\n", __GNUC__, __GNUC_MINOR__);
 #endif
 #ifdef _MSC_VER
-    fprintf(stream, "Compiler:   MSVC %.2f\n", (float) _MSC_VER / 100.0f);
+    fprintf(stream, "Compiler:   Microsoft C/C++ %.2f\n", (float) _MSC_VER / 100.0f);
 #endif
 
 }

@@ -1,0 +1,20 @@
+{
+  "name": "flex-launcher",
+  "version": "1.6.1",
+  "builtin-baseline": "14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44",
+  "dependencies": [
+    "sdl2",
+    {
+      "name": "sdl2-image",
+      "features": ["libjpeg-turbo", "libwebp"]
+    },
+    "sdl2-ttf",
+    "getopt"
+  ],
+  "overrides": [
+    {
+      "name": "sdl2",
+      "version": "2.0.20"
+    }
+  ]
+} 
