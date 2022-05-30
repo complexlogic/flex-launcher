@@ -28,18 +28,9 @@ include(${PROJECT_SOURCE_DIR}/config/config_settings.cmake)
 # Find dependencies - Linux
 if (UNIX)
   find_package(PkgConfig MODULE REQUIRED)
-  pkg_check_modules(SDL2 REQUIRED sdl2>=${MIN_SDL_VERSION})
-  pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image>=${MIN_SDL_IMAGE_VERSION})
-  pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf>=${MIN_SDL_TTF_VERSION})
-  include_directories(${SDL2_INCLUDE_DIRS} 
-    ${SDL2_IMAGE_INCLUDE_DIRS} 
-    ${SDL2_TTF_INCLUDE_DIRS}
-  )
-  link_libraries(${SDL2_LIBRARIES} 
-    ${SDL2_IMAGE_LIBRARIES} 
-    ${SDL2_TTF_LIBRARIES}
-    m
-  )
+  pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2>=${MIN_SDL_VERSION})
+  pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image>=${MIN_SDL_IMAGE_VERSION})
+  pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf>=${MIN_SDL_TTF_VERSION})
 endif ()
 
 # Find dependencies - Windows
