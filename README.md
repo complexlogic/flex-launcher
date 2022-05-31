@@ -54,20 +54,20 @@ Binary packages are available on the [release page](https://github.com/complexlo
 #### APT-based x86-64 Distributions (Debian, Ubuntu, etc.)
 This package is compatible with Debian Bullseye and later, Ubuntu 21.04 and later.
 ```Shell
-VERSION=1.6.1
+VERSION=1.7
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
 sudo apt install ./flex-launcher_${VERSION}_amd64.deb
 ```
 #### Pacman-based x86-64 Distributions (Arch, Manjaro, etc.)
 ```Shell
-VERSION=1.6.1
+VERSION=1.7
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
 This package is compatible with Raspbian Bullseye and later, 32 bit only.
 ```Shell
-VERSION=1.6.1
+VERSION=1.7
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_armhf.deb
 sudo apt install ./flex-launcher_${VERSION}_armhf.deb
 ```

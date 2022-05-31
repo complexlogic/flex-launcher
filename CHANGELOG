@@ -1,4 +1,4 @@
-Unreleased
+v1.7 (2022-5-30)
 - Added selected icons feature
 - Added StartupCmd and QuitCmd features
 - New getopt-based command line parsing
