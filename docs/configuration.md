@@ -305,7 +305,7 @@ For example, if the icon path for an entry is defined as `C:\icons\kodi.png`, th
 Special commands are commands that are internal to Flex Launcher and begin with a colon. The following is a list of special commands:
 
 #### :submenu
-Change to a different menu. Requires a menu title as an argument. For example, the command `:submenu Games``` will change to the menu `Games`. The argument must be a valid menu title that is defined elsewhere in the config file.
+Change to a different menu. Requires a menu title as an argument. For example, the command `:submenu Games` will change to the menu `Games`. The argument must be a valid menu title that is defined elsewhere in the config file.
 
 #### :fork
 Forks a new process and executes a command in it without exiting the launcher. This is typically used in combination with a [hotkey](#hotkeys). Use this special command when you want to execute a command on your system for some reason other than launching a graphical application. Example use cases:
