@@ -35,9 +35,11 @@ Open the Settings app, then select Accounts, then select Sign-in options. Under 
 ## Kiosk Mode Setup
 "Kiosk Mode" typically refers to a user interface which resembles an embedded-style device that performs only a single function (as opposed to a multitasking PC with a desktop interface). This section contains instructions to set up my interpretation of a "Kiosk Mode" interface for a Windows HTPC. Before starting, make sure you have [set up autologin](#autologin) and [disabled your lock screen](#disable-lock-screen) per the previous sections.
 
-In Windows Explorer, navigate to the folder that contains Flex Launcher. Hold shift on your keyboard, then right click on `flex-launcher.exe` and select "Copy as path" from the context menu. Use Windows key + R to bring up the run box, then type `gpedit.msc` and press enter. In the left pane under "User Configuration", select "Administrative Templates", then "System". In the right pane, double click "Custom User Interface". Change the radio button to "Enabled". Then, under "Interface file name", paste the path to `flex-launcher.exe` that was copied in the previous step. Press OK to confirm the changes.
+In Windows Explorer, navigate to the folder that contains Flex Launcher. Hold shift on your keyboard, then right click on `flex-launcher.exe` and select "Copy as path" from the context menu. Use Windows key + R to bring up the run box, then type `gpedit.msc` and press enter. In the left pane under "User Configuration", select "Administrative Templates", then "System". In the right pane, double click "Custom User Interface". Change the radio button to "Enabled". Then, under "Interface file name", paste the path to `flex-launcher.exe` that was copied in the previous step. Press OK to confirm the changes. This will cause Flex Launcher to replace the Windows desktop as your default graphical user interface. 
 
-This will cause Flex Launcher to replace the Windows desktop as your default graphical user interface. Reboot your HTPC for the change to take effect.
+Running Flex Launcher in this manner changes the working directory. The default config file that ships with Flex Launcher uses relative paths from the directory containing `flex-launcher.exe`, which will no longer be valid. Therefore, you should convert all relative paths in your config file to absolute paths, e.g. `.\assets\icons\kodi.png` should instead be `C:\path\to\assets\icons\kodi.png`, otherwise images will not load properly.
+
+Reboot your HTPC for the change to take effect.
 
 ### Restoring the Desktop
 It may be desirable to use the desktop interface occasionally, e.g. during maintenance or installation of new software. You can get your desktop back by running `explorer.exe`. This can be accomplished in a few ways.
