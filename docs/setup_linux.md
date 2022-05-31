@@ -50,7 +50,7 @@ SDL_VIDEODRIVER=wayland flex-launcher
 If you choose to run Flex Launcher in Wayland, it is strongly recommended to use it with the latest stable release of SDL, as later versions have seen significantly improved support.
 
 ## Kiosk Mode Setup
-"Kiosk Mode" typically refers to a user interface which resembles an embedded-style device that performs only a single function (as opposed to a multitasking PC with a desktop interface). This section contains instructions to set up my interpretation of a "Kiosk Mode" interface for an HTPC. The design is based on my recommendations in the previous sections, consisting of Xorg, Openbox, and Flex Launcher.
+"Kiosk Mode" typically refers to a user interface which resembles an embedded-style device that performs only a single function (as opposed to a multitasking PC with a desktop interface). This section contains instructions to set up my interpretation of a "Kiosk Mode" interface for a Linux HTPC. The design is based on my recommendations in the previous sections, consisting of Xorg, Openbox, and Flex Launcher.
 
 ### Prerequisites
 Before starting I assume that you have one of the following operating systems installed *without* a desktop evironnment (only a console login):

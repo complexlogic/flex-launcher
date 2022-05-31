@@ -43,37 +43,37 @@ Flex Launcher is compatible with both Windows and Linux (including Raspberry Pi 
 ![Screenshot 2](docs/assets/screenshots/screenshot2.png "Screenshot 2")
 
 ## Installation
-Compiled binaries are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. Alternatively, you may also choose to compile the program yourself using the [compilation guide](docs/compilation.md).
+Executables are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. You can also compile the program yourself using the [compilation guide](docs/compilation.md).
 
 ### Windows
-A win64 zip file is provided on the [release page](https://github.com/complexlogic/flex-launcher/releases). Simply download the file and extract the contents to a directory of your choosing. Flex Launcher should be run on an up-to-date Windows 10 system, or Windows 11.
+Download the win64 .zip file from the [latest release](https://github.com/complexlogic/flex-launcher/releases/latest) and extract the contents to a directory of your choice. Flex Launcher should be run on an up-to-date Windows 10 system, or Windows 11.
 
 ### Linux
 Binary packages are available on the [release page](https://github.com/complexlogic/flex-launcher/releases) for APT and pacman based distributions. You may use the commands below to install.
 
 #### APT-based x86-64 Distributions (Debian, Ubuntu, etc.)
 This package is compatible with Debian Bullseye and later, Ubuntu 21.04 and later.
-```
+```Shell
 VERSION=1.6.1
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_amd64.deb
 sudo apt install ./flex-launcher_${VERSION}_amd64.deb
 ```
 #### Pacman-based x86-64 Distributions (Arch, Manjaro, etc.)
-```
+```Shell
 VERSION=1.6.1
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 sudo pacman -U flex-launcher-${VERSION}-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
-This package is compatible with Raspbian Bullseye and later.
-```
+This package is compatible with Raspbian Bullseye and later, 32 bit only.
+```Shell
 VERSION=1.6.1
 wget https://github.com/complexlogic/flex-launcher/releases/download/v${VERSION}/flex-launcher_${VERSION}_armhf.deb
 sudo apt install ./flex-launcher_${VERSION}_armhf.deb
 ```
 #### Copying Assets to Home Directory
-The Linux packages install a default config file and assets to /usr/share/flex-launcher. It is strongly recommended to NOT edit this config file directly, as it will be overwritten if you upgrade to a later version of Flex Launcher. Instead, copy these files to your home directory and edit it there.
-```
+The Linux packages install a default config file and assets to `/usr/share/flex-launcher`. It is strongly recommended to *not* edit this config file directly, as it will be overwritten if you upgrade to a later version of Flex Launcher. Instead, copy these files to your home directory and edit it there.
+```Shell
 cp -r /usr/share/flex-launcher ~/.config
 sed -i "s|/usr/share/flex-launcher|$HOME/.config/flex-launcher|g" ~/.config/flex-launcher/config.ini
 ```
@@ -86,7 +86,7 @@ Flex Launcher uses an INI file to configure the menus and settings. Upon  startu
 4. Linux only: `/usr/share/flex-launcher`
 
 If your config file is in one of the above locations, Flex Launcher can be started simply by double clicking the executable file or adding it to autostart. If your config file is in a non-standard location, you must specify the path via command line argument:
-```
+```Shell
 flex-launcher -c /path/to/config.ini
 ```
 Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](docs/configuration.md#configuring-flex-launcher) for instuctions on how to change the menus and settings.
@@ -102,7 +102,7 @@ Gamepad controls are built-in to the program, but are disabled by default. To en
 
 ### Debugging
 Flex Launcher has a debug mode which may be enabled as follows:
-```
+```Shell
 flex-launcher -d
 ```
 This will output a logfile named `flex-launcher.log` in the same directory as `flex-launcher.exe` on Windows, and in `~/.local/share/flex-launcher` on Linux. 

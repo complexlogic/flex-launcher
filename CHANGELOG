@@ -1,3 +1,8 @@
+Unreleased
+- Added selected icons feature
+- Added StartupCmd and QuitCmd features
+- New getopt-based command line parsing
+
 v1.6.1 (2022-4-19)
 - Windows: Disable system DPI scaling
 
