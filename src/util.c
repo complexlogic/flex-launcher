@@ -313,6 +313,9 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (!strcmp(name, SETTING_MOUSE_SELECT)) {
             pconfig->mouse_select = convert_bool(value, DEFAULT_MOUSE_SELECT);
         }
+        else if (!strcmp(name, SETTING_INHIBIT_OS_SCREENSAVER)) {
+            pconfig->inhibit_os_screensaver = convert_bool(value, DEFAULT_INHIBIT_OS_SCREENSAVER);
+        }
         else if (!strcmp(name, SETTING_STARTUP_CMD)) {
             copy_string_alloc(&pconfig->startup_cmd, value);
         }

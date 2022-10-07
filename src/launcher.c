@@ -78,6 +78,7 @@ Config config = {
     .title_oversize_mode              = MODE_TRUNCATE,
     .reset_on_back                    = DEFAULT_RESET_ON_BACK,
     .mouse_select                     = DEFAULT_MOUSE_SELECT,
+    .inhibit_os_screensaver           = DEFAULT_INHIBIT_OS_SCREENSAVER,
     .startup_cmd                      = NULL,
     .quit_cmd                         = NULL,
     .screensaver_enabled              = false,
@@ -166,7 +167,8 @@ static void init_sdl()
 #ifdef __unix__
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
 #endif
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"1");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+    SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, config.inhibit_os_screensaver ? "0" : "1");
     if (config.gamepad_enabled) {
         sdl_flags |= SDL_INIT_GAMECONTROLLER;
     }

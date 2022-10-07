@@ -208,6 +208,12 @@ void debug_settings()
     else {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_MOUSE_SELECT, "false");
     }
+    if (config.inhibit_os_screensaver) {
+        output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_INHIBIT_OS_SCREENSAVER, "true");
+    }
+    else {
+        output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_INHIBIT_OS_SCREENSAVER, "false");
+    }
     if (config.startup_cmd != NULL) {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_STARTUP_CMD, config.startup_cmd);
     }
