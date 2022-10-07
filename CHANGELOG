@@ -1,3 +1,8 @@
+v1.8 (2022-10-7)
+- Added inhibit OS screensaver feature
+- Minor bugfixes
+- Windows: Added "chrome_proxy.exe" to the list of supported browser processes
+
 v1.7 (2022-5-30)
 - Added selected icons feature
 - Added StartupCmd and QuitCmd features
