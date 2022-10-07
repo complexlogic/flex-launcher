@@ -558,9 +558,10 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
     // Return error if the menu doesn't contain entires
     if (current_menu->num_entries == 0) {
         output_log(LOGLEVEL_ERROR, 
-            "Error: No valid entries found for Menu \"%s\"", 
+            "Error: No valid entries found for Menu \"%s\"\n", 
             current_menu->name
         );
+        current_menu = previous_menu;
         return 1;
     }
 
