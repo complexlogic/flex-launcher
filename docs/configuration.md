@@ -71,6 +71,7 @@ Every config file must have a section titled "Settings". Within this section, th
 - [OnLaunch](#onlaunch)
 - [ResetOnBack](#resetonback)
 - [MouseSelect](#mouseselect)
+- [InhibitOSScreensaver](#inhibitosscreensaver)
 - [StartupCmd](#startupcmd)
 - [QuitCmd](#quitcmd)
 
@@ -263,9 +264,14 @@ Defines whether Flex Launcher will remember the previous entry position when goi
 Default: false
 
 #### MouseSelect
-Defines whether the left mouse button can be used to select the highlighted entry. This setting is intended to support gyroscopic mouse devices where the enter/ok button functions as a mouse left click instead of the keyboard enter button.
+Defines whether the left mouse button can be used to select the highlighted entry. This setting is intended to support gyroscopic mouse devices where the enter/ok button functions as a mouse left click instead of the keyboard enter button. This setting is a boolean "true" or "false".
 
 Default: false
+
+#### InhibitOSScreensaver
+Defines whether Flex Launcher will prevent your default OS screensaver from activating while it is running. On Windows, this will also inhibit any power saving features as well (e.g. autosleep). This setting is a boolean "true" or "false".
+
+Default: true
 
 #### StartupCmd
 Defines a command that Flex Launcher will execute immediately upon startup. This can be used to autostart your favorite application.

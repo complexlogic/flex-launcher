@@ -43,7 +43,7 @@ mkdir build && cd build
 ```
 Generate the Makefile:
 ```
-cmake .. 
+cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 If you're building on Raspberry Pi, it's recommended to pass `-DRPI=1` to `cmake`, which tweaks the default configuration to be more Pi-centric.
 

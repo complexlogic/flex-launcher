@@ -27,7 +27,7 @@
         <li><a href="#controls">Controls</a></li>
         <li><a href="#debugging">Debugging</a></li>
       </ul>
-    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#development-status">Development Status</a></li>
     <li><a href="#documentation">Documentation</a></li>
     <li><a href="#credits">Credits</a></li>
   </ol>
@@ -95,7 +95,7 @@ Flex Launcher ships with a default config file which is intended strictly for de
 The keyboard arrow keys move the highlight cursor left and right. Enter selects the current entry, backspace goes back to the previous menu (if applicable), and Esc quits the program. 
 
 #### TV Remotes
-Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher. You can also use a hardware-based solution, such as the FLIRC USB device 
+Flex Launcher does not feature built-in decoding of IR or CEC signals. If you plan to use a TV remote to control the device, it is assumed that these signals are decoded by the OS or another program and mapped to keyboard presses, which can then be received by Flex Launcher.
 
 #### Gamepads
 Gamepad controls are built-in to the program, but are disabled by default. To enable them, open your configuration file and, under the "Gamepad" section, change the "Enabled" setting from false to true. After that, the gamepad controls should "Just Work" for most users. If your gamepad is not recognized automatically, or you want to change the default controls, see the [gamepad controls documentation](docs/configuration.md#gamepad-controls).
@@ -107,10 +107,8 @@ flex-launcher -d
 ```
 This will output a logfile named `flex-launcher.log` in the same directory as `flex-launcher.exe` on Windows, and in `~/.local/share/flex-launcher` on Linux. 
 
-## Contributing
-Contributions are welcome. For new features, create a discussion thread before starting work. Pull requests for bugfixes can be submitted without any prior coordination.
-
-Please keep code formatted to 4 space K&R style for consistency.
+## Development Status
+Flex Launcher has reached a mature state, and there are currently no feature releases planned for the future. I've started a [new HTPC launcher project](https://github.com/complexlogic/big-launcher) which is similar in nature to Flex Launcher, but aims to provide a more advanced, Smart TV-like user interface. My future development effort will be focused on that new project, but I will still maintain Flex Launcher for bugfixes and dependency updates.
 
 ## Documentation
 Here is a list of available documentation:

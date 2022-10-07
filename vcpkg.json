@@ -1,7 +1,4 @@
 {
-  "name": "flex-launcher",
-  "version": "1.7",
-  "builtin-baseline": "14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44",
   "dependencies": [
     "sdl2",
     {
@@ -10,11 +7,5 @@
     },
     "sdl2-ttf",
     "getopt"
-  ],
-  "overrides": [
-    {
-      "name": "sdl2",
-      "version": "2.0.20"
-    }
   ]
 } 
