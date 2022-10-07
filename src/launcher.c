@@ -850,7 +850,7 @@ static void execute_command(const char *command)
         
         // Post-application updates
         if (config.gamepad_enabled) {
-            connect_gamepad(config.gamepad_device);
+            connect_gamepad(config.gamepad_device, false);
         }
         if (config.clock_enabled) {
             update_clock(true);
@@ -936,17 +936,18 @@ static void launch_application(char *cmd)
 }
 
 // A function to connect to a gamepad
-static void connect_gamepad(int device_index)
+static void connect_gamepad(int device_index, bool raise_error)
 {
     gamepad = SDL_GameControllerOpen(device_index);
     if (gamepad == NULL) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Could not open gamepad at device index %i\n", 
-            config.gamepad_device
-        );
+        if (raise_error)
+            output_log(LOGLEVEL_ERROR, 
+                "Error: Could not open gamepad at device index %i\n", 
+                config.gamepad_device
+            );
         return;
     }
-    if (config.debug) {
+    if (config.debug && raise_error) {
         char *mapping = SDL_GameControllerMapping(gamepad);
         output_log(LOGLEVEL_DEBUG, 
             "Gamepad Mapping:\n%s\n", 
@@ -1342,7 +1343,7 @@ int main(int argc, char *argv[])
                             event.jdevice.which
                         );
                         if (event.jdevice.which == config.gamepad_device) {
-                            connect_gamepad(event.jdevice.which);
+                            connect_gamepad(event.jdevice.which, true);
                         }
                     }
                     break;

@@ -303,7 +303,7 @@ static void handle_keypress(SDL_Keysym *key);
 static void execute_command(const char *command);
 static void launch_application(char *cmd);
 static void poll_gamepad(void);
-static void connect_gamepad(int device_index);
+static void connect_gamepad(int device_index, bool raise_error);
 void quit(int status);
 void print_version(FILE *stream);
 static void cleanup(void);
