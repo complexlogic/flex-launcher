@@ -44,11 +44,13 @@ static bool is_browser(const char *exe_basename)
 {
     static const char *browsers[] = {
         "chrome.exe",
+        "chrome_proxy.exe",
         "msedge.exe",
         "firefox.exe"
     };
     for (int i = 0; i < sizeof(browsers) / sizeof(browsers[0]); i++) {
         if (!strcmp(exe_basename, browsers[i])) {
+            browser_process = (i == 1) ? browsers[0] : browsers[i];
             return true;
         }
     }
@@ -206,7 +208,6 @@ bool process_running()
     if (web_browser) {
         bool running = process_running_name(browser_process);
         if (!running) {
-            free(browser_process);
             browser_process = NULL;
         }
         return running;
@@ -265,7 +266,6 @@ bool start_process(char *cmd, bool application)
             char *process_basename = path_basename(process_name);
             web_browser = is_browser(process_basename);
             if (web_browser) {
-                copy_string_alloc(&browser_process, process_basename);
                 browser_launched = false;
             }
         }
