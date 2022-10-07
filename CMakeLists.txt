@@ -42,7 +42,7 @@ endif ()
 if (WIN32)
   find_package(SDL2 CONFIG REQUIRED)
   find_package(sdl2-image CONFIG REQUIRED)
-  find_package(sdl2-ttf CONFIG REQUIRED)
+  find_package(SDL2_ttf CONFIG REQUIRED)
   
   find_path(GETOPT_INCLUDE_DIR "getopt.h" REQUIRED)
   find_library(GETOPT getopt REQUIRED)

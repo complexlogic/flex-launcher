@@ -18,7 +18,13 @@ target_link_libraries(${EXECUTABLE_TITLE} platform inih)
 if (UNIX)
   target_link_libraries(${EXECUTABLE_TITLE} PkgConfig::SDL2 PkgConfig::SDL2_IMAGE PkgConfig::SDL2_TTF m)
 else ()
-  target_link_libraries(${EXECUTABLE_TITLE} SDL2::SDL2main SDL2::SDL2_image SDL2::SDL2_ttf ${GETOPT} PowrProf)
+  target_link_libraries(${EXECUTABLE_TITLE} 
+    SDL2::SDL2main 
+	SDL2::SDL2_image 
+	$<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static> 
+	${GETOPT} 
+	PowrProf
+  )
   target_include_directories(${EXECUTABLE_TITLE} PUBLIC ${GETOPT_INCLUDE_DIR})
 endif ()
 
