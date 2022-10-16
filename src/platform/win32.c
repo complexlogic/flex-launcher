@@ -46,11 +46,12 @@ static bool is_browser(const char *exe_basename)
         "chrome.exe",
         "chrome_proxy.exe",
         "msedge.exe",
+        "msedge_proxy.exe",
         "firefox.exe"
     };
     for (int i = 0; i < sizeof(browsers) / sizeof(browsers[0]); i++) {
         if (!strcmp(exe_basename, browsers[i])) {
-            browser_process = (i == 1) ? browsers[0] : browsers[i];
+            browser_process = (i == 1 || i == 3) ? browsers[i - 1] : browsers[i];
             return true;
         }
     }
