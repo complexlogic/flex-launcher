@@ -1,3 +1,6 @@
+Unreleased
+- Windows: Added "msedge_proxy.exe" to the list of supported browser processes
+
 v1.8 (2022-10-7)
 - Added inhibit OS screensaver feature
 - Minor bugfixes
