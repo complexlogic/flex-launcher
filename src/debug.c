@@ -187,10 +187,7 @@ void debug_settings()
     output_log(LOGLEVEL_DEBUG, "%s G: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.g);
     output_log(LOGLEVEL_DEBUG, "%s B: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.b);
     output_log(LOGLEVEL_DEBUG, "%s A: %i\n", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.a);
-    if (config.on_launch == MODE_HIDE) {
-        output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Hide");
-    }
-    else if (config.on_launch == MODE_BLANK) {
+    if (config.on_launch == MODE_BLANK) {
         output_log(LOGLEVEL_DEBUG, "%s: %s\n", SETTING_ON_LAUNCH, "Blank");
     }
     else if (config.on_launch == MODE_NONE) {

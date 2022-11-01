@@ -300,11 +300,8 @@ int config_handler(void *user, const char *section, const char *name, const char
             if (!strcmp(value, "None")) {
                 pconfig->on_launch = MODE_NONE;
             }
-            else if (!strcmp(value, "Blank")) {
-                pconfig->on_launch = MODE_BLANK;
-            }
             else {
-                pconfig->on_launch = MODE_HIDE;
+                pconfig->on_launch = MODE_BLANK;
             }
         }
         else if (!strcmp(name, SETTING_RESET_ON_BACK)) {

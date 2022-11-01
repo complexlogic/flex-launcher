@@ -22,32 +22,21 @@ pid_t child_pid;
 static int desktop_handler(void *user, const char *section, const char *name, const char *value)
 {
     Desktop *pdesktop = (Desktop*) user;
-    if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC)) {
+    if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC))
         copy_string_alloc(&pdesktop->exec, value);
-    }
 }
 
 // A function to determine if a file exists in the filesystem
 bool file_exists(const char *path)
 {
-    if(access(path, R_OK) == 0) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return access(path, R_OK) ? false : true;
 }
 
 // A function to determine if a directory exists in the filesystem
 bool directory_exists(const char *path)
 {
     struct stat directory;
-    if (stat(path, &directory) == 0 && S_ISDIR(directory.st_mode)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return stat(path, &directory) == 0 && S_ISDIR(directory.st_mode) ? true : false;
 }
 
 // A function to remove field codes from .desktop file Exec line
@@ -95,25 +84,18 @@ static bool ends_with(const char *string, const char *phrase)
 {
     int len_string = strlen(string);
     int len_phrase = strlen(phrase);
-    if (len_phrase > len_string) {
+    if (len_phrase > len_string)
         return false;
-    }
     char *p = string + len_string - len_phrase;
-    if (!strcmp(p, phrase)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return strcmp(p, phrase) ? false : true;
 }
 
 // A function to launch an external application
 bool start_process(char *cmd, bool application)
 {
     // Check if the command is an XDG .desktop file
-    char *tmp = NULL;
     char *exec = NULL;
-    copy_string_alloc(&tmp, cmd);
+    char *tmp = strdup(cmd);
     char *file = strtok(tmp, DELIMITER_ACTION);
     if (ends_with(file, EXT_DESKTOP)) {
         Desktop desktop;
@@ -121,12 +103,10 @@ bool start_process(char *cmd, bool application)
 
         // Parse the desktop action from the command (if any)
         char *action = strtok(NULL, DELIMITER_ACTION);
-        if (action == NULL) {
+        if (action == NULL)
             copy_string(desktop.section, DESKTOP_SECTION_HEADER, sizeof(desktop.section));
-        }
-        else {
+        else
             snprintf(desktop.section, sizeof(desktop.section), DESKTOP_SECTION_HEADER_ACTION, action);
-        }
 
         // Parse the .desktop file for the Exec line value
         int error = ini_parse(file, desktop_handler, &desktop);
@@ -184,21 +164,6 @@ bool start_process(char *cmd, bool application)
             break;
     }
     free(exec);
-    return true;
-}
-
-// A function to check if a child process is still running
-bool process_running()
-{
-    pid_t pid = waitpid(-1*child_pid, NULL, WNOHANG);
-    if (pid > 0) {
-        if (waitpid(-1*child_pid, NULL, WNOHANG) == -1) {
-            return false;
-        }
-    } 
-    else if (pid == -1) {
-        return false;
-    }
     return true;
 }
 

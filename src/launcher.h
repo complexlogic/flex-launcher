@@ -37,6 +37,7 @@
 #define MAX_SCREENSAVER_IDLE_TIME 900
 #define SCREENSAVER_TRANSITION_TIME 1500
 #define APPLICATION_WAIT_PERIOD 100
+#define APPLICATION_TIMEOUT 7000
 
 // Special commands
 #define SCMD_SELECT ":select"
@@ -60,7 +61,6 @@ typedef enum {
     MODE_SLIDESHOW,
     MODE_TRUNCATE,
     MODE_SHRINK,
-    MODE_HIDE,
     MODE_BLANK,
 } Mode;
 
@@ -94,6 +94,8 @@ typedef enum {
 
 // Program states
 typedef struct {
+    bool application_launching;
+    bool application_running;
     bool slideshow_transition;
     bool slideshow_background_rendering;
     bool slideshow_background_ready;
@@ -107,6 +109,7 @@ typedef struct {
 // Timing information
 typedef struct {
     Uint32 main;
+    Uint32 application_launched;
     Uint32 slideshow_load;
     Uint32 last_input;
     Uint32 clock_update;
@@ -301,7 +304,6 @@ static void load_back_menu(Menu *menu);
 static void draw_screen(void);
 static void handle_keypress(SDL_Keysym *key);
 static void execute_command(const char *command);
-static void launch_application(char *cmd);
 static void poll_gamepad(void);
 static void connect_gamepad(int device_index, bool raise_error);
 void quit(int status);
