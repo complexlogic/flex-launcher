@@ -10,6 +10,7 @@
 
 #define SELECTED_SUFFIX "_selected"
 #define LEN(x) ((sizeof(x)/sizeof(x[0])) - sizeof(x[0]))
+#define MATCH(x, y) !strcmp(x, y)
 
 struct gamepad_info {
     const char *label;
