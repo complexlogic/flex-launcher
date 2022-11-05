@@ -537,29 +537,21 @@ char *selected_path(const char *path)
 // A function to convert a hex-formatted string into a color struct
 bool hex_to_color(const char *string, SDL_Color *color)
 {
+    if (*string != '#')
+        return false;
+    char *p = (char*) string + 1;
+
     // If strtoul returned 0, and the hex string wasn't 000..., then there was an error
-    int length = strlen(string);
-    Uint32 hex = (Uint32) strtoul(string, NULL, 16);
-    if ((!hex && strcmp(string,"00000000")) || 
-    (!hex && strcmp(string,"000000")) || 
-    (length != 6 && length != 8))
+    int length = strlen(p);
+    Uint32 hex = (Uint32) strtoul(p, NULL, 16);
+    if ((!hex && strcmp(p,"000000")) || (length != 6))
         return false;
 
     // Convert int to SDL_Color struct via bitwise logic
-    if (length == 8) {
-        color->r = (Uint8) (hex >> 24);
-        color->g = (Uint8) ((hex & 0x00ff0000) >> 16);
-        color->b = (Uint8) ((hex & 0x0000ff00) >> 8);
-        return true;
-    }
-    else if (length == 6) {
-        color->r = (Uint8) (hex >> 16);
-        color->g = (Uint8) ((hex & 0x0000ff00) >> 8);
-        color->b = (Uint8) (hex & 0x000000ff);
-        return true;
-    }
-    else
-        return false;
+    color->r = (Uint8) (hex >> 16);
+    color->g = (Uint8) ((hex & 0x0000ff00) >> 8);
+    color->b = (Uint8) (hex & 0x000000ff);
+    return true;
 }
 
 // A function to convert a string into a bool

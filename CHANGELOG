@@ -1,5 +1,9 @@
 Unreleased
-- Windows: Added "msedge_proxy.exe" to the list of supported browser processes
+- Change application tracking to window focus-based instead of process based
+- Remove OnLaunch "Hide" mode
+- Reorganize configuration file into smaller sections
+- Make highlight optional
+- Specify color with string beginning with # character
 
 v1.8 (2022-10-7)
 - Added inhibit OS screensaver feature
