@@ -111,12 +111,12 @@ bool start_process(char *cmd, bool application)
         // Parse the .desktop file for the Exec line value
         int error = ini_parse(file, desktop_handler, &desktop);
         if (error < 0) {
-            output_log(LOGLEVEL_ERROR, "Error: Desktop file \"%s\" not found\n", file);
+            log_error("Desktop file '%s' not found", file);
             free(tmp);
             return false;
         }
         if (desktop.exec == NULL) {
-            output_log(LOGLEVEL_DEBUG, "No Exec line found in desktop file \"%s\"\n", cmd);
+            log_debug("No Exec line found in desktop file '%s'", cmd);
             free(tmp);
             return false;
         }
@@ -130,7 +130,7 @@ bool start_process(char *cmd, bool application)
     child_pid = fork();
     switch(child_pid) {
         case -1:
-            output_log(LOGLEVEL_ERROR, "Error: Could not fork new process for application\n");
+            log_error("Could not fork new process for application");
             free(exec);
             return false;
 
@@ -157,10 +157,10 @@ bool start_process(char *cmd, bool application)
             SDL_Delay(10);
             pid_t pid = waitpid(child_pid, &status, WNOHANG);
             if (WIFEXITED(status) && WEXITSTATUS(status) > 126) {
-                output_log(LOGLEVEL_ERROR, "Error: Application failed to launch\n");
+                log_error("Application failed to launch");
                 return false;
             }
-            output_log(LOGLEVEL_DEBUG, "Application launched successfully\n");
+            log_debug("Application launched successfully");
             break;
     }
     free(exec);

@@ -168,8 +168,8 @@ static void init_sdl()
     // Initialize SDL
     if (SDL_Init(sdl_flags) < 0)
     {
-        output_log(LOGLEVEL_FATAL, 
-            "Fatal Error: Could not initialize SDL\n%s\n", 
+        log_fatal(
+            "Fatal Error: Could not initialize SDL\n%s", 
             SDL_GetError()
         );
     }
@@ -195,8 +195,8 @@ static void create_window()
                  SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS
              );
     if (window == NULL) {
-        output_log(LOGLEVEL_FATAL, 
-            "Fatal Error: Could not create SDL Window\n%s\n", 
+        log_fatal(
+            "Fatal Error: Could not create SDL Window\n%s", 
             SDL_GetError()
         );
     }
@@ -206,8 +206,8 @@ static void create_window()
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     if (renderer == NULL) {
-        output_log(LOGLEVEL_FATAL, 
-            "Fatal Error: Could not initialize renderer\n%s\n", 
+        log_fatal(
+            "Fatal Error: Could not initialize renderer\n%s", 
             SDL_GetError()
         );
     }
@@ -227,8 +227,8 @@ static void init_sdl_image()
     int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
     // Initialize SDL_image
     if (!(IMG_Init(img_flags) & img_flags)) {
-        output_log(LOGLEVEL_FATAL, 
-            "Fatal Error: Could not initialize SDL_image\n%s\n", 
+        log_fatal(
+            "Fatal Error: Could not initialize SDL_image\n%s", 
             IMG_GetError()
         );
     }
@@ -254,8 +254,8 @@ static void init_sdl_ttf()
 {
     // Initialize SDL_ttf
     if (TTF_Init() == -1) {
-        output_log(LOGLEVEL_FATAL, 
-            "Fatal Error: Could not initialize SDL_ttf\n%s\n", 
+        log_fatal(
+            "Fatal Error: Could not initialize SDL_ttf\n%s", 
             TTF_GetError()
         );
      }
@@ -277,7 +277,7 @@ static void init_sdl_ttf()
 
     int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
     if (error)
-        output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load title font\n");
+        log_fatal("Could not load title font");
 
     TTF_SizeUTF8(title_info.font, "TEST STRING", NULL, &geo.font_height);
 }
@@ -369,13 +369,8 @@ static void cleanup()
 // A function to handle key presses from keyboard
 static void handle_keypress(SDL_Keysym *key)
 {
-    if (config.debug) {
-        output_log(LOGLEVEL_DEBUG, 
-            "Key %s (%X) detected\n", 
-            SDL_GetKeyName(key->sym),
-            key->sym
-        );
-    }
+    if (config.debug)
+        log_debug("Key %s (%X) detected", SDL_GetKeyName(key->sym), key->sym);
 
     // Check default keys
     if (key->sym == SDLK_LEFT)
@@ -383,11 +378,10 @@ static void handle_keypress(SDL_Keysym *key)
     else if (key->sym == SDLK_RIGHT)
         move_right();
     else if (key->sym == SDLK_RETURN) {
-        output_log(LOGLEVEL_DEBUG, 
-            "Selected Entry:\n"
-            "Title: %s\n"
-            "Icon Path: %s\n"
-            "Command: %s\n", 
+        log_debug("Selected Entry:"
+            "Title: %s"
+            "Icon Path: %s"
+            "Command: %s", 
             current_entry->title, 
             current_entry->icon_path, 
             current_entry->cmd
@@ -422,9 +416,9 @@ void quit_slideshow()
 static void init_slideshow()
 {
     if (!directory_exists(config.slideshow_directory)) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Slideshow directory %s does not exist\n"
-            "Switching to color background mode\n",
+        log_error(
+            "Error: Slideshow directory %s does not exist"
+            "Switching to color background mode",
             config.slideshow_directory
         );
         config.background_mode = MODE_COLOR;
@@ -444,18 +438,18 @@ static void init_slideshow()
     
     // Handle errors
     if (num_images == 0) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: No images found in slideshow directory %s\n"
-            "Changing background mode to color\n", 
+        log_error(
+            "Error: No images found in slideshow directory %s"
+            "Changing background mode to color", 
             config.slideshow_directory
         );
         config.background_mode = MODE_COLOR;
         quit_slideshow();
     } 
     else if (num_images == 1) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Only one image found in slideshow directory %s\n"
-            "Changing background mode to single image\n", 
+        log_error(
+            "Error: Only one image found in slideshow directory %s"
+            "Changing background mode to single image", 
             config.slideshow_directory
         );
         free(config.background_image);
@@ -491,7 +485,7 @@ static void init_screensaver()
     // Calculate alpha end value
     screensaver->alpha_end_value = 255.0f * percent / 100.0f;
     if (screensaver->alpha_end_value < 1.0f) {
-        output_log(LOGLEVEL_ERROR, "Invalid screensaver intensity value, disabling feature\n");
+        log_error("Invalid screensaver intensity value, disabling feature");
         config.screensaver_enabled = false;
         free(screensaver);
         screensaver = NULL;
@@ -533,12 +527,12 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
     Menu *previous_menu = current_menu;
 
     current_menu = menu;
-    output_log(LOGLEVEL_DEBUG, "Loading menu \"%s\"\n", current_menu->name);
+    log_debug("Loading menu '%s'", current_menu->name);
 
     // Return error if the menu doesn't contain entires
     if (current_menu->num_entries == 0) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: No valid entries found for Menu \"%s\"\n", 
+        log_error(
+            "Error: No valid entries found for Menu '%s'", 
             current_menu->name
         );
         current_menu = previous_menu;
@@ -806,18 +800,15 @@ static void connect_gamepad(int device_index, bool raise_error)
     gamepad = SDL_GameControllerOpen(device_index);
     if (gamepad == NULL) {
         if (raise_error)
-            output_log(LOGLEVEL_ERROR, 
-                "Error: Could not open gamepad at device index %i\n", 
+            log_error(
+                "Error: Could not open gamepad at device index %i", 
                 config.gamepad_device
             );
         return;
     }
     if (config.debug && raise_error) {
         char *mapping = SDL_GameControllerMapping(gamepad);
-        output_log(LOGLEVEL_DEBUG, 
-            "Gamepad Mapping:\n%s\n", 
-            mapping
-        );
+        log_debug("Gamepad Mapping:\n%s", mapping);
         SDL_free(mapping);
     }
 }
@@ -856,7 +847,7 @@ static void poll_gamepad()
 
         // Execute command if first press or valid repeat
         if (i->repeat == 1) {
-            output_log(LOGLEVEL_DEBUG, "Gamepad %s detected\n", i->label);
+            log_debug("Gamepad %s detected", i->label);
             ticks.last_input = ticks.main;
             execute_command(i->cmd);
         }
@@ -1050,7 +1041,7 @@ static inline post_launch()
 // A function to quit the launcher
 void quit(int status)
 {
-    output_log(LOGLEVEL_DEBUG, "Quitting program\n");
+    log_debug("Quitting program");
     cleanup();
     if (config.quit_cmd != NULL) {
         execute_command(config.quit_cmd);
@@ -1066,10 +1057,10 @@ void print_version(FILE *stream)
     SDL_GetVersion(&sdl_version);
     const SDL_version *img_version = IMG_Linked_Version();
     const SDL_version *ttf_version = TTF_Linked_Version();
-    fprintf(stream, PROJECT_NAME " version " PROJECT_VERSION ", using:\n");
-    fprintf(stream, "  SDL       %u.%u.%u\n", sdl_version.major, sdl_version.minor, sdl_version.patch);
-    fprintf(stream, "  SDL_image %u.%u.%u\n", img_version->major, img_version->minor, img_version->patch);
-    fprintf(stream, "  SDL_ttf   %u.%u.%u\n", ttf_version->major, ttf_version->minor, ttf_version->patch);
+    fprintf(stream, PROJECT_NAME " version " PROJECT_VERSION ", using:" endline);
+    fprintf(stream, "  SDL       %u.%u.%u" endline, sdl_version.major, sdl_version.minor, sdl_version.patch);
+    fprintf(stream, "  SDL_image %u.%u.%u" endline, img_version->major, img_version->minor, img_version->patch);
+    fprintf(stream, "  SDL_ttf   %u.%u.%u" endline, ttf_version->major, ttf_version->minor, ttf_version->patch);
 }
 
 int main(int argc, char *argv[]) 
@@ -1107,8 +1098,8 @@ int main(int argc, char *argv[])
     if (config.gamepad_enabled && config.gamepad_mappings_file != NULL) {
         error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
         if (error < 0) {
-            output_log(LOGLEVEL_ERROR, 
-                "Error: Could not load gamepad mappings from %s\n%s\n", 
+            log_error(
+                "Error: Could not load gamepad mappings from %s\n%s", 
                 config.gamepad_mappings_file,
                 SDL_GetError()
             );
@@ -1118,14 +1109,14 @@ int main(int argc, char *argv[])
     // Render background
     if (config.background_mode == MODE_IMAGE) {
         if (config.background_image == NULL)
-            output_log(LOGLEVEL_ERROR, "Error: BackgroundImage not specified in config file\n");
+            log_error("BackgroundImage not specified in config file");
         else
             background_texture = load_texture_from_file(config.background_image);
 
         // Switch to color mode if loading background image failed
         if (background_texture == NULL) {
             config.background_mode = MODE_COLOR;
-            output_log(LOGLEVEL_ERROR, "Error: Couldn't load background image, defaulting to color background\n");
+            log_error("Couldn't load background image, defaulting to color background");
             set_draw_color();
         }
     }
@@ -1202,20 +1193,20 @@ int main(int argc, char *argv[])
 
     // Load the default menu and display it
     if (config.default_menu == NULL)
-        output_log(LOGLEVEL_FATAL, "Fatal Error: No default menu defined in config file\n");
+        log_fatal("No default menu defined in config file");
     default_menu = get_menu(config.default_menu);
     if (default_menu == NULL)
-        output_log(LOGLEVEL_FATAL, "Fatal Error: Default menu %s not found in config file\n", config.default_menu);
+        log_fatal("Default menu %s not found in config file", config.default_menu);
     error = load_menu(default_menu, false, true);
     if (error)
-        output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default menu %s\n", config.default_menu);
+        log_fatal("Could not load default menu %s", config.default_menu);
 
     // Execute startup command
     if (config.startup_cmd != NULL)
         execute_command(config.startup_cmd);
     
     // Main program loop
-    output_log(LOGLEVEL_DEBUG, "Begin program loop\n");
+    log_debug("Begin program loop");
     while (1) {
         ticks.main = SDL_GetTicks();
         while (SDL_PollEvent(&event)) {
@@ -1238,10 +1229,7 @@ int main(int argc, char *argv[])
 
                 case SDL_JOYDEVICEADDED:
                     if (SDL_IsGameController(event.jdevice.which) == SDL_TRUE) {
-                        output_log(LOGLEVEL_DEBUG, 
-                            "Gamepad connected with device index %i\n", 
-                            event.jdevice.which
-                        );
+                        log_debug("Gamepad connected with device index %i", event.jdevice.which);
                         if (event.jdevice.which == config.gamepad_device)
                             connect_gamepad(event.jdevice.which, true);
                     }
@@ -1249,7 +1237,7 @@ int main(int argc, char *argv[])
 
                 case SDL_JOYDEVICEREMOVED:
                     if (event.jdevice.which == config.gamepad_device && gamepad != NULL) {
-                        output_log(LOGLEVEL_DEBUG, "Gamepad disconnected\n");
+                        log_debug("Gamepad disconnected");
                         SDL_GameControllerClose(gamepad);
                         gamepad = NULL;
                     }
@@ -1257,9 +1245,9 @@ int main(int argc, char *argv[])
 
                 case SDL_WINDOWEVENT:
                     if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
-                        output_log(LOGLEVEL_DEBUG, "Lost keyboard focus\n");
+                        log_debug("Lost keyboard focus");
                         if (state.application_launching) {
-                            output_log(LOGLEVEL_DEBUG, "Application detected\n");
+                            log_debug("Application detected");
                             state.application_launching = false;
                             state.application_running = true;
                             pre_launch();
@@ -1270,15 +1258,15 @@ int main(int argc, char *argv[])
 #endif
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-                        output_log(LOGLEVEL_DEBUG, "Gained keyboard focus\n");
+                        log_debug("Gained keyboard focus");
                         if (state.application_running) {
                             state.application_running = false;
                             post_launch();
-                            output_log(LOGLEVEL_DEBUG, "Application finished\n");
+                            log_debug("Application finished");
                         }
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_LEAVE)
-                        output_log(LOGLEVEL_DEBUG, "Lost mouse focus\n");
+                        log_debug("Lost mouse focus");
                     break;
 #ifdef _WIN32
                 case SDL_SYSWMEVENT:

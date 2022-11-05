@@ -27,7 +27,7 @@ int init_svg()
 {
     rasterizer = nsvgCreateRasterizer();
     if (rasterizer == NULL) {
-        output_log(LOGLEVEL_FATAL, "Fatal Error: Could not initialize SVG rasterizer.\n");
+        log_fatal("Could not initialize SVG rasterizer.");
         return 1;
     }
     return 0;
@@ -73,9 +73,9 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
     
     // Switch to color background mode if we failed to load any image from the array
     if (surface == NULL) {
-        output_log(LOGLEVEL_ERROR, 
+        log_error(
             "Error: Could not load any image from slideshow directory %s\n"
-            "Changing background to color mode\n", 
+            "Changing background to color mode", 
             config.slideshow_directory
         );
         quit_slideshow();
@@ -86,9 +86,9 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
     // If only one image in the entire slideshow array was valid, switch to
     // single image background mode
     else if (slideshow->i == initial_index && surface != NULL) {
-        output_log(LOGLEVEL_ERROR, 
+        log_error(
             "Error: Could only load one image from slideshow directory %s\n"
-            "Changing background to single image mode\n",
+            "Changing background to single image mode",
             config.slideshow_directory
         );
         background_texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -115,8 +115,8 @@ SDL_Texture *load_texture_from_file(const char *path)
     if (path != NULL) {
         surface = IMG_Load(path);
         if (surface == NULL) {
-            output_log(LOGLEVEL_ERROR, 
-                "Error: Could not load image %s\n%s\n", 
+            log_error(
+                "Error: Could not load image %s\n%s", 
                 path, 
                 IMG_GetError()
             );
@@ -139,7 +139,7 @@ SDL_Texture *load_texture(SDL_Surface *surface)
     //Convert surface to screen format
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (texture == NULL) {
-        output_log(LOGLEVEL_ERROR, "Error: Could not create texture %s\n", SDL_GetError());
+        log_error("Could not create texture %s", SDL_GetError());
     }
     SDL_FreeSurface(surface);
     return texture;
@@ -156,7 +156,7 @@ SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
     // Parse SVG to NSVGimage struct
     image = nsvgParse(buffer, "px", 96.0f);
     if (image == NULL) {
-        output_log(LOGLEVEL_ERROR, "Error: could not open SVG image.\n");
+        log_error("could not open SVG image.");
         return NULL;
     }
 
@@ -186,7 +186,7 @@ SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
     pitch = 4*width;
     pixel_buffer = malloc(4*width*height);
     if (pixel_buffer == NULL) {
-        output_log(LOGLEVEL_ERROR, "Error: Could not alloc SVG pixel buffer.\n");
+        log_error("Could not alloc SVG pixel buffer.");
         return NULL;
     }
 
@@ -218,7 +218,7 @@ SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *r
     char *buffer = NULL;
     read_file(path, &buffer);
     if (buffer == NULL) {
-        output_log(LOGLEVEL_ERROR, "Error: Could not read file \"%s\"\n", path);
+        log_error("Could not read file \"%s\"", path);
     }
     else {
         texture = rasterize_svg(buffer, w, h, rect);
@@ -290,7 +290,7 @@ void render_scroll_indicators(Scroll *scroll, int height, Geometry *geo)
     scroll->rect_left.w = scroll->rect_right.w;
     scroll->rect_left.h = scroll->rect_right.h;
     if (scroll->texture == NULL) {
-        output_log(LOGLEVEL_ERROR, "Error: Could not render scroll indicator, disabling feature\n");
+        log_error("Could not render scroll indicator, disabling feature");
         free(scroll);
         config.scroll_indicators = false;
         return;
@@ -424,7 +424,7 @@ int load_font(TextInfo *info, const char *default_font)
 
     // Try to load default font if we failed loading from config file
     if (info->font == NULL) {
-        output_log(LOGLEVEL_ERROR, "Error: Could not initialize font from config file\n");
+        log_error("Could not initialize font from config file");
         char *prefixes[2];
         char fonts_exe_buffer[MAX_PATH_CHARS + 1];
         prefixes[0] = join_paths(fonts_exe_buffer, sizeof(fonts_exe_buffer), 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
@@ -443,7 +443,7 @@ int load_font(TextInfo *info, const char *default_font)
             free(default_font_path);
         }
         if (info->font == NULL) {
-            output_log(LOGLEVEL_FATAL, "Fatal Error: Could not load default font\n");
+            log_fatal("Could not load default font");
             return 1;
         }
     }

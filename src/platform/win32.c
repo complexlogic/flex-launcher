@@ -152,7 +152,7 @@ bool start_process(char *cmd, bool application)
             ret = true;
         }
         else {
-            output_log(LOGLEVEL_DEBUG, "Failed to launch command\n");
+            log_debug("Failed to launch command");
             ret = false;
         }
     }
@@ -246,13 +246,13 @@ static bool get_shutdown_privilege()
     HANDLE token = NULL;
     BOOL ret = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &token);
     if (!ret) {
-        output_log(LOGLEVEL_ERROR, "Error: Could not open process token\n");
+        log_error("Could not open process token");
         return false;
     }
     LUID luid;
     ret = LookupPrivilegeValueA(NULL, SE_SHUTDOWN_NAME, &luid);
     if (!ret) {
-        output_log(LOGLEVEL_ERROR, "Error: Failed to lookup privilege\n");
+        log_error("Failed to lookup privilege");
         CloseHandle(token);
         return false;
     }
@@ -262,7 +262,7 @@ static bool get_shutdown_privilege()
     tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
     ret = AdjustTokenPrivileges(token, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
     if (!ret) {
-        output_log(LOGLEVEL_ERROR, "Error: Failed to adjust token privileges\n");
+        log_error("Failed to adjust token privileges");
         CloseHandle(token);
         return false;
     }
@@ -286,7 +286,7 @@ void set_exit_hotkey(SDL_Keycode keycode)
         return;
     exit_hotkey = sdl_to_win32_keycode(keycode);
     if (!exit_hotkey) {
-        output_log(LOGLEVEL_ERROR, "Error: Invalid exit hotkey keycode %X\n", keycode);
+        log_error("Invalid exit hotkey keycode %X", keycode);
     }
 }
 
@@ -296,7 +296,7 @@ void register_exit_hotkey()
     BOOL ret = RegisterHotKey(wm_info.info.win.window, 1, 0, exit_hotkey);
     if (!ret) {
         exit_hotkey = 0;
-        output_log(LOGLEVEL_ERROR, "Error: Failed to register exit hotkey with Windows\n");
+        log_error("Failed to register exit hotkey with Windows");
     }
 }
 
@@ -304,10 +304,10 @@ void register_exit_hotkey()
 void check_exit_hotkey(SDL_SysWMmsg *msg)
 {
     if (msg->msg.win.msg == WM_HOTKEY) {
-        output_log(LOGLEVEL_DEBUG, "Exit hotkey detected\n");
+        log_debug("Exit hotkey detected");
         HWND hwnd = GetForegroundWindow();
         if (hwnd == NULL) {
-            output_log(LOGLEVEL_ERROR, "Error: Could not get top window\n");
+            log_error("Could not get top window");
             return;
         }
         PostMessage(hwnd, WM_CLOSE, 0, 0);

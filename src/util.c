@@ -53,7 +53,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
                         copy_string_alloc(config_file_path, optarg);
                     }
                     else {
-                        output_log(LOGLEVEL_FATAL, "Fatal Error: Config file '%s' not found\n", optarg);
+                        log_fatal("Config file '%s' not found", optarg);
                     }
                     break;
 
@@ -96,10 +96,10 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
 #endif
 
         if (*config_file_path == NULL) {
-            output_log(LOGLEVEL_FATAL, "Fatal Error: No config file found\n");
+            log_fatal("No config file found");
         }
     }
-    output_log(LOGLEVEL_DEBUG, "Config file found: %s\n", *config_file_path);
+    log_debug("Config file found: %s", *config_file_path);
 }
 
 // A function to parse the config file and store the settings into the config struct
@@ -107,13 +107,13 @@ void parse_config_file(const char *config_file_path)
 {
     FILE *file = fopen(config_file_path, "r");
     if (file == NULL) {
-        output_log(LOGLEVEL_FATAL, "Fatal Error: Could not open config file\n");
+        log_fatal("Could not open config file");
     }
     int error = ini_parse_file(file, config_handler, &config);
     fclose(file);
     
     if (error < 0) {
-        output_log(LOGLEVEL_FATAL, "Fatal Error: Could not parse config file\n");
+        log_fatal("Could not parse config file");
     }
 }
 
@@ -880,8 +880,8 @@ void validate_settings(Geometry *geo)
     if (config.icon_size * config.max_buttons > geo->screen_width) {
         int i;
         for (i = config.max_buttons; i * config.icon_size > geo->screen_width && i > 0; i--);
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Not enough screen space for %i buttons, reducing to %i\n", 
+        log_error(
+            "Error: Not enough screen space for %i buttons, reducing to %i", 
             config.max_buttons, 
             i
         );
@@ -971,16 +971,16 @@ void validate_settings(Geometry *geo)
         required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
     }
     if (config.highlight_hpadding != highlight_hpadding) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Highlight padding value %i too large to fit screen, shrinking to %i\n",
+        log_error(
+            "Error: Highlight padding value %i too large to fit screen, shrinking to %i",
             config.highlight_hpadding, 
             highlight_hpadding
         );
         config.highlight_hpadding = highlight_hpadding;
     }
     if (config.icon_spacing != icon_spacing) {
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Icon spacing value %i too large to fit screen, shrinking to %i\n",
+        log_error(
+            "Error: Icon spacing value %i too large to fit screen, shrinking to %i",
             config.icon_spacing, 
             icon_spacing
         );
@@ -990,8 +990,8 @@ void validate_settings(Geometry *geo)
     // Make sure title padding is in valid range
     if (config.title_padding < 0 || config.title_padding > config.icon_size / 2) {
         int title_padding = config.icon_size / 10;
-        output_log(LOGLEVEL_ERROR, 
-            "Error: Text padding value %i invalid, changing to %i\n",
+        log_error(
+            "Error: Text padding value %i invalid, changing to %i",
             config.title_padding, 
             title_padding
         );
@@ -1041,8 +1041,8 @@ Menu *get_menu(char *menu_name)
         if (MATCH(menu_name, menu->name))
             return menu;
     }
-    output_log(LOGLEVEL_ERROR, 
-        "Error: Menu \"%s\" not found in config file\n", 
+    log_error(
+        "Error: Menu '%s' not found in config file", 
         menu_name
     );
     return NULL;
