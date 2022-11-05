@@ -58,7 +58,7 @@ void output_log(LogLevel log_level, const char *format, ...)
         return;
 
     // Initialize logging if not already initialized
-    else if (log_file == NULL)
+    if (log_file == NULL)
         init_log();
     
     // Output log
@@ -96,206 +96,81 @@ void print_compiler_info(FILE *stream)
 // A function to print the parsed settings to the command line
 void debug_settings()
 {
-    log_debug("======================== Settings ========================");
-    log_debug("%s: %s", SETTING_DEFAULT_MENU,config.default_menu);
-    log_debug("%s: %i", SETTING_MAX_BUTTONS,config.max_buttons);
-    if (config.background_mode == BACKGROUND_COLOR) {
-        log_debug("%s: %s", SETTING_BACKGROUND_MODE, "Color");
-    }
-    else if (config.background_mode == BACKGROUND_IMAGE) {
-        log_debug("%s: %s", SETTING_BACKGROUND_MODE, "Image");
-    }
-    else if (config.background_mode == BACKGROUND_SLIDESHOW) {
-        log_debug("%s: %s", SETTING_BACKGROUND_MODE, "Slideshow");
-    }
-    log_debug("%s R: %i", SETTING_BACKGROUND_COLOR, config.background_color.r);
-    log_debug("%s G: %i", SETTING_BACKGROUND_COLOR, config.background_color.g);
-    log_debug("%s B: %i", SETTING_BACKGROUND_COLOR, config.background_color.b);
-    if (config.background_image != NULL) {
-        log_debug("%s: %s", SETTING_BACKGROUND_IMAGE, config.background_image);
-    }
-    if (config.slideshow_directory != NULL) {
-        log_debug("%s: %s", SETTING_SLIDESHOW_DIRECTORY , config.slideshow_directory);
-    }
-    log_debug("%s: %i", SETTING_SLIDESHOW_IMAGE_DURATION, config.slideshow_image_duration / 1000);
-    log_debug("%s: %f", SETTING_SLIDESHOW_TRANSITION_TIME, ((float) config.slideshow_transition_time) / 1000.0f);
-    if (config.background_overlay) {
-        log_debug("%s: %s", SETTING_BACKGROUND_OVERLAY, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_BACKGROUND_OVERLAY, "false");
-    }
-    log_debug("%s R: %i", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.r);
-    log_debug("%s G: %i", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.g);
-    log_debug("%s B: %i", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.b);
-    log_debug("%s A: %i", SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color.a);
-    log_debug("%s: %i", SETTING_ICON_SIZE, config.icon_size);
-    log_debug("%s: %i", SETTING_ICON_SPACING, config.icon_spacing);
-    log_debug("%s: %s", SETTING_TITLE_FONT, config.title_font_path);
-    log_debug("%s: %i", SETTING_TITLE_FONT_SIZE, config.title_font_size);
-    log_debug("%s R: %i", SETTING_TITLE_FONT_COLOR, config.title_font_color.r);
-    log_debug("%s G: %i", SETTING_TITLE_FONT_COLOR, config.title_font_color.g);
-    log_debug("%s B: %i", SETTING_TITLE_FONT_COLOR, config.title_font_color.b);
-    log_debug("%s A: %i", SETTING_TITLE_FONT_COLOR, config.title_font_color.a);
-    if (config.title_shadows) {
-        log_debug("%s: %s", SETTING_TITLE_SHADOWS, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_TITLE_SHADOWS, "false");
-    }
-    log_debug("%s R: %i", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.r);
-    log_debug("%s G: %i", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.g);
-    log_debug("%s B: %i", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.b);
-    log_debug("%s A: %i", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.a);
-    
-    if (config.title_oversize_mode == OVERSIZE_TRUNCATE) {
-        log_debug("%s: %s", SETTING_TITLE_OVERSIZE_MODE, "Truncate");
-    }
-    else if (config.title_oversize_mode == OVERSIZE_SHRINK) {
-        log_debug("%s: %s", SETTING_TITLE_OVERSIZE_MODE, "Shrink");
-    }
-    else if (config.title_oversize_mode == OVERSIZE_NONE) {
-        log_debug("%s: %s", SETTING_TITLE_OVERSIZE_MODE, "None");
-    }
-    log_debug("%s: %i", SETTING_TITLE_PADDING, config.title_padding);
-    log_debug("%s R: %i", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.r);
-    log_debug("%s G: %i", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.g);
-    log_debug("%s B: %i", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.b);
-    log_debug("%s A: %i", SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color.a);
-    log_debug("%s: %i", SETTING_HIGHLIGHT_OUTLINE_SIZE, config.highlight_outline_size);
-    log_debug("%s R: %i", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.r);
-    log_debug("%s G: %i", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.g);
-    log_debug("%s B: %i", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.b);
-    log_debug("%s A: %i", SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color.a);
-    log_debug("%s: %i", SETTING_HIGHLIGHT_CORNER_RADIUS, config.highlight_rx);
-    log_debug("%s: %i", SETTING_HIGHLIGHT_VPADDING, config.highlight_vpadding);
-    log_debug("%s: %i", SETTING_HIGHLIGHT_HPADDING, config.highlight_hpadding);
-    if (config.scroll_indicators) {
-        log_debug("%s: %s", SETTING_SCROLL_INDICATORS, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_SCROLL_INDICATORS, "false");
-    }
-    log_debug("%s R: %i", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.r);
-    log_debug("%s G: %i", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.g);
-    log_debug("%s B: %i", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.b);
-    log_debug("%s A: %i", SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color.a);
-    log_debug("%s: %i", SETTING_SCROLL_INDICATOR_OUTLINE_SIZE, config.scroll_indicator_outline_size);
-    log_debug("%s R: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.r);
-    log_debug("%s G: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.g);
-    log_debug("%s B: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.b);
-    log_debug("%s A: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.a);
-    if (config.on_launch == ON_LAUNCH_BLANK) {
-        log_debug("%s: %s", SETTING_ON_LAUNCH, "Blank");
-    }
-    else if (config.on_launch == ON_LAUNCH_NONE) {
-        log_debug("%s: %s", SETTING_ON_LAUNCH, "None");
-    }
-    if (config.reset_on_back) {
-        log_debug("%s: %s", SETTING_RESET_ON_BACK, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_RESET_ON_BACK, "false");
-    }
-    if (config.mouse_select) {
-        log_debug("%s: %s", SETTING_MOUSE_SELECT, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_MOUSE_SELECT, "false");
-    }
-    if (config.inhibit_os_screensaver) {
-        log_debug("%s: %s", SETTING_INHIBIT_OS_SCREENSAVER, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_INHIBIT_OS_SCREENSAVER, "false");
-    }
-    if (config.startup_cmd != NULL) {
-        log_debug("%s: %s", SETTING_STARTUP_CMD, config.startup_cmd);
-    }
-    if (config.quit_cmd != NULL) {
-        log_debug("%s: %s", SETTING_QUIT_CMD, config.quit_cmd);
-    }
-    log_debug("========================== Clock ==========================");
-    if (config.clock_enabled) {
-        log_debug("%s: %s", SETTING_CLOCK_ENABLED, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_CLOCK_ENABLED, "false");
-    }
-    if (config.clock_show_date) {
-        log_debug("%s: %s", SETTING_CLOCK_SHOW_DATE, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_CLOCK_SHOW_DATE, "false");
-    }
-    if (config.clock_alignment == ALIGNMENT_LEFT) {
-        log_debug("%s: %s", SETTING_CLOCK_ALIGNMENT, "Left");
-    }
-    else if (config.clock_alignment == ALIGNMENT_RIGHT) {
-        log_debug("%s: %s", SETTING_CLOCK_ALIGNMENT, "Right");
-    }
-    log_debug("%s: %s", SETTING_CLOCK_FONT, config.clock_font_path);
-    log_debug("%s: %u", SETTING_CLOCK_FONT_SIZE,config.clock_font_size);
-    log_debug("%s: %i",SETTING_CLOCK_MARGIN, config.clock_margin);    
-    log_debug("%s R: %i", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.r);
-    log_debug("%s G: %i", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.g);
-    log_debug("%s B: %i", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.b);
-    log_debug("%s A: %i", SETTING_CLOCK_FONT_COLOR, config.clock_font_color.a);
-    if (config.clock_shadows) {
-        log_debug("%s: %s", SETTING_CLOCK_SHADOWS, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_CLOCK_SHADOWS, "false");
-    }
-    log_debug("%s R: %i", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.r);
-    log_debug("%s G: %i", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.g);
-    log_debug("%s B: %i", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.b);
-    log_debug("%s A: %i", SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color.a);
-    if (config.clock_time_format == FORMAT_TIME_12HR) {
-        log_debug("%s: %s", SETTING_CLOCK_TIME_FORMAT, "12hr");
-    }
-    else if (config.clock_time_format == FORMAT_TIME_24HR) {
-        log_debug("%s: %s", SETTING_CLOCK_TIME_FORMAT, "24hr");
-    }
-    else {
-        log_debug("%s: %s", SETTING_CLOCK_TIME_FORMAT, "Auto");
-    }
-    if (config.clock_date_format == FORMAT_DATE_LITTLE) {
-        log_debug("%s: %s", SETTING_CLOCK_DATE_FORMAT, "Little");
-    }
-    else if (config.clock_date_format == FORMAT_DATE_BIG) {
-        log_debug("%s: %s", SETTING_CLOCK_DATE_FORMAT, "Big");
-    }
-    else {
-        log_debug("%s: %s", SETTING_CLOCK_DATE_FORMAT, "Auto");
-    }
-    if (config.clock_include_weekday) {
-        log_debug("%s: %s", SETTING_CLOCK_INCLUDE_WEEKDAY, "true");
-    }
-    else {
-        log_debug("%s: %s", SETTING_CLOCK_INCLUDE_WEEKDAY, "false");
-    }
+    log_debug("======================= General ========================\n");
+    DEBUG_STR(SETTING_DEFAULT_MENU, config.default_menu);
+    DEBUG_MODE(SETTING_ON_LAUNCH, MODE_SETTING_ON_LAUNCH, config.on_launch);
+    DEBUG_BOOL(SETTING_RESET_ON_BACK, config.reset_on_back);
+    DEBUG_BOOL(SETTING_MOUSE_SELECT, config.mouse_select);
+    DEBUG_BOOL(SETTING_INHIBIT_OS_SCREENSAVER, config.inhibit_os_screensaver);
+    DEBUG_STR(SETTING_STARTUP_CMD, config.startup_cmd);
+    DEBUG_STR(SETTING_QUIT_CMD, config.quit_cmd);
+    log_debug("");
 
-    log_debug("======================= Screensaver =======================");
-    if (config.screensaver_enabled) {
-        log_debug("%s: %s",SETTING_SCREENSAVER_ENABLED, "true");
-    }
-    else {
-        log_debug("%s: %s",SETTING_SCREENSAVER_ENABLED, "false");
-    }
-    log_debug("%s: %i", SETTING_SCREENSAVER_IDLE_TIME, config.screensaver_idle_time / 1000);
-    if(strlen(config.screensaver_intensity_str)) {
-        log_debug("%s: %s",SETTING_SCREENSAVER_INTENSITY, config.screensaver_intensity_str);
-    }
-    else {
-        log_debug("%s: %s",SETTING_SCREENSAVER_INTENSITY, DEFAULT_SCREENSAVER_INTENSITY);
-    }
-    if (config.screensaver_pause_slideshow) {
-        log_debug("%s: %s",SETTING_SCREENSAVER_PAUSE_SLIDESHOW, "true");
-    }
-    else {
-        log_debug("%s: %s",SETTING_SCREENSAVER_PAUSE_SLIDESHOW, "false");
-    }
+    log_debug("===================== Background =======================\n");
+    DEBUG_MODE(SETTING_BACKGROUND_MODE, MODE_SETTING_BACKGROUND, config.background_mode);
+    DEBUG_COLOR(SETTING_BACKGROUND_COLOR, config.background_color);
+    DEBUG_STR(SETTING_BACKGROUND_IMAGE, config.background_image);
+    DEBUG_STR(SETTING_SLIDESHOW_DIRECTORY, config.slideshow_directory);
+    DEBUG_INT(SETTING_SLIDESHOW_IMAGE_DURATION, config.slideshow_image_duration / 1000);
+    DEBUG_FLOAT(SETTING_SLIDESHOW_TRANSITION_TIME, ((float) config.slideshow_transition_time) / 1000.0f);
+    DEBUG_BOOL(SETTING_BACKGROUND_OVERLAY, config.background_overlay);
+    DEBUG_COLOR(SETTING_BACKGROUND_OVERLAY_COLOR, config.background_overlay_color);
+    log_debug("");
+
+    log_debug("======================= Layout =========================\n");
+    DEBUG_INT(SETTING_MAX_BUTTONS, config.max_buttons);
+    DEBUG_INT(SETTING_ICON_SIZE, config.icon_size);
+    DEBUG_INT(SETTING_ICON_SPACING, config.icon_spacing);
+    DEBUG_STR(SETTING_BUTTON_CENTERLINE, config.button_centerline[0] != '\0' ? config.button_centerline : "50%");
+    log_debug("");
+
+    log_debug("====================== Highlight =======================\n");
+    DEBUG_COLOR(SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color);
+    DEBUG_INT(SETTING_HIGHLIGHT_OUTLINE_SIZE, config.highlight_outline_size);
+    DEBUG_COLOR(SETTING_HIGHLIGHT_OUTLINE_COLOR, config.highlight_outline_color);
+    DEBUG_INT(SETTING_HIGHLIGHT_CORNER_RADIUS, config.highlight_rx);
+    DEBUG_INT(SETTING_HIGHLIGHT_VPADDING, config.highlight_vpadding);
+    DEBUG_INT(SETTING_HIGHLIGHT_HPADDING, config.highlight_hpadding);
+    log_debug("");
+
+    log_debug("================== Scroll Indicators ===================\n");
+    DEBUG_BOOL(SETTING_SCROLL_INDICATORS, config.scroll_indicators);
+    DEBUG_COLOR(SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color);
+    DEBUG_INT(SETTING_SCROLL_INDICATOR_OUTLINE_SIZE, config.scroll_indicator_outline_size);
+    DEBUG_COLOR(SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color);
+    log_debug("");
+
+    log_debug("======================== Titles ========================\n");
+    DEBUG_STR(SETTING_TITLE_FONT, config.title_font_path);
+    DEBUG_INT(SETTING_TITLE_FONT_SIZE, config.title_font_size);
+    DEBUG_COLOR(SETTING_TITLE_FONT_COLOR, config.title_font_color);
+    DEBUG_BOOL(SETTING_TITLE_SHADOWS, config.title_shadows);
+    DEBUG_COLOR(SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color);
+    DEBUG_MODE(SETTING_TITLE_OVERSIZE_MODE, MODE_SETTING_OVERSIZE, config.title_oversize_mode);
+    DEBUG_INT(SETTING_TITLE_PADDING, config.title_padding);
+    log_debug("");
+
+    log_debug("======================== Clock =========================\n");
+    DEBUG_BOOL(SETTING_CLOCK_ENABLED, config.clock_enabled);
+    DEBUG_BOOL(SETTING_CLOCK_SHOW_DATE, config.clock_show_date);
+    DEBUG_MODE(SETTING_CLOCK_ALIGNMENT, MODE_SETTING_ALIGNMENT, config.clock_alignment);
+    DEBUG_STR(SETTING_CLOCK_FONT, config.clock_font_path);
+    DEBUG_INT(SETTING_CLOCK_FONT_SIZE, config.clock_font_size);
+    DEBUG_INT(SETTING_CLOCK_MARGIN, config.clock_margin);
+    DEBUG_COLOR(SETTING_CLOCK_FONT_COLOR, config.clock_font_color);
+    DEBUG_BOOL(SETTING_CLOCK_SHADOWS, config.clock_shadows);
+    DEBUG_COLOR(SETTING_CLOCK_SHADOW_COLOR, config.clock_shadow_color);
+    DEBUG_MODE(SETTING_CLOCK_TIME_FORMAT, MODE_SETTING_TIME_FORMAT, config.clock_time_format);
+    DEBUG_MODE(SETTING_CLOCK_DATE_FORMAT, MODE_SETTING_DATE_FORMAT, config.clock_date_format);
+    DEBUG_BOOL(SETTING_CLOCK_INCLUDE_WEEKDAY, config.clock_include_weekday);
+    log_debug("");
+
+    log_debug("===================== Screensaver ======================\n");
+    DEBUG_BOOL(SETTING_SCREENSAVER_ENABLED, config.screensaver_enabled);
+    DEBUG_INT(SETTING_SCREENSAVER_IDLE_TIME, config.screensaver_idle_time / 1000);
+    DEBUG_STR(SETTING_SCREENSAVER_INTENSITY, config.screensaver_intensity_str[0] != '\0' ? config.screensaver_intensity_str : DEFAULT_SCREENSAVER_INTENSITY);
+    DEBUG_BOOL(SETTING_SCREENSAVER_PAUSE_SLIDESHOW, config.screensaver_pause_slideshow);
+    log_debug("");
 }
 
 // A function to print the parsed menu entries to the command line
@@ -305,7 +180,7 @@ void debug_menu_entries(Menu *first_menu, int num_menus)
         log_debug("No valid menus found");
         return;
     }
-    log_debug("======================= Menu Entries =======================");
+    log_debug("======================= Menu Entries =======================\n");
     Menu *menu = first_menu;
     Entry *entry;
     for (int i = 0; i < num_menus; i ++) {
@@ -316,9 +191,8 @@ void debug_menu_entries(Menu *first_menu, int num_menus)
             log_debug("Entry %i Title: %s",j,entry->title);
             log_debug("Entry %i Icon Path: %s",j,entry->icon_path);
             log_debug("Entry %i Command: %s",j,entry->cmd);
-            if (j != menu->num_entries - 1) {
+            if (j != menu->num_entries - 1)
                 log_debug("");
-            }
             entry = entry->next;
         }
         if (i != num_menus - 1) {
@@ -331,20 +205,13 @@ void debug_menu_entries(Menu *first_menu, int num_menus)
 
 void debug_gamepad(GamepadControl *gamepad_controls)
 {
-    log_debug("======================== Gamepad ========================");
-    if (config.gamepad_enabled) {
-        log_debug("%s: %s",SETTING_GAMEPAD_ENABLED, "true");
-    }
-    else {
-        log_debug("%s: %s",SETTING_GAMEPAD_ENABLED, "false");
-    }
-    log_debug("%s: %i", SETTING_GAMEPAD_DEVICE, config.gamepad_device);
-    if (config.gamepad_mappings_file != NULL) {
-        log_debug("%s: %s", SETTING_GAMEPAD_MAPPINGS_FILE, config.gamepad_mappings_file);
-    }
-    for (GamepadControl *i = gamepad_controls; i != NULL; i = i->next) {
-        log_debug("%s: %s", i->label, i->cmd);
-    }
+    log_debug("======================= Gamepad ========================\n");
+    DEBUG_BOOL(SETTING_GAMEPAD_ENABLED, config.gamepad_enabled);
+    DEBUG_INT(SETTING_GAMEPAD_DEVICE, config.gamepad_device);
+    DEBUG_STR(SETTING_GAMEPAD_MAPPINGS_FILE, config.gamepad_mappings_file);
+    for (GamepadControl *i = gamepad_controls; i != NULL; i = i->next)
+        log_debug("%-25s %s", i->label, i->cmd);
+    log_debug("");
 }
 
 void debug_hotkeys(Hotkey *hotkeys)
@@ -353,41 +220,41 @@ void debug_hotkeys(Hotkey *hotkeys)
         log_debug("No hotkeys detected");
         return;
     }
-    log_debug("======================== Hotkeys =========================");
+    log_debug("======================== Hotkeys =========================\n");
     int index = 0;
     for (Hotkey *i = hotkeys; i != NULL; i = i->next) {
         log_debug("Hotkey %i Keycode: %X", index, i->keycode);
         log_debug("Hotkey %i Command: %s", index, i->cmd);
         index++;
     }
+    log_debug("");
 }
 
 // A function to debug the parsed slideshow files
 void debug_slideshow(Slideshow *slideshow)
 {
     log_debug("======================== Slideshow ========================");
-    log_debug(
-      "Found %i images in directory %s:", 
+    log_debug("Found %i images in directory %s:", 
       slideshow->num_images, 
       config.slideshow_directory
     );
-    for (int i = 0; i < slideshow->num_images; i++) {
+    for (int i = 0; i < slideshow->num_images; i++)
         log_debug("%s", slideshow->images[slideshow->order[i]]);
-    }
 }
 
 // A function to debug the video settings
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
 {
-    log_debug("===================== Video Information =====================");
-    log_debug("Resolution: %ix%i", display_mode->w, display_mode->h);
-    log_debug("Refresh rate: %i Hz", display_mode->refresh_rate);
-    log_debug("Video driver: %s", SDL_GetCurrentVideoDriver());
+    log_debug("================== Video Information ===================\n");
+    log_debug("Resolution:    %ix%i", display_mode->w, display_mode->h);
+    log_debug("Refresh rate:  %i Hz", display_mode->refresh_rate);
+    log_debug("Video driver:  %s", SDL_GetCurrentVideoDriver());
+    log_debug("");
     SDL_RendererInfo info;
     SDL_GetRendererInfo(renderer, &info);
     log_debug("Supported Texture formats:");
-    for(int i = 0; i < info.num_texture_formats; i++) {
-        log_debug("%s", SDL_GetPixelFormatName(info.texture_formats[i]));
-    }
+    for(int i = 0; i < info.num_texture_formats; i++)
+        log_debug("  %s", SDL_GetPixelFormatName(info.texture_formats[i]));
+    log_debug("");
 }
 
