@@ -23,7 +23,7 @@ int convert_percent(const char *string, int max_value);
 int utf8_length(const char *string);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
 bool hex_to_color(const char *string, SDL_Color *color);
-bool convert_bool(const char *string, bool default_setting);
+bool convert_bool(const char *string, bool *setting);
 bool is_percent(const char *string);
 static bool ends_with(const char *string, const char *phrase);
 char *selected_path(const char *path);

@@ -106,263 +106,258 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
 void parse_config_file(const char *config_file_path)
 {
     FILE *file = fopen(config_file_path, "r");
-    if (file == NULL) {
+    if (file == NULL)
         log_fatal("Could not open config file");
-    }
-    int error = ini_parse_file(file, config_handler, &config);
+    int error = ini_parse_file(file, config_handler, NULL);
     fclose(file);
     
-    if (error < 0) {
+    if (error < 0)
         log_fatal("Could not parse config file");
-    }
 }
 
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
 {
-    Config *pconfig = (Config*) user;
-
-    // Parse settings
     if (MATCH(section, "General")) {
         if (MATCH(name, SETTING_DEFAULT_MENU))
-            pconfig->default_menu = strdup(value);
+            config.default_menu = strdup(value);
         else if (MATCH(name, SETTING_ON_LAUNCH)) {
             if (MATCH(value, "None"))
-                pconfig->on_launch = MODE_NONE;
+                config.on_launch = MODE_NONE;
             else if (MATCH(value, "Blank"))
-                pconfig->on_launch = MODE_BLANK;
+                config.on_launch = MODE_BLANK;
         }
         else if (MATCH(name, SETTING_RESET_ON_BACK))
-            pconfig->reset_on_back = convert_bool(value, DEFAULT_RESET_ON_BACK);
+            convert_bool(value, &config.reset_on_back);
         else if (MATCH(name, SETTING_MOUSE_SELECT))
-            pconfig->mouse_select = convert_bool(value, DEFAULT_MOUSE_SELECT);
+            convert_bool(value, &config.mouse_select);
         else if (MATCH(name, SETTING_INHIBIT_OS_SCREENSAVER))
-            pconfig->inhibit_os_screensaver = convert_bool(value, DEFAULT_INHIBIT_OS_SCREENSAVER);
+            convert_bool(value, &config.inhibit_os_screensaver);
         else if (MATCH(name, SETTING_STARTUP_CMD))
-            pconfig->startup_cmd = strdup(value);
+            config.startup_cmd = strdup(value);
         else if (MATCH(name, SETTING_QUIT_CMD))
-            pconfig->quit_cmd = strdup(value);
+            config.quit_cmd = strdup(value);
     }
     else if (MATCH(section, "Layout")) {
         if (MATCH(name, SETTING_MAX_BUTTONS)) {
             int max_buttons = atoi(value);
             if (max_buttons > 0)
-                pconfig->max_buttons = (unsigned int) max_buttons;
+                config.max_buttons = (unsigned int) max_buttons;
         }
         else if (MATCH(name, SETTING_ICON_SIZE)) {
             Uint16 icon_size = (Uint16) atoi(value);
             if (icon_size >= MIN_ICON_SIZE && icon_size <= MAX_ICON_SIZE)
-                pconfig->icon_size = icon_size;
+                config.icon_size = icon_size;
         }
         else if (MATCH(name, SETTING_ICON_SPACING)) {
             if (is_percent(value))
-                copy_string(pconfig->icon_spacing_str, value, sizeof(pconfig->icon_spacing_str));
+                copy_string(config.icon_spacing_str, value, sizeof(config.icon_spacing_str));
             else {
                 int icon_spacing = atoi(value);
                 if (icon_spacing > 0 || MATCH(value, "0"))
-                    pconfig->icon_spacing = icon_spacing;
+                    config.icon_spacing = icon_spacing;
             }
         }
         else if (MATCH(name, SETTING_BUTTON_CENTERLINE)) {
             if (is_percent(value))
-                copy_string(pconfig->button_centerline, value, sizeof(pconfig->button_centerline));
+                copy_string(config.button_centerline, value, sizeof(config.button_centerline));
         }
     }
     else if (MATCH(section, "Background")) {
         if (MATCH(name, SETTING_BACKGROUND_MODE)) {
             if (MATCH(value, "Color"))
-                pconfig->background_mode = MODE_COLOR;
+                config.background_mode = MODE_COLOR;
             else if (MATCH(value, "Image"))
-                pconfig->background_mode = MODE_IMAGE;
+                config.background_mode = MODE_IMAGE;
             else if (MATCH(value, "Slideshow"))
-                pconfig->background_mode = MODE_SLIDESHOW;
+                config.background_mode = MODE_SLIDESHOW;
         }
         else if (MATCH(name, SETTING_BACKGROUND_COLOR))
-            hex_to_color(value, &pconfig->background_color);
+            hex_to_color(value, &config.background_color);
         else if (MATCH(name, SETTING_BACKGROUND_IMAGE)) {
-            pconfig->background_image = strdup(value);
-            clean_path(pconfig->background_image);
+            config.background_image = strdup(value);
+            clean_path(config.background_image);
         }
         else if (MATCH(name, SETTING_SLIDESHOW_DIRECTORY)) {
-            pconfig->slideshow_directory = strdup(value);
-            clean_path(pconfig->slideshow_directory);
+            config.slideshow_directory = strdup(value);
+            clean_path(config.slideshow_directory);
         }
         else if (MATCH(name, SETTING_SLIDESHOW_IMAGE_DURATION)) {
             Uint32 slideshow_image_duration = ((Uint32) atoi(value))*1000;
             if (slideshow_image_duration >= MIN_SLIDESHOW_IMAGE_DURATION && 
             slideshow_image_duration <= MAX_SLIDESHOW_IMAGE_DURATION)
-                pconfig->slideshow_image_duration = slideshow_image_duration;
+                config.slideshow_image_duration = slideshow_image_duration;
         }
         else if (MATCH(name, SETTING_SLIDESHOW_TRANSITION_TIME)) {
             Uint32 slideshow_transition_time = (Uint32) (atof(value)*1000.0f);
             if (slideshow_transition_time >= MIN_SLIDESHOW_TRANSITION_TIME && 
             slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME)
-                pconfig->slideshow_transition_time = slideshow_transition_time;
+                config.slideshow_transition_time = slideshow_transition_time;
         }
         else if (MATCH(name, SETTING_BACKGROUND_OVERLAY))
-            pconfig->background_overlay = convert_bool(value, DEFAULT_BACKGROUND_OVERLAY);
+            convert_bool(value, &config.background_overlay);
         else if (MATCH(name, SETTING_BACKGROUND_OVERLAY_COLOR))
-            hex_to_color(value, &pconfig->background_overlay_color);
+            hex_to_color(value, &config.background_overlay_color);
         else if (MATCH(name, SETTING_BACKGROUND_OVERLAY_OPACITY)) {
             if (is_percent(value))
-                copy_string(pconfig->background_overlay_opacity, value, sizeof(pconfig->background_overlay_opacity));
+                copy_string(config.background_overlay_opacity, value, sizeof(config.background_overlay_opacity));
         }
     }
     else if (MATCH(section, "Titles")) {
         if (MATCH(name, SETTING_TITLE_FONT)) {
-            pconfig->title_font_path = strdup(value);
-            clean_path(pconfig->title_font_path);
+            config.title_font_path = strdup(value);
+            clean_path(config.title_font_path);
         }
         else if (MATCH(name, SETTING_TITLE_FONT_SIZE))
-            pconfig->title_font_size = (unsigned int) atoi(value);
+            config.title_font_size = (unsigned int) atoi(value);
         else if (MATCH(name, SETTING_TITLE_FONT_COLOR))
-            hex_to_color(value, &pconfig->title_font_color);
+            hex_to_color(value, &config.title_font_color);
         else if (MATCH(name, SETTING_TITLE_OPACITY)) {
             if (is_percent(value))
-                copy_string(pconfig->title_opacity, value, sizeof(pconfig->title_opacity));
+                copy_string(config.title_opacity, value, sizeof(config.title_opacity));
         }
         else if (MATCH(name, SETTING_TITLE_SHADOWS))
-            pconfig->title_shadows = convert_bool(value, DEFAULT_TITLE_SHADOWS);
+            convert_bool(value, &config.title_shadows);
         else if (MATCH(name, SETTING_TITLE_SHADOW_COLOR))
-            hex_to_color(value, &pconfig->title_shadow_color);
+            hex_to_color(value, &config.title_shadow_color);
         else if (MATCH(name, SETTING_TITLE_OVERSIZE_MODE)) {
             if (MATCH(value, "Truncate"))
-                pconfig->title_oversize_mode = MODE_TRUNCATE;
+                config.title_oversize_mode = MODE_TRUNCATE;
             else if (MATCH(value, "Shrink"))
-                pconfig->title_oversize_mode = MODE_SHRINK;
+                config.title_oversize_mode = MODE_SHRINK;
             else if (MATCH(value, "None"))
-                pconfig->title_oversize_mode = MODE_NONE;
+                config.title_oversize_mode = MODE_NONE;
         }
         else if (MATCH(name, SETTING_TITLE_PADDING)) {
             int title_padding = atoi(value);
             if (title_padding >= 0)
-                pconfig->title_padding = (unsigned int) title_padding;
+                config.title_padding = (unsigned int) title_padding;
         }
     }
     else if (MATCH(section, "Highlight")) {
         if (MATCH(name, SETTING_HIGHLIGHT_ENABLED))
-            pconfig->highlight = convert_bool(value, DEFAULT_HIGHLIGHT_ENABLED);
+            convert_bool(value, &config.highlight);
         else if (MATCH(name, SETTING_HIGHLIGHT_FILL_COLOR))
-            hex_to_color(value, &pconfig->highlight_fill_color);
+            hex_to_color(value, &config.highlight_fill_color);
         else if (MATCH(name, SETTING_HIGHLIGHT_OUTLINE_COLOR))
-            hex_to_color(value, &pconfig->highlight_outline_color);
+            hex_to_color(value, &config.highlight_outline_color);
         else if (MATCH(name, SETTING_HIGHLIGHT_OUTLINE_SIZE)) {
             int highlight_outline_size = atoi(value);
             if (highlight_outline_size >= 0)
-                pconfig->highlight_outline_size = highlight_outline_size;
+                config.highlight_outline_size = highlight_outline_size;
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_CORNER_RADIUS)) {
             Uint16 rx = (Uint16) atoi(value);
             if (rx >= MIN_RX_SIZE && rx <= MAX_RX_SIZE)
-                pconfig->highlight_rx = rx;
+                config.highlight_rx = rx;
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_FILL_OPACITY)) {
             if (is_percent(value))
-                copy_string(pconfig->highlight_fill_opacity, value, sizeof(pconfig->highlight_fill_opacity));
+                copy_string(config.highlight_fill_opacity, value, sizeof(config.highlight_fill_opacity));
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_OUTLINE_OPACITY)) {
             if (is_percent(value))
-                copy_string(pconfig->highlight_outline_opacity, value, sizeof(pconfig->highlight_outline_opacity));
+                copy_string(config.highlight_outline_opacity, value, sizeof(config.highlight_outline_opacity));
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_VPADDING)) {
             int highlight_vpadding = atoi(value);
             if (highlight_vpadding > 0 || MATCH(value,"0"))
-                pconfig->highlight_vpadding = highlight_vpadding;
+                config.highlight_vpadding = highlight_vpadding;
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_HPADDING)) {
             int highlight_hpadding = atoi(value);
             if (highlight_hpadding > 0 || MATCH(value,"0"))
-                pconfig->highlight_hpadding = highlight_hpadding;
+                config.highlight_hpadding = highlight_hpadding;
         }
     }
     else if (MATCH(section, "Scroll Indicators")) {
         if (MATCH(name,SETTING_SCROLL_INDICATORS))
-            pconfig->scroll_indicators = convert_bool(value, DEFAULT_SCROLL_INDICATORS);
+            convert_bool(value, &config.scroll_indicators);
         else if (MATCH(name,SETTING_SCROLL_INDICATOR_FILL_COLOR))
-            hex_to_color(value, &pconfig->scroll_indicator_fill_color);
+            hex_to_color(value, &config.scroll_indicator_fill_color);
         else if (MATCH(name, SETTING_SCROLL_INDICATOR_OUTLINE_SIZE)) {
             int scroll_indicator_outline_size = atoi(value);
             if (scroll_indicator_outline_size >= 0)
-                pconfig->scroll_indicator_outline_size = scroll_indicator_outline_size;
+                config.scroll_indicator_outline_size = scroll_indicator_outline_size;
         }
         else if (MATCH(name,SETTING_SCROLL_INDICATOR_OUTLINE_COLOR))
-            hex_to_color(value, &pconfig->scroll_indicator_outline_color);
+            hex_to_color(value, &config.scroll_indicator_outline_color);
         else if (MATCH(name,SETTING_SCROLL_INDICATOR_OPACITY)) {
             if (is_percent(value))
-                copy_string(pconfig->scroll_indicator_opacity, value, sizeof(pconfig->scroll_indicator_opacity));
+                copy_string(config.scroll_indicator_opacity, value, sizeof(config.scroll_indicator_opacity));
         }
     }
 
     else if (MATCH(section, "Clock")) {
         if (MATCH(name, SETTING_CLOCK_ENABLED))
-            pconfig->clock_enabled = convert_bool(value, DEFAULT_CLOCK_ENABLED);
+            convert_bool(value, &config.clock_enabled);
         else if (MATCH(name, SETTING_CLOCK_SHOW_DATE))
-            pconfig->clock_show_date = convert_bool(value, DEFAULT_CLOCK_SHOW_DATE);
+            convert_bool(value, &config.clock_show_date);
         else if (MATCH(name, SETTING_CLOCK_ALIGNMENT)) {
             if(MATCH(value, "Left"))
-                pconfig->clock_alignment = ALIGNMENT_LEFT;
+                config.clock_alignment = ALIGNMENT_LEFT;
             else if (MATCH(value, "Right"))
-                pconfig->clock_alignment = ALIGNMENT_RIGHT;
+                config.clock_alignment = ALIGNMENT_RIGHT;
         }
         else if (MATCH(name, SETTING_CLOCK_FONT)) {
-            copy_string_alloc(&pconfig->clock_font_path, value);
-            clean_path(pconfig->clock_font_path);
+            copy_string_alloc(&config.clock_font_path, value);
+            clean_path(config.clock_font_path);
         }
         else if (MATCH(name, SETTING_CLOCK_MARGIN)) {
             if (is_percent(value))
-                copy_string(pconfig->clock_margin_str, value, sizeof(pconfig->clock_margin_str));
+                copy_string(config.clock_margin_str, value, sizeof(config.clock_margin_str));
             else {
                 int clock_margin = atoi(value);
                 if (clock_margin > 0 || MATCH(value,"0"))
-                    pconfig->clock_margin = clock_margin;
+                    config.clock_margin = clock_margin;
             }
         }
         else if (MATCH(name, SETTING_CLOCK_FONT_COLOR))
-            hex_to_color(value, &pconfig->clock_font_color);
+            hex_to_color(value, &config.clock_font_color);
         else if (MATCH(name, SETTING_CLOCK_SHADOW_COLOR))
-            hex_to_color(value, &pconfig->clock_shadow_color);
+            hex_to_color(value, &config.clock_shadow_color);
         else if (MATCH(name, SETTING_CLOCK_SHADOWS))
-            pconfig->clock_shadows = convert_bool(value, DEFAULT_CLOCK_SHADOWS);
+            convert_bool(value, &config.clock_shadows);
         else if (MATCH(name, SETTING_CLOCK_OPACITY)) {
             if (is_percent(value))
-                copy_string(pconfig->clock_opacity, value, sizeof(pconfig->clock_opacity));
+                copy_string(config.clock_opacity, value, sizeof(config.clock_opacity));
         }
         else if (MATCH(name, SETTING_CLOCK_FONT_SIZE)) {
             unsigned int font_size = (unsigned int) atoi(value);
             if (font_size)
-                pconfig->clock_font_size = font_size;
+                config.clock_font_size = font_size;
         }
         else if (MATCH(name, SETTING_CLOCK_TIME_FORMAT)) {
             if (MATCH(value, "12hr"))
-                pconfig->clock_time_format = FORMAT_TIME_12HR;
+                config.clock_time_format = FORMAT_TIME_12HR;
             else if (MATCH(value, "24hr"))
-                pconfig->clock_time_format = FORMAT_TIME_24HR;
+                config.clock_time_format = FORMAT_TIME_24HR;
         }
         else if (MATCH(name, SETTING_CLOCK_DATE_FORMAT)) {
             if (MATCH(value, "Little"))
-                pconfig->clock_date_format = FORMAT_DATE_LITTLE;
+                config.clock_date_format = FORMAT_DATE_LITTLE;
             else if (MATCH(value, "Big"))
-                pconfig->clock_date_format = FORMAT_DATE_BIG;
+                config.clock_date_format = FORMAT_DATE_BIG;
         }
         else if (MATCH(name, SETTING_CLOCK_INCLUDE_WEEKDAY))
-            pconfig->clock_include_weekday = convert_bool(value, DEFAULT_CLOCK_INCLUDE_WEEKDAY);
+            convert_bool(value, &config.clock_include_weekday);
     }
 
     else if (MATCH(section, "Screensaver")) {
         if (MATCH(name, SETTING_SCREENSAVER_ENABLED))
-            pconfig->screensaver_enabled = convert_bool(value, DEFAULT_SCREENSAVER_ENABLED);
+            convert_bool(value, &config.screensaver_enabled);
         else if (MATCH(name, SETTING_SCREENSAVER_IDLE_TIME)) {
             Uint32 screensaver_idle_time = (Uint32) atoi(value);
             if (screensaver_idle_time >= MIN_SCREENSAVER_IDLE_TIME &&
             screensaver_idle_time <= MAX_SCREENSAVER_IDLE_TIME)
-                pconfig->screensaver_idle_time = screensaver_idle_time*1000; // Convert to ms
+                config.screensaver_idle_time = screensaver_idle_time*1000; // Convert to ms
         }
         else if (MATCH(name, SETTING_SCREENSAVER_INTENSITY)) {
             if (is_percent(value))
-                copy_string(pconfig->screensaver_intensity_str, value, sizeof(pconfig->screensaver_intensity_str));
+                copy_string(config.screensaver_intensity_str, value, sizeof(config.screensaver_intensity_str));
         }
         else if (MATCH(name, SETTING_SCREENSAVER_PAUSE_SLIDESHOW))
-            pconfig->screensaver_pause_slideshow = convert_bool(value, DEFAULT_SCREENSAVER_PAUSE_SLIDESHOW);
+            convert_bool(value, &config.screensaver_pause_slideshow);
     }
     
     else if (MATCH(section, "Hotkeys")) {
@@ -376,15 +371,15 @@ int config_handler(void *user, const char *section, const char *name, const char
 
     else if (MATCH(section, "Gamepad")) {
         if (MATCH(name, SETTING_GAMEPAD_ENABLED))
-            pconfig->gamepad_enabled = convert_bool(value, DEFAULT_GAMEPAD_ENABLED);
+            convert_bool(value, &config.gamepad_enabled);
         else if (MATCH(name, SETTING_GAMEPAD_DEVICE)) {
             int device_index = atoi(value);
             if (device_index >= 0)
-                pconfig->gamepad_device = device_index;
+                config.gamepad_device = device_index;
         }
         else if (MATCH(name, SETTING_GAMEPAD_MAPPINGS_FILE)) {
-            pconfig->gamepad_mappings_file = strdup(value);
-            clean_path(pconfig->gamepad_mappings_file);
+            config.gamepad_mappings_file = strdup(value);
+            clean_path(config.gamepad_mappings_file);
         }
 
         // Parse gamepad controls
@@ -398,13 +393,13 @@ int config_handler(void *user, const char *section, const char *name, const char
         Entry *previous_entry;
 
         // Check if menu struct exists for current section
-        if (pconfig->first_menu == NULL) {
-            pconfig->first_menu = create_menu(section, &pconfig->num_menus);
-            menu = pconfig->first_menu;
+        if (config.first_menu == NULL) {
+            config.first_menu = create_menu(section, &config.num_menus);
+            menu = config.first_menu;
         }
         else {
             bool menu_exists = false;
-            for (Menu *tmp = pconfig->first_menu; tmp != NULL;
+            for (Menu *tmp = config.first_menu; tmp != NULL;
             tmp = tmp->next) {
                 if (MATCH(tmp->name,section)) {
                     menu_exists = true;
@@ -414,7 +409,7 @@ int config_handler(void *user, const char *section, const char *name, const char
 
         // Create menu if it doesn't already exist
             if (menu_exists == false) {
-                menu->next = create_menu(section, &pconfig->num_menus);
+                menu->next = create_menu(section, &config.num_menus);
                 menu = menu->next;
             }
         }
@@ -555,14 +550,17 @@ bool hex_to_color(const char *string, SDL_Color *color)
 }
 
 // A function to convert a string into a bool
-bool convert_bool(const char *string, bool default_setting)
+bool convert_bool(const char *string, bool *setting)
 {
-    if (MATCH(string, "true") || MATCH(string, "True"))
+    if (MATCH(string, "true") || MATCH(string, "True")) {
+        *setting = true;
         return true;
-    else if (MATCH(string, "false") || MATCH(string, "False"))
-        return false;
-    else
-        return default_setting;
+    }
+    else if (MATCH(string, "false") || MATCH(string, "False")) {
+        *setting = false;
+        return true;
+    }
+    return false;
 }
 
 // A function to copy a string into an existing buffer
