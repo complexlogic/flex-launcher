@@ -370,7 +370,7 @@ static void cleanup()
 static void handle_keypress(SDL_Keysym *key)
 {
     if (config.debug)
-        log_debug("Key %s (%X) detected", SDL_GetKeyName(key->sym), key->sym);
+        log_debug("Key %s (#%X) detected", SDL_GetKeyName(key->sym), key->sym);
 
     // Check default keys
     if (key->sym == SDLK_LEFT)

@@ -767,9 +767,13 @@ unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int h
 // A function to add a hotkey to the linked list
 void add_hotkey(const char *keycode, const char *cmd)
 {
+    if (keycode[0] != '#')
+        return;
+    char *p = (char*) keycode + 1;
+
     // Convert hex string to binary
     static Hotkey *current_hotkey = NULL;
-    SDL_Keycode code = (SDL_Keycode) strtol(keycode, NULL, 16);
+    SDL_Keycode code = (SDL_Keycode) strtol(p, NULL, 16);
 
     // Check if exit hotkey for Windows
 #ifdef _WIN32
