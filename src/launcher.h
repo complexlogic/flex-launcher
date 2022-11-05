@@ -230,6 +230,7 @@ typedef struct {
     char title_opacity[PERCENT_MAX_CHARS];
     Mode title_oversize_mode; 
     unsigned int title_padding;
+    bool highlight;
     SDL_Color highlight_fill_color;
     SDL_Color highlight_outline_color;
     int highlight_outline_size;

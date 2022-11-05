@@ -159,7 +159,7 @@ int config_handler(void *user, const char *section, const char *name, const char
                 copy_string(pconfig->icon_spacing_str, value, sizeof(pconfig->icon_spacing_str));
             else {
                 int icon_spacing = atoi(value);
-                if (icon_spacing > 0 || MATCH(value,"0"))
+                if (icon_spacing > 0 || MATCH(value, "0"))
                     pconfig->icon_spacing = icon_spacing;
             }
         }
@@ -240,7 +240,9 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
     }
     else if (MATCH(section, "Highlight")) {
-        if (MATCH(name, SETTING_HIGHLIGHT_FILL_COLOR))
+        if (MATCH(name, SETTING_HIGHLIGHT_ENABLED))
+            pconfig->highlight = convert_bool(value, DEFAULT_HIGHLIGHT_ENABLED);
+        else if (MATCH(name, SETTING_HIGHLIGHT_FILL_COLOR))
             hex_to_color(value, &pconfig->highlight_fill_color);
         else if (MATCH(name, SETTING_HIGHLIGHT_OUTLINE_COLOR))
             hex_to_color(value, &pconfig->highlight_outline_color);

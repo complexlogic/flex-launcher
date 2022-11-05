@@ -43,6 +43,7 @@ Config config = {
     .background_overlay_color.b       = DEFAULT_BACKGROUND_OVERLAY_COLOR_B,
     .background_overlay_color.a       = DEFAULT_BACKGROUND_OVERLAY_COLOR_A,
     .background_overlay_opacity[0]    = '\0',
+    .highlight                        = true,
     .icon_size                        = DEFAULT_ICON_SIZE,
     .highlight_fill_color.r           = DEFAULT_HIGHLIGHT_FILL_COLOR_R,
     .highlight_fill_color.g           = DEFAULT_HIGHLIGHT_FILL_COLOR_G,
@@ -567,8 +568,10 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
     
     // Recalculate the screen geometry
     calculate_button_geometry(current_menu->root_entry, buttons);
-    highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-    highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
+    if (config.highlight) {
+        highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
+        highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
+    }
     return 0;
 }
 
@@ -627,7 +630,8 @@ static void move_left()
 {
     // If we are not in leftmost position, move highlight left
     if (current_menu->highlight_position > 0) {
-        highlight->rect.x -= geo.x_advance;
+        if (config.highlight)
+            highlight->rect.x -= geo.x_advance;
         current_menu->highlight_position--;
         current_entry = current_entry->previous;
     }
@@ -638,7 +642,8 @@ static void move_left()
         current_entry = current_entry->previous;
         current_menu->root_entry = advance_entries(current_menu->root_entry,buttons,DIRECTION_LEFT);
         calculate_button_geometry(current_menu->root_entry, buttons);
-        highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
+        if (config.highlight)
+            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page--;
         current_menu->highlight_position = buttons - 1;
     }
@@ -649,7 +654,8 @@ static void move_right()
 {
     // If we are not in the rightmost position, move highlight right
     if (current_menu->highlight_position < (geo.num_buttons - 1)) {
-        highlight->rect.x += geo.x_advance;
+        if (config.highlight)
+            highlight->rect.x += geo.x_advance;
         current_menu->highlight_position++;
         current_entry = current_entry->next;
     }
@@ -663,7 +669,8 @@ static void move_right()
         current_entry = current_entry->next;
         current_menu->root_entry = current_entry;
         calculate_button_geometry(current_menu->root_entry, buttons);
-        highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
+        if (config.highlight)
+            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page++;
         current_menu->highlight_position = 0;
     }
@@ -714,11 +721,12 @@ static void draw_screen()
         }
 
         // Draw highlight
-        SDL_RenderCopy(renderer,
-            highlight->texture,
-            NULL,
-            &highlight->rect
-        );
+        if (config.highlight)
+            SDL_RenderCopy(renderer,
+                highlight->texture,
+                NULL,
+                &highlight->rect
+            );
 
         // Draw buttons
         Entry *entry = current_menu->root_entry;
@@ -1140,13 +1148,15 @@ int main(int argc, char *argv[])
     }
     
     // Render highlight
-    int button_height = config.icon_size + config.title_padding + geo.font_height;
-    highlight = malloc(sizeof(Highlight));
-    highlight->texture = render_highlight(config.icon_size + 2*config.highlight_hpadding,
-                             button_height + 2*config.highlight_vpadding,
-                             config.highlight_rx,
-                             &highlight->rect
-                         );
+    if (config.highlight) {
+        int button_height = config.icon_size + config.title_padding + geo.font_height;
+        highlight = malloc(sizeof(Highlight));
+        highlight->texture = render_highlight(config.icon_size + 2*config.highlight_hpadding,
+                                button_height + 2*config.highlight_vpadding,
+                                config.highlight_rx,
+                                &highlight->rect
+                            );
+    }
 
     // Render scroll indicators
     if (config.scroll_indicators) {
