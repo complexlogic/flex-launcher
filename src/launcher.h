@@ -53,21 +53,48 @@
 #define SCMD_RESTART ":restart"
 #define SCMD_SLEEP ":sleep"
 
-// Enum definitions
 typedef enum {
-    MODE_NONE,
-    MODE_COLOR,
-    MODE_IMAGE,
-    MODE_SLIDESHOW,
-    MODE_TRUNCATE,
-    MODE_SHRINK,
-    MODE_BLANK,
-} Mode;
+    MODE_SETTING_BACKGROUND,
+    MODE_SETTING_ON_LAUNCH,
+    MODE_SETTING_OVERSIZE,
+    MODE_SETTING_ALIGNMENT,
+    MODE_SETTING_TIME_FORMAT,
+    MODE_SETTING_DATE_FORMAT
+} ModeSettingType;
+
+typedef enum {
+    BACKGROUND_COLOR,
+    BACKGROUND_IMAGE,
+    BACKGROUND_SLIDESHOW
+} ModeBackground;
+
+typedef enum {
+    ON_LAUNCH_BLANK,
+    ON_LAUNCH_NONE
+} ModeOnLaunch;
+
+typedef enum {
+    OVERSIZE_TRUNCATE,
+    OVERSIZE_SHRINK,
+    OVERSIZE_NONE
+} ModeOversize;
 
 typedef enum {
     ALIGNMENT_LEFT,
     ALIGNMENT_RIGHT,
 } Alignment;
+
+typedef enum {
+    FORMAT_TIME_24HR,
+    FORMAT_TIME_12HR,
+    FORMAT_TIME_AUTO
+} TimeFormat;
+
+typedef enum {
+    FORMAT_DATE_BIG,
+    FORMAT_DATE_LITTLE,
+    FORMAT_DATE_AUTO
+} DateFormat;
 
 typedef enum {
     TYPE_BUTTON,
@@ -79,18 +106,6 @@ typedef enum {
     DIRECTION_LEFT,
     DIRECTION_RIGHT,
 } Direction;
-
-typedef enum {
-    FORMAT_TIME_AUTO,
-    FORMAT_TIME_12HR,
-    FORMAT_TIME_24HR
-} TimeFormat;
-
-typedef enum {
-    FORMAT_DATE_AUTO,
-    FORMAT_DATE_LITTLE,
-    FORMAT_DATE_BIG
-} DateFormat;
 
 // Program states
 typedef struct {
@@ -212,7 +227,7 @@ typedef struct {
 typedef struct {
     char *default_menu;
     unsigned int max_buttons;
-    Mode background_mode; // Defines image or color background mode
+    ModeBackground background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
     char *background_image; // Path to background image
     char *slideshow_directory;
@@ -228,7 +243,7 @@ typedef struct {
     bool title_shadows;
     SDL_Color title_shadow_color;
     char title_opacity[PERCENT_MAX_CHARS];
-    Mode title_oversize_mode; 
+    ModeOversize title_oversize_mode; 
     unsigned int title_padding;
     bool highlight;
     SDL_Color highlight_fill_color;
@@ -250,7 +265,7 @@ typedef struct {
     bool inhibit_os_screensaver;
     char *startup_cmd;
     char *quit_cmd;
-    Mode on_launch;
+    ModeOnLaunch on_launch;
     bool screensaver_enabled;
     Uint32 screensaver_idle_time;
     char screensaver_intensity_str[PERCENT_MAX_CHARS];

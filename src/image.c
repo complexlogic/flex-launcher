@@ -79,7 +79,7 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
             config.slideshow_directory
         );
         quit_slideshow();
-        config.background_mode = MODE_COLOR;
+        config.background_mode = BACKGROUND_COLOR;
         set_draw_color();
     }
 
@@ -92,7 +92,7 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
             config.slideshow_directory
         );
         background_texture = SDL_CreateTextureFromSurface(renderer, surface);
-        config.background_mode = MODE_IMAGE;
+        config.background_mode = BACKGROUND_IMAGE;
     }
     return surface;
 }
@@ -319,16 +319,16 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
     TTF_SizeUTF8(info->font, text_buffer, &w, &h);
 
     // If title is too large to fit
-    if (info->oversize_mode != MODE_NONE && w > info->max_width) {
+    if (info->oversize_mode != OVERSIZE_NONE && w > info->max_width) {
 
         // Truncate mode:
-        if (info->oversize_mode == MODE_TRUNCATE) {
+        if (info->oversize_mode == OVERSIZE_TRUNCATE) {
             utf8_truncate(text_buffer, w, info->max_width);
             TTF_SizeUTF8(info->font, text_buffer, &w, &h);
         }
 
         // Shrink mode:
-        else if (info->oversize_mode == MODE_SHRINK) {
+        else if (info->oversize_mode == OVERSIZE_SHRINK) {
             int reduced_font_size = info->font_size - 1;
             reduced_font = TTF_OpenFont(*info->font_path, reduced_font_size);
             TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
@@ -393,7 +393,7 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
     // Set geometry
     rect->w = surface->w;
     rect->h = surface->h;
-    if (info->oversize_mode == MODE_SHRINK && text_height != NULL) {
+    if (info->oversize_mode == OVERSIZE_SHRINK && text_height != NULL) {
         *text_height = h;
     }
 

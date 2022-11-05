@@ -20,6 +20,14 @@ extern Hotkey          *hotkeys;
 Menu                   *menu  = NULL;
 Entry                  *entry = NULL;
 
+static const char *mode_settings[][4] = {
+    {"Color", "Image", "Slideshow", NULL},    // Background Mode
+    {"Blank", "None", NULL, NULL},            // OnLaunch
+    {"Truncated", "Shrink", "None", NULL},    // OversizeMode
+    {"Left", "Right", NULL, NULL},            // Clock Alignment
+    {"24hr", "12hr", "Auto", NULL},           // Clock Format
+    {"Big", "Little", "Auto", NULL}           // Date Format
+};
 
 // A function to handle the arguments from the command line
 void handle_arguments(int argc, char *argv[], char **config_file_path)
@@ -121,12 +129,8 @@ int config_handler(void *user, const char *section, const char *name, const char
     if (MATCH(section, "General")) {
         if (MATCH(name, SETTING_DEFAULT_MENU))
             config.default_menu = strdup(value);
-        else if (MATCH(name, SETTING_ON_LAUNCH)) {
-            if (MATCH(value, "None"))
-                config.on_launch = MODE_NONE;
-            else if (MATCH(value, "Blank"))
-                config.on_launch = MODE_BLANK;
-        }
+        else if (MATCH(name, SETTING_ON_LAUNCH))
+            parse_mode_setting(MODE_SETTING_ON_LAUNCH, value, &config.on_launch);
         else if (MATCH(name, SETTING_RESET_ON_BACK))
             convert_bool(value, &config.reset_on_back);
         else if (MATCH(name, SETTING_MOUSE_SELECT))
@@ -138,6 +142,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (MATCH(name, SETTING_QUIT_CMD))
             config.quit_cmd = strdup(value);
     }
+
     else if (MATCH(section, "Layout")) {
         if (MATCH(name, SETTING_MAX_BUTTONS)) {
             int max_buttons = atoi(value);
@@ -163,15 +168,10 @@ int config_handler(void *user, const char *section, const char *name, const char
                 copy_string(config.button_centerline, value, sizeof(config.button_centerline));
         }
     }
+
     else if (MATCH(section, "Background")) {
-        if (MATCH(name, SETTING_BACKGROUND_MODE)) {
-            if (MATCH(value, "Color"))
-                config.background_mode = MODE_COLOR;
-            else if (MATCH(value, "Image"))
-                config.background_mode = MODE_IMAGE;
-            else if (MATCH(value, "Slideshow"))
-                config.background_mode = MODE_SLIDESHOW;
-        }
+        if (MATCH(name, SETTING_BACKGROUND_MODE))
+            parse_mode_setting(MODE_SETTING_BACKGROUND, value, &config.background_mode);
         else if (MATCH(name, SETTING_BACKGROUND_COLOR))
             hex_to_color(value, &config.background_color);
         else if (MATCH(name, SETTING_BACKGROUND_IMAGE)) {
@@ -203,6 +203,7 @@ int config_handler(void *user, const char *section, const char *name, const char
                 copy_string(config.background_overlay_opacity, value, sizeof(config.background_overlay_opacity));
         }
     }
+
     else if (MATCH(section, "Titles")) {
         if (MATCH(name, SETTING_TITLE_FONT)) {
             config.title_font_path = strdup(value);
@@ -220,20 +221,15 @@ int config_handler(void *user, const char *section, const char *name, const char
             convert_bool(value, &config.title_shadows);
         else if (MATCH(name, SETTING_TITLE_SHADOW_COLOR))
             hex_to_color(value, &config.title_shadow_color);
-        else if (MATCH(name, SETTING_TITLE_OVERSIZE_MODE)) {
-            if (MATCH(value, "Truncate"))
-                config.title_oversize_mode = MODE_TRUNCATE;
-            else if (MATCH(value, "Shrink"))
-                config.title_oversize_mode = MODE_SHRINK;
-            else if (MATCH(value, "None"))
-                config.title_oversize_mode = MODE_NONE;
-        }
+        else if (MATCH(name, SETTING_TITLE_OVERSIZE_MODE))
+            parse_mode_setting(MODE_SETTING_OVERSIZE, value, &config.title_oversize_mode);
         else if (MATCH(name, SETTING_TITLE_PADDING)) {
             int title_padding = atoi(value);
             if (title_padding >= 0)
                 config.title_padding = (unsigned int) title_padding;
         }
     }
+
     else if (MATCH(section, "Highlight")) {
         if (MATCH(name, SETTING_HIGHLIGHT_ENABLED))
             convert_bool(value, &config.highlight);
@@ -270,6 +266,7 @@ int config_handler(void *user, const char *section, const char *name, const char
                 config.highlight_hpadding = highlight_hpadding;
         }
     }
+
     else if (MATCH(section, "Scroll Indicators")) {
         if (MATCH(name,SETTING_SCROLL_INDICATORS))
             convert_bool(value, &config.scroll_indicators);
@@ -293,12 +290,8 @@ int config_handler(void *user, const char *section, const char *name, const char
             convert_bool(value, &config.clock_enabled);
         else if (MATCH(name, SETTING_CLOCK_SHOW_DATE))
             convert_bool(value, &config.clock_show_date);
-        else if (MATCH(name, SETTING_CLOCK_ALIGNMENT)) {
-            if(MATCH(value, "Left"))
-                config.clock_alignment = ALIGNMENT_LEFT;
-            else if (MATCH(value, "Right"))
-                config.clock_alignment = ALIGNMENT_RIGHT;
-        }
+        else if (MATCH(name, SETTING_CLOCK_ALIGNMENT))
+            parse_mode_setting(MODE_SETTING_ALIGNMENT, value, &config.clock_alignment);
         else if (MATCH(name, SETTING_CLOCK_FONT)) {
             copy_string_alloc(&config.clock_font_path, value);
             clean_path(config.clock_font_path);
@@ -327,18 +320,10 @@ int config_handler(void *user, const char *section, const char *name, const char
             if (font_size)
                 config.clock_font_size = font_size;
         }
-        else if (MATCH(name, SETTING_CLOCK_TIME_FORMAT)) {
-            if (MATCH(value, "12hr"))
-                config.clock_time_format = FORMAT_TIME_12HR;
-            else if (MATCH(value, "24hr"))
-                config.clock_time_format = FORMAT_TIME_24HR;
-        }
-        else if (MATCH(name, SETTING_CLOCK_DATE_FORMAT)) {
-            if (MATCH(value, "Little"))
-                config.clock_date_format = FORMAT_DATE_LITTLE;
-            else if (MATCH(value, "Big"))
-                config.clock_date_format = FORMAT_DATE_BIG;
-        }
+        else if (MATCH(name, SETTING_CLOCK_TIME_FORMAT))
+            parse_mode_setting(MODE_SETTING_TIME_FORMAT, value, &config.clock_time_format);
+        else if (MATCH(name, SETTING_CLOCK_DATE_FORMAT))
+            parse_mode_setting(MODE_SETTING_DATE_FORMAT, value, &config.clock_date_format);
         else if (MATCH(name, SETTING_CLOCK_INCLUDE_WEEKDAY))
             convert_bool(value, &config.clock_include_weekday);
     }
@@ -477,6 +462,23 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
     }
     return 0;
+}
+
+static bool parse_mode_setting(ModeSettingType type, const char *value, int *setting)
+{
+    const char **arr = mode_settings[type];
+    for (int i = 0; arr[i] != NULL; i++) {
+        if (MATCH(arr[i], value)) {
+            *setting = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+const char *get_mode_setting(int type, int value)
+{
+    return mode_settings[type][value];
 }
 
 // A function to determine if a string is a percent value

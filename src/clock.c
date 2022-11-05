@@ -202,7 +202,7 @@ void init_clock(Clock *clk)
                                     .font_path = &config.clock_font_path,
                                     .color = &config.clock_font_color,
                                     .shadow = config.clock_shadows,
-                                    .oversize_mode = MODE_NONE
+                                    .oversize_mode = OVERSIZE_NONE
                                 };
     clk->time_format = config.clock_time_format;
     clk->date_format = config.clock_date_format;

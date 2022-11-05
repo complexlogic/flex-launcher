@@ -32,7 +32,7 @@ Config config = {
     .title_shadow_color.g             = DEFAULT_TITLE_SHADOW_COLOR_G,
     .title_shadow_color.b             = DEFAULT_TITLE_SHADOW_COLOR_B,
     .title_shadow_color.a             = DEFAULT_TITLE_SHADOW_COLOR_A,
-    .background_mode                  = MODE_COLOR,
+    .background_mode                  = BACKGROUND_COLOR,
     .background_color.r               = DEFAULT_BACKGROUND_COLOR_R,
     .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
     .background_color.b               = DEFAULT_BACKGROUND_COLOR_B,
@@ -76,7 +76,7 @@ Config config = {
     .scroll_indicator_outline_color.b = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_B,
     .scroll_indicator_outline_color.a = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_A,
     .scroll_indicator_opacity[0]      = '\0',
-    .title_oversize_mode              = MODE_TRUNCATE,
+    .title_oversize_mode              = OVERSIZE_TRUNCATE,
     .reset_on_back                    = DEFAULT_RESET_ON_BACK,
     .mouse_select                     = DEFAULT_MOUSE_SELECT,
     .inhibit_os_screensaver           = DEFAULT_INHIBIT_OS_SCREENSAVER,
@@ -89,7 +89,7 @@ Config config = {
     .gamepad_enabled                  = DEFAULT_GAMEPAD_ENABLED,
     .gamepad_device                   = DEFAULT_GAMEPAD_DEVICE,
     .gamepad_mappings_file            = NULL,
-    .on_launch                        = MODE_BLANK,
+    .on_launch                        = ON_LAUNCH_BLANK,
     .debug                            = false,
     .exe_path                         = NULL,
     .first_menu                       = NULL,
@@ -237,7 +237,7 @@ static void init_sdl_image()
 // A function to set the color of the renderer
 void set_draw_color()
 {
-    if (config.background_mode == MODE_COLOR) {
+    if (config.background_mode == BACKGROUND_COLOR) {
         SDL_SetRenderDrawColor(renderer,
             config.background_color.r,
             config.background_color.g,
@@ -304,7 +304,7 @@ static void cleanup()
     IMG_Quit();
     TTF_Quit();
     quit_svg();
-    if (config.background_mode == MODE_SLIDESHOW)
+    if (config.background_mode == BACKGROUND_SLIDESHOW)
         quit_slideshow();
 
     // Close log file if open
@@ -421,7 +421,7 @@ static void init_slideshow()
             "Switching to color background mode",
             config.slideshow_directory
         );
-        config.background_mode = MODE_COLOR;
+        config.background_mode = BACKGROUND_COLOR;
         set_draw_color();
         return;
     }
@@ -443,7 +443,7 @@ static void init_slideshow()
             "Changing background mode to color", 
             config.slideshow_directory
         );
-        config.background_mode = MODE_COLOR;
+        config.background_mode = BACKGROUND_COLOR;
         quit_slideshow();
     } 
     else if (num_images == 1) {
@@ -454,7 +454,7 @@ static void init_slideshow()
         );
         free(config.background_image);
         copy_string_alloc(&config.background_image, slideshow->images[0]);
-        config.background_mode = MODE_IMAGE;
+        config.background_mode = BACKGROUND_IMAGE;
         quit_slideshow();
     }
 
@@ -613,7 +613,7 @@ static void render_buttons(Menu *menu)
                                    &entry->text_rect,
                                    &h
                                );
-        if (config.title_oversize_mode == MODE_SHRINK && h != geo.font_height)
+        if (config.title_oversize_mode == OVERSIZE_SHRINK && h != geo.font_height)
             entry->title_offset = (geo.font_height - h) / 2;
     }
     menu->rendered = true;
@@ -688,11 +688,11 @@ static void draw_screen()
 {
     // Draw background
     SDL_RenderClear(renderer);
-    if (!(state.application_launching && config.on_launch == MODE_BLANK)) {
-        if (config.background_mode == MODE_IMAGE || config.background_mode == MODE_SLIDESHOW)
+    if (!(state.application_launching && config.on_launch == ON_LAUNCH_BLANK)) {
+        if (config.background_mode == BACKGROUND_IMAGE || config.background_mode == BACKGROUND_SLIDESHOW)
             SDL_RenderCopy(renderer, background_texture, NULL, NULL);
 
-        if (config.background_mode == MODE_SLIDESHOW && state.slideshow_transition)
+        if (config.background_mode == BACKGROUND_SLIDESHOW && state.slideshow_transition)
             SDL_RenderCopy(renderer, slideshow->transition_texture, NULL, NULL);
 
         // Draw background overlay
@@ -787,7 +787,7 @@ static void execute_command(const char *command)
         if (start_process(cmd, true)) {
             state.application_launching = true;
             ticks.application_launched = ticks.main;
-            if (config.on_launch == MODE_BLANK)
+            if (config.on_launch == ON_LAUNCH_BLANK)
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
         }
     }
@@ -918,7 +918,7 @@ static void update_screensaver()
     if (!state.screensaver_active && ticks.main - ticks.last_input > config.screensaver_idle_time) {
         state.screensaver_active = true;
         state.screensaver_transition = true;
-        if (config.background_mode == MODE_SLIDESHOW && config.screensaver_pause_slideshow) {
+        if (config.background_mode == BACKGROUND_SLIDESHOW && config.screensaver_pause_slideshow) {
             state.slideshow_paused = true;
         }
     }
@@ -942,7 +942,7 @@ static void update_screensaver()
             screensaver->alpha = 0.0f;
             state.screensaver_active = false;
             state.screensaver_transition = false;
-            if (config.background_mode == MODE_SLIDESHOW) {
+            if (config.background_mode == BACKGROUND_SLIDESHOW) {
                 state.slideshow_paused = false;
                 
                 // Reset the slideshow time so we don't have a transition immediately 
@@ -1021,9 +1021,9 @@ static inline post_launch()
         connect_gamepad(config.gamepad_device, false);
     if (config.clock_enabled)
         update_clock(true);
-    if (config.background_mode == MODE_SLIDESHOW)
+    if (config.background_mode == BACKGROUND_SLIDESHOW)
         resume_slideshow();
-    if (config.on_launch == MODE_BLANK)
+    if (config.on_launch == ON_LAUNCH_BLANK)
         set_draw_color();
 
 // Prevent any duplicate keypresses that were used to exit the program (Wayland workaround)
@@ -1083,7 +1083,7 @@ int main(int argc, char *argv[])
     validate_settings(&geo);
     
     // Initialize slideshow
-    if (config.background_mode == MODE_SLIDESHOW)
+    if (config.background_mode == BACKGROUND_SLIDESHOW)
         init_slideshow();
 
     // Initialize Nanosvg, create window and renderer
@@ -1107,7 +1107,7 @@ int main(int argc, char *argv[])
     }
 
     // Render background
-    if (config.background_mode == MODE_IMAGE) {
+    if (config.background_mode == BACKGROUND_IMAGE) {
         if (config.background_image == NULL)
             log_error("BackgroundImage not specified in config file");
         else
@@ -1115,14 +1115,14 @@ int main(int argc, char *argv[])
 
         // Switch to color mode if loading background image failed
         if (background_texture == NULL) {
-            config.background_mode = MODE_COLOR;
+            config.background_mode = BACKGROUND_COLOR;
             log_error("Couldn't load background image, defaulting to color background");
             set_draw_color();
         }
     }
 
     // Render first slideshow image
-    else if (config.background_mode == MODE_SLIDESHOW) {
+    else if (config.background_mode == BACKGROUND_SLIDESHOW) {
         SDL_Surface *surface = load_next_slideshow_background(slideshow, false);
         background_texture = load_texture(surface);
     }
@@ -1279,7 +1279,7 @@ int main(int argc, char *argv[])
         // Post-event loop updates
         if (gamepad != NULL)
             poll_gamepad();
-        if (config.background_mode == MODE_SLIDESHOW)
+        if (config.background_mode == BACKGROUND_SLIDESHOW)
             update_slideshow();
         if (config.screensaver_enabled)
             update_screensaver();
@@ -1288,7 +1288,7 @@ int main(int argc, char *argv[])
         if (state.application_launching &&
         ticks.main - ticks.application_launched > APPLICATION_TIMEOUT) {
             state.application_launching = false;
-            if (config.on_launch == MODE_BLANK)
+            if (config.on_launch == ON_LAUNCH_BLANK)
                 set_draw_color();
         }
         if (state.application_running)

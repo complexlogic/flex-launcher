@@ -99,13 +99,13 @@ void debug_settings()
     log_debug("======================== Settings ========================");
     log_debug("%s: %s", SETTING_DEFAULT_MENU,config.default_menu);
     log_debug("%s: %i", SETTING_MAX_BUTTONS,config.max_buttons);
-    if (config.background_mode == MODE_COLOR) {
+    if (config.background_mode == BACKGROUND_COLOR) {
         log_debug("%s: %s", SETTING_BACKGROUND_MODE, "Color");
     }
-    else if (config.background_mode == MODE_IMAGE) {
+    else if (config.background_mode == BACKGROUND_IMAGE) {
         log_debug("%s: %s", SETTING_BACKGROUND_MODE, "Image");
     }
-    else if (config.background_mode == MODE_SLIDESHOW) {
+    else if (config.background_mode == BACKGROUND_SLIDESHOW) {
         log_debug("%s: %s", SETTING_BACKGROUND_MODE, "Slideshow");
     }
     log_debug("%s R: %i", SETTING_BACKGROUND_COLOR, config.background_color.r);
@@ -148,13 +148,13 @@ void debug_settings()
     log_debug("%s B: %i", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.b);
     log_debug("%s A: %i", SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color.a);
     
-    if (config.title_oversize_mode == MODE_TRUNCATE) {
+    if (config.title_oversize_mode == OVERSIZE_TRUNCATE) {
         log_debug("%s: %s", SETTING_TITLE_OVERSIZE_MODE, "Truncate");
     }
-    else if (config.title_oversize_mode == MODE_SHRINK) {
+    else if (config.title_oversize_mode == OVERSIZE_SHRINK) {
         log_debug("%s: %s", SETTING_TITLE_OVERSIZE_MODE, "Shrink");
     }
-    else if (config.title_oversize_mode == MODE_NONE) {
+    else if (config.title_oversize_mode == OVERSIZE_NONE) {
         log_debug("%s: %s", SETTING_TITLE_OVERSIZE_MODE, "None");
     }
     log_debug("%s: %i", SETTING_TITLE_PADDING, config.title_padding);
@@ -185,10 +185,10 @@ void debug_settings()
     log_debug("%s G: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.g);
     log_debug("%s B: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.b);
     log_debug("%s A: %i", SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color.a);
-    if (config.on_launch == MODE_BLANK) {
+    if (config.on_launch == ON_LAUNCH_BLANK) {
         log_debug("%s: %s", SETTING_ON_LAUNCH, "Blank");
     }
-    else if (config.on_launch == MODE_NONE) {
+    else if (config.on_launch == ON_LAUNCH_NONE) {
         log_debug("%s: %s", SETTING_ON_LAUNCH, "None");
     }
     if (config.reset_on_back) {

@@ -20,6 +20,8 @@ struct gamepad_info {
 
 int config_handler(void *user, const char *section, const char *name, const char *value);
 int convert_percent(const char *string, int max_value);
+static bool parse_mode_setting(ModeSettingType type, const char *value, int *setting);
+const char *get_mode_setting(int type, int value);
 int utf8_length(const char *string);
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_padding);
 bool hex_to_color(const char *string, SDL_Color *color);

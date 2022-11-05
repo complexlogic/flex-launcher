@@ -18,7 +18,7 @@ typedef struct {
     bool shadow;
     SDL_Color *shadow_color;
     int max_width;
-    Mode oversize_mode;
+    ModeOversize oversize_mode;
 } TextInfo;
 
 int init_svg(void);
