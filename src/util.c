@@ -129,7 +129,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (MATCH(name, SETTING_ON_LAUNCH)) {
             if (MATCH(value, "None"))
                 pconfig->on_launch = MODE_NONE;
-            else if (MATCH(name, "Blank"))
+            else if (MATCH(value, "Blank"))
                 pconfig->on_launch = MODE_BLANK;
         }
         else if (MATCH(name, SETTING_RESET_ON_BACK))
