@@ -43,9 +43,8 @@ fputs("\n", log_file);
 print_compiler_info(log_file);
 fputs("\n", log_file);
 #ifdef __unix__
-    if (config.debug) {
+    if (config.debug)
         printf("Debug mode enabled\nLog is outputted to %s\n", log_file_path);
-    }
 #endif
     return 0;
 }
@@ -258,4 +257,3 @@ void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
         log_debug("  %s", SDL_GetPixelFormatName(info.texture_formats[i]));
     log_debug("");
 }
-

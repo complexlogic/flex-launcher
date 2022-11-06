@@ -741,7 +741,7 @@ static void draw_screen()
     if (!config.vsync) {
         int sleep_time = refresh_period - (SDL_GetTicks() - ticks.main);
         if (sleep_time > 0)
-            SDL_Delay(refresh_period - (SDL_GetTicks() - ticks.main));
+            SDL_Delay(sleep_time);
     }
 }
 
@@ -900,9 +900,8 @@ static void update_slideshow()
             state.slideshow_transition = false;
             ticks.slideshow_load = ticks.main;
         }
-        else {
+        else
             SDL_SetTextureAlphaMod(slideshow->transition_texture, (Uint8) slideshow->transition_alpha);
-        }
     }
 }
 
@@ -913,9 +912,8 @@ static void update_screensaver()
     if (!state.screensaver_active && ticks.main - ticks.last_input > config.screensaver_idle_time) {
         state.screensaver_active = true;
         state.screensaver_transition = true;
-        if (config.background_mode == BACKGROUND_SLIDESHOW && config.screensaver_pause_slideshow) {
+        if (config.background_mode == BACKGROUND_SLIDESHOW && config.screensaver_pause_slideshow)
             state.slideshow_paused = true;
-        }
     }
     else {
 
@@ -926,9 +924,8 @@ static void update_screensaver()
                 SDL_SetTextureAlphaMod(screensaver->texture, (Uint8) screensaver->alpha_end_value);
                 state.screensaver_transition = false;
             }
-            else {
+            else
                 SDL_SetTextureAlphaMod(screensaver->texture, (Uint8) screensaver->alpha);
-            }
         }
 
         // User has pressed input, deactivate the screensaver
@@ -1036,6 +1033,12 @@ static inline void post_launch()
 void quit(int status)
 {
     log_debug("Quitting program");
+    if (status != EXIT_SUCCESS)
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, 
+            PROJECT_NAME, 
+            "A critical error occurred. Check the log file for details.", 
+            NULL
+        );
     cleanup();
     if (config.quit_cmd != NULL) {
         execute_command(config.quit_cmd);
@@ -1092,8 +1095,7 @@ int main(int argc, char *argv[])
     if (config.gamepad_enabled && config.gamepad_mappings_file != NULL) {
         error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
         if (error < 0) {
-            log_error(
-                "Error: Could not load gamepad mappings from %s\n%s", 
+            log_error("Error: Could not load gamepad mappings from %s\n%s", 
                 config.gamepad_mappings_file,
                 SDL_GetError()
             );
@@ -1271,7 +1273,7 @@ int main(int argc, char *argv[])
         }
 
         // Post-event loop updates
-        if (!state.application_running) {
+        if (!(state.application_running || state.application_launching)) {
             if (gamepad != NULL)
                 poll_gamepad();
             if (config.background_mode == BACKGROUND_SLIDESHOW)

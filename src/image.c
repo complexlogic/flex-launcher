@@ -220,9 +220,9 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
             stroke_opacity
         );
     }
-    else {
+    else
         outline_buffer = "";
-    }
+
     float fill_opacity = ((float) config.highlight_fill_color.a) / 255.0f;
     format_highlight(&buffer, 
         width, 
@@ -238,9 +238,8 @@ SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *
     
     // Cleanup
     free(buffer);
-    if (config.highlight_outline_size) {
+    if (config.highlight_outline_size)
         free(outline_buffer);
-    }
 
     return texture;
 }
@@ -319,17 +318,14 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
                 TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
             }
 
-            if (reduced_font_size) {
+            if (reduced_font_size)
                 output_font = reduced_font;
-            }
-            else {
+            else
                 reduced_font = NULL;
-            }
         }
     }
-    if (reduced_font == NULL) {
+    if (reduced_font == NULL)
         output_font = info->font;
-    }
 
     // Render surface
     SDL_Surface *surface = NULL;
@@ -360,24 +356,21 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
         SDL_FreeSurface(foreground);
         SDL_FreeSurface(shadow);
     }
-    else {
+    else
         surface = TTF_RenderUTF8_Blended(output_font,
                       text_buffer,
                       *info->color
                   );
-    }
 
     // Set geometry
     rect->w = surface->w;
     rect->h = surface->h;
-    if (info->oversize_mode == OVERSIZE_SHRINK && text_height != NULL) {
+    if (info->oversize_mode == OVERSIZE_SHRINK && text_height != NULL)
         *text_height = h;
-    }
 
     // Clean up
-    if (reduced_font != NULL) {
+    if (reduced_font != NULL)
         TTF_CloseFont(reduced_font);
-    }
     free(text_buffer);
     
     return surface;
@@ -395,9 +388,8 @@ int load_font(TextInfo *info, const char *default_font)
 {
     char *font_path = *info->font_path;
     // Load user specified font
-    if (font_path != NULL) {
+    if (font_path != NULL)
         info->font = TTF_OpenFont(font_path, info->font_size);
-    }
 
     // Try to load default font if we failed loading from config file
     if (info->font == NULL) {
