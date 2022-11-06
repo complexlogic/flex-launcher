@@ -57,12 +57,10 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
                     break;
 
                 case 'c':
-                    if (file_exists(optarg)) {
-                        copy_string_alloc(config_file_path, optarg);
-                    }
-                    else {
+                    if (file_exists(optarg))
+                        *config_file_path = strdup(optarg);
+                    else
                         log_fatal("Config file '%s' not found", optarg);
-                    }
                     break;
 
                 case 'd':
@@ -89,7 +87,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
     // Try to find config file if none is specified on the command line
     if (*config_file_path == NULL) {
 #ifdef __unix__
-        char *prefixes[4];
+        const char *prefixes[4];
         char home_config_buffer[MAX_PATH_CHARS + 1];
         prefixes[0] = CURRENT_DIRECTORY;
         prefixes[1] = config.exe_path;
@@ -133,11 +131,11 @@ int config_handler(void *user, const char *section, const char *name, const char
             convert_bool(value, &config.vsync);
         else if(MATCH(name, SETTING_FPS_LIMIT)) {
             int fps = atoi(value);
-            if (value > MIN_FPS_LIMIT)
+            if (fps > MIN_FPS_LIMIT)
                 config.fps_limit = fps;
         }
         else if (MATCH(name, SETTING_ON_LAUNCH))
-            parse_mode_setting(MODE_SETTING_ON_LAUNCH, value, &config.on_launch);
+            parse_mode_setting(MODE_SETTING_ON_LAUNCH, value, (int*) &config.on_launch);
         else if (MATCH(name, SETTING_RESET_ON_BACK))
             convert_bool(value, &config.reset_on_back);
         else if (MATCH(name, SETTING_MOUSE_SELECT))
@@ -178,7 +176,7 @@ int config_handler(void *user, const char *section, const char *name, const char
 
     else if (MATCH(section, "Background")) {
         if (MATCH(name, SETTING_BACKGROUND_MODE))
-            parse_mode_setting(MODE_SETTING_BACKGROUND, value, &config.background_mode);
+            parse_mode_setting(MODE_SETTING_BACKGROUND, value, (int*) &config.background_mode);
         else if (MATCH(name, SETTING_BACKGROUND_COLOR))
             hex_to_color(value, &config.background_color);
         else if (MATCH(name, SETTING_BACKGROUND_IMAGE)) {
@@ -229,7 +227,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (MATCH(name, SETTING_TITLE_SHADOW_COLOR))
             hex_to_color(value, &config.title_shadow_color);
         else if (MATCH(name, SETTING_TITLE_OVERSIZE_MODE))
-            parse_mode_setting(MODE_SETTING_OVERSIZE, value, &config.title_oversize_mode);
+            parse_mode_setting(MODE_SETTING_OVERSIZE, value, (int*) &config.title_oversize_mode);
         else if (MATCH(name, SETTING_TITLE_PADDING)) {
             int title_padding = atoi(value);
             if (title_padding >= 0)
@@ -298,9 +296,9 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (MATCH(name, SETTING_CLOCK_SHOW_DATE))
             convert_bool(value, &config.clock_show_date);
         else if (MATCH(name, SETTING_CLOCK_ALIGNMENT))
-            parse_mode_setting(MODE_SETTING_ALIGNMENT, value, &config.clock_alignment);
+            parse_mode_setting(MODE_SETTING_ALIGNMENT, value, (int*) &config.clock_alignment);
         else if (MATCH(name, SETTING_CLOCK_FONT)) {
-            copy_string_alloc(&config.clock_font_path, value);
+            config.clock_font_path = strdup(value);
             clean_path(config.clock_font_path);
         }
         else if (MATCH(name, SETTING_CLOCK_MARGIN)) {
@@ -328,9 +326,9 @@ int config_handler(void *user, const char *section, const char *name, const char
                 config.clock_font_size = font_size;
         }
         else if (MATCH(name, SETTING_CLOCK_TIME_FORMAT))
-            parse_mode_setting(MODE_SETTING_TIME_FORMAT, value, &config.clock_time_format);
+            parse_mode_setting(MODE_SETTING_TIME_FORMAT, value, (int*) &config.clock_time_format);
         else if (MATCH(name, SETTING_CLOCK_DATE_FORMAT))
-            parse_mode_setting(MODE_SETTING_DATE_FORMAT, value, &config.clock_date_format);
+            parse_mode_setting(MODE_SETTING_DATE_FORMAT, value, (int*) &config.clock_date_format);
         else if (MATCH(name, SETTING_CLOCK_INCLUDE_WEEKDAY))
             convert_bool(value, &config.clock_include_weekday);
     }
@@ -353,7 +351,7 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
     
     else if (MATCH(section, "Hotkeys")) {
-        char *keycode = strtok(value, ";");
+        char *keycode = strtok((char*) value, ";");
         if (keycode != NULL) {
             char *cmd = strtok(NULL, "");
             if (cmd != NULL)
@@ -375,9 +373,8 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
 
         // Parse gamepad controls
-        else {
+        else
             add_gamepad_control(name, value);
-        }
     }
 
     // Parse menus/entries
@@ -521,7 +518,7 @@ char *selected_path(const char *path)
     // Find file extension
     if (length + LEN(SELECTED_SUFFIX) + 1 > sizeof(buffer))
         return out;
-    char *p = path + length - 1;
+    char *p = (char*) path + length - 1;
     while (*p != '.' && p > path)
         p--;
     if (p == path)
@@ -579,19 +576,6 @@ void copy_string(char *dest, const char *string, size_t size)
     dest[size - 1] = '\0';
 }
 
-// Allocates memory and copies a variable length string
-void copy_string_alloc(char **dest, const char *string)
-{
-    int length = strlen(string);
-    if (length) {
-        *dest = malloc(sizeof(char)*(length + 1));
-        strcpy(*dest, string);
-    }
-    else {
-        *dest = NULL;
-    }
-}
-
 // A function to join paths together
 char *join_paths(char *buffer, size_t bytes, int num_paths, ...)
 {
@@ -645,7 +629,7 @@ char *find_file(const char *file, int num_prefixes, const char **prefixes)
             join_paths(buffer, sizeof(buffer), 2, prefixes[i], file);
             if (file_exists(buffer)) {
                 char *output;
-                copy_string_alloc(&output, buffer);
+                output = strdup(buffer);
                 return output;
             }
         }
@@ -657,7 +641,7 @@ char *find_file(const char *file, int num_prefixes, const char **prefixes)
 int utf8_length(const char *string)
 {
     int length = 0;
-    char *ptr = string;
+    char *ptr = (char*) string;
     while (*ptr != '\0') {
         // If byte is 0xxxxxxx, then it's a 1 byte (ASCII) char
         if ((*ptr & 0x80) == 0)
@@ -800,7 +784,7 @@ void add_hotkey(const char *keycode, const char *cmd)
         current_hotkey = current_hotkey->next;
     }
     current_hotkey->keycode = code;
-    copy_string_alloc(&current_hotkey->cmd, cmd);
+    current_hotkey->cmd = strdup(cmd);
     current_hotkey->next = NULL;
 }
 
@@ -982,16 +966,14 @@ void validate_settings(Geometry *geo)
         required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
     }
     if (config.highlight_hpadding != highlight_hpadding) {
-        log_error(
-            "Error: Highlight padding value %i too large to fit screen, shrinking to %i",
+        log_error("Error: Highlight padding value %i too large to fit screen, shrinking to %i",
             config.highlight_hpadding, 
             highlight_hpadding
         );
         config.highlight_hpadding = highlight_hpadding;
     }
     if (config.icon_spacing != icon_spacing) {
-        log_error(
-            "Error: Icon spacing value %i too large to fit screen, shrinking to %i",
+        log_error("Error: Icon spacing value %i too large to fit screen, shrinking to %i",
             config.icon_spacing, 
             icon_spacing
         );
@@ -1001,8 +983,7 @@ void validate_settings(Geometry *geo)
     // Make sure title padding is in valid range
     if (config.title_padding < 0 || config.title_padding > config.icon_size / 2) {
         int title_padding = config.icon_size / 10;
-        log_error(
-            "Error: Text padding value %i invalid, changing to %i",
+        log_error("Error: Text padding value %i invalid, changing to %i",
             config.title_padding, 
             title_padding
         );
@@ -1046,21 +1027,18 @@ void validate_settings(Geometry *geo)
 }
 
 // A function to retreive menu struct from the linked list via the menu name
-Menu *get_menu(char *menu_name)
+Menu *get_menu(const char *menu_name)
 {
     for (Menu *menu = config.first_menu; menu != NULL; menu = menu->next) {
         if (MATCH(menu_name, menu->name))
             return menu;
     }
-    log_error(
-        "Error: Menu '%s' not found in config file", 
-        menu_name
-    );
+    log_error("Error: Menu '%s' not found in config file", menu_name);
     return NULL;
 }
 
 // A function to allocate memory to and initialize a menu struct
-Menu *create_menu(char *menu_name, int *num_menus)
+Menu *create_menu(const char *menu_name, int *num_menus)
 {
     Menu *menu = malloc(sizeof(Menu));
     *menu = (Menu) {

@@ -12,6 +12,7 @@
 #include "image.h"
 #include "clock.h"
 #include "debug.h"
+#include "platform/platform.h"
 
 extern Config config;
 extern State state;
@@ -24,7 +25,7 @@ static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int
     int ymax = 0; 
     int xmin, xmax, xadvance;
     int current_ymin, current_ymax;
-    char *p = text;
+    char *p = (char*) text;
     Uint16 code_point;
     int bytes;
 
@@ -39,20 +40,17 @@ static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int
             &current_ymax,
             &xadvance
         );
-        if (current_ymax > ymax) {
+        if (current_ymax > ymax)
             ymax = current_ymax;
-        }
-        if (current_ymin < ymin) {
+        if (current_ymin < ymin)
             ymin = current_ymin;
-        }
-        if (p == text && config.clock_alignment == ALIGNMENT_LEFT) {
+        if (p == text && config.clock_alignment == ALIGNMENT_LEFT)
             *x_offset = xmin;
-        }
+
     p += bytes;
     }
-    if (config.clock_alignment == ALIGNMENT_RIGHT) {
+    if (config.clock_alignment == ALIGNMENT_RIGHT)
         *x_offset = xadvance - xmax;
-    }
     *h = ymax - ymin;
 }
 
@@ -101,9 +99,8 @@ void get_time(Clock *clk)
     // Set render flags if time and/or date changed
     if (clk->time_info == NULL || previous_min != clk->time_info->tm_min) {
         clk->render_time = true;
-        if (clk->time_info == NULL || previous_day != clk->time_info->tm_mday) {
+        if (clk->time_info == NULL || previous_day != clk->time_info->tm_mday)
             clk->render_date = true;
-        }
     }
 }
 
@@ -111,12 +108,10 @@ void get_time(Clock *clk)
 static void format_time(Clock *clk)
 {
     char *format = NULL;
-    if (clk->time_format == FORMAT_TIME_24HR) {
+    if (clk->time_format == FORMAT_TIME_24HR)
         format = TIME_STRING_24HR;
-    }
-    else {
+    else
         format = TIME_STRING_12HR;
-    }
     strftime(clk->time_string, 
         sizeof(clk->time_string), 
         format, 
@@ -130,12 +125,10 @@ static void format_date(Clock *clk)
     char *format = NULL;
  
     // Get date format
-    if (clk->date_format == FORMAT_DATE_LITTLE) {
+    if (clk->date_format == FORMAT_DATE_LITTLE)
         format = DATE_STRING_LITTLE;
-    }
-    else {
+    else
         format = DATE_STRING_BIG;
-    } 
     char weekday[MAX_CLOCK_CHARS + 1];
     char date[MAX_CLOCK_CHARS + 1];
     unsigned int bytes = sizeof(clk->date_string);
@@ -148,9 +141,8 @@ static void format_date(Clock *clk)
             clk->time_info
         );
     }
-    else {
+    else
         weekday[0] = '\0';
-    }
     copy_string(clk->date_string, 
         weekday, 
         sizeof(clk->date_string)
@@ -176,20 +168,17 @@ static void calculate_clock_positioning(Clock *clk)
 {
     if (config.clock_alignment == ALIGNMENT_LEFT) {
         clk->time_rect.x = config.clock_margin - clk->x_offset_time;
-        if (config.clock_show_date) {
+        if (config.clock_show_date)
             clk->date_rect.x = config.clock_margin - clk->x_offset_date;
-        }
     }
     else {
         clk->time_rect.x = geo.screen_width - config.clock_margin - clk->time_rect.w + clk->x_offset_time;
-        if (config.clock_show_date) {
+        if (config.clock_show_date)
             clk->date_rect.x = geo.screen_width - config.clock_margin - clk->date_rect.w + clk->x_offset_date;
-        }
     }
     clk->time_rect.y = config.clock_margin - clk->y_offset;
-    if (config.clock_show_date) {
+    if (config.clock_show_date)
         clk->date_rect.y = clk->time_rect.y + clk->y_advance;
-    }
 }
 
 // A function to initialize the clock
@@ -211,9 +200,8 @@ void init_clock(Clock *clk)
         clk->text_info.shadow_color = &config.clock_shadow_color;
         calculate_shadow_alpha(clk->text_info);
     }
-    else {
+    else
         clk->text_info.shadow_color = NULL;
-    }
     
     // Load the font
     int error = load_font(&clk->text_info, FILENAME_DEFAULT_CLOCK_FONT);
@@ -228,12 +216,10 @@ void init_clock(Clock *clk)
         char region[3];
         memset(region, '\0', sizeof(region));
         get_region(region);
-        if (clk->time_format == FORMAT_TIME_AUTO) {
+        if (clk->time_format == FORMAT_TIME_AUTO)
             clk->time_format = get_time_format(region);
-        }
-        if (config.clock_show_date && clk->date_format == FORMAT_DATE_AUTO) {
+        if (config.clock_show_date && clk->date_format == FORMAT_DATE_AUTO)
             clk->date_format = get_date_format(region);
-        }
     }
 
     // Render the time and date

@@ -48,9 +48,8 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
     do {
         // Increment slideshow background index and load background
         (slideshow->i)++;
-        if (slideshow->i >= slideshow->num_images) {
+        if (slideshow->i >= slideshow->num_images)
             slideshow->i = 0;
-        }
         surface = IMG_Load(slideshow->images[slideshow->order[slideshow->i]]);
         
         // If the loaded image has no alpha channel (e.g. JPEG), create one 
@@ -121,9 +120,8 @@ SDL_Texture *load_texture_from_file(const char *path)
                 IMG_GetError()
             );
         }
-        else {
+        else
             texture = load_texture(surface);
-        }
     }
     return texture;
 }
@@ -132,21 +130,19 @@ SDL_Texture *load_texture_from_file(const char *path)
 SDL_Texture *load_texture(SDL_Surface *surface)
 {
     SDL_Texture *texture = NULL;
-    if (surface == NULL) {
-        return;
-    }
+    if (surface == NULL)
+        return NULL;
 
     //Convert surface to screen format
     texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (texture == NULL) {
+    if (texture == NULL)
         log_error("Could not create texture %s", SDL_GetError());
-    }
     SDL_FreeSurface(surface);
     return texture;
 }
 
 // A function to rasterize an SVG from an existing text buffer
-SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
+SDL_Texture *rasterize_svg(char *buffer, int w, int h, SDL_Rect *rect)
 {
     NSVGimage *image = NULL;
     unsigned char *pixel_buffer = NULL;
@@ -209,24 +205,6 @@ SDL_Texture *rasterize_svg(const char *buffer, int w, int h, SDL_Rect *rect)
     nsvgDelete(image);
     return texture;
 }
-
-// A function to rasterize an SVG from a file
-/* No longer used, reserved for future re-use
-SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *rect)
-{
-    SDL_Texture *texture = NULL;
-    char *buffer = NULL;
-    read_file(path, &buffer);
-    if (buffer == NULL) {
-        log_error("Could not read file \"%s\"", path);
-    }
-    else {
-        texture = rasterize_svg(buffer, w, h, rect);
-        free(buffer);
-    }
-    return texture;
-}
-*/
 
 // A function to render the highlight for the buttons
 SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
@@ -311,8 +289,7 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
     int w, h;
 
     // Copy text into new buffer in case we need to manipulate it
-    char *text_buffer;
-    copy_string_alloc(&text_buffer, text);
+    char *text_buffer = strdup(text);
 
     // Calculate size of the rendered title
     int title_length = strlen(text_buffer);
@@ -425,7 +402,7 @@ int load_font(TextInfo *info, const char *default_font)
     // Try to load default font if we failed loading from config file
     if (info->font == NULL) {
         log_error("Could not initialize font from config file");
-        char *prefixes[2];
+        const char *prefixes[2];
         char fonts_exe_buffer[MAX_PATH_CHARS + 1];
         prefixes[0] = join_paths(fonts_exe_buffer, sizeof(fonts_exe_buffer), 3, config.exe_path, PATH_ASSETS_EXE, PATH_FONTS_EXE);
 #ifdef __unix__
@@ -439,7 +416,7 @@ int load_font(TextInfo *info, const char *default_font)
         if (default_font_path != NULL) {
             info->font = TTF_OpenFont(default_font_path, info->font_size);
             free(font_path);
-            copy_string_alloc(info->font_path, default_font_path);
+            *(info->font_path) = strdup(default_font_path);
             free(default_font_path);
         }
         if (info->font == NULL) {

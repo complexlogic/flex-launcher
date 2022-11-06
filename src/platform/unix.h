@@ -1,3 +1,5 @@
+#include <dirent.h>
+
 #define CMD_SHUTDOWN "systemctl poweroff"
 #define CMD_RESTART "systemctl reboot"
 #define CMD_SLEEP "systemctl suspend"
@@ -16,4 +18,4 @@ typedef struct {
 static int desktop_handler(void *user, const char *section, const char *name, const char *value);
 static void strip_field_codes(char *cmd);
 static bool ends_with(const char *string, const char *phrase);
-static int image_filter(struct dirent *file);
+static int image_filter(const struct dirent *file);

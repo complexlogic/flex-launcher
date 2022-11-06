@@ -469,7 +469,7 @@ static void init_slideshow()
             config.slideshow_directory
         );
         free(config.background_image);
-        copy_string_alloc(&config.background_image, slideshow->images[0]);
+        config.background_image = strdup(slideshow->images[0]);
         config.background_mode = BACKGROUND_IMAGE;
         quit_slideshow();
     }

@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -23,7 +22,7 @@ static int desktop_handler(void *user, const char *section, const char *name, co
 {
     Desktop *pdesktop = (Desktop*) user;
     if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC))
-        copy_string_alloc(&pdesktop->exec, value);
+        pdesktop->exec = strdup(value);
 }
 
 // A function to determine if a file exists in the filesystem
@@ -44,17 +43,15 @@ static void strip_field_codes(char *cmd)
 {
     int start = 0;
     for (int i = 0; i < strlen(cmd); i++) {
-        if (cmd[i] == '%' && i > 0 && cmd[i - 1] == ' ') {
+        if (cmd[i] == '%' && i > 0 && cmd[i - 1] == ' ')
             start = i;
-        }
         else if (start && i > start + 2 && cmd[i] != ' ') {
             strcpy(cmd + start, cmd + i);
             start = 0;
         }
     }
-    if (start) {
+    if (start)
         cmd[start - 1] ='\0'; 
-    }
 }
 
 // A function to make a directory, including any intermediate
@@ -66,9 +63,8 @@ void make_directory(const char *directory)
     int length;
     snprintf(buffer, sizeof(buffer), "%s", directory);
     length = strlen(buffer);
-    if (buffer[length - 1] == '/') {
+    if (buffer[length - 1] == '/')
         buffer[length - 1] = '\0';
-    }     
     for (i = buffer + 1; *i != '\0'; i++) {
         if (*i == '/') {
             *i = '\0';
@@ -86,7 +82,7 @@ static bool ends_with(const char *string, const char *phrase)
     int len_phrase = strlen(phrase);
     if (len_phrase > len_string)
         return false;
-    char *p = string + len_string - len_phrase;
+    char *p = (char*) string + len_string - len_phrase;
     return strcmp(p, phrase) ? false : true;
 }
 
@@ -144,7 +140,7 @@ bool start_process(char *cmd, bool application)
                 cmd, 
                 NULL
             };
-            execvp(file, args);
+            execvp(file, (char* const*) args);
             break;
 
         // Parent process
@@ -168,16 +164,15 @@ bool start_process(char *cmd, bool application)
 }
 
 // A function to determine if a file is an image file
-int image_filter(struct dirent *file)
+int image_filter(const struct dirent *file)
 {
     int len_file = strlen(file->d_name);
     int len_extension;
     for (int i = 0; i < NUM_IMAGE_EXTENSIONS; i++) {
         len_extension = strlen(extensions[i]);
         if (len_file > len_extension && 
-        !strcmp(file->d_name + len_file - len_extension, extensions[i])) {
+        !strcmp(file->d_name + len_file - len_extension, extensions[i]))
             return 1;
-        }
     }
     return 0;
 }
@@ -191,17 +186,16 @@ int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
     for (int i = 0; i < n; i++) {
         if (i < MAX_SLIDESHOW_IMAGES) {
             join_paths(file_path, sizeof(file_path), 2, directory, files[i]->d_name);
-            copy_string_alloc(&slideshow->images[i], file_path);
+            slideshow->images[i] = strdup(file_path);
         }
         free(files[i]);
     }
     free(files);
-    if (n <= MAX_SLIDESHOW_IMAGES) {
+    if (n <= MAX_SLIDESHOW_IMAGES)
         slideshow->num_images = n;
-    }
-    else {
+    else
         slideshow->num_images = MAX_SLIDESHOW_IMAGES;
-    }
+
     return slideshow->num_images;
 }
 
@@ -209,13 +203,11 @@ void get_region(char *buffer)
 {
     char *lang = getenv("LANG");
     char *token = strtok(lang, "_");
-    if (token == NULL) {
+    if (token == NULL)
         return;
-    }
     token = strtok(NULL, ".");
-    if (token != NULL && strlen(token) == 2) {
+    if (token != NULL && strlen(token) == 2)
         copy_string(buffer, token, 3);
-    }
 }
 
 // A function to shutdown the computer

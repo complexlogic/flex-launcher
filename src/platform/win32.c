@@ -51,15 +51,13 @@ static void parse_command(char *cmd, char *file, size_t file_size, char **params
     file[0] = '\0';
 
     // Skip any whitespace at beginning of command
-    while (*p == ' ') {
+    while (*p == ' ')
         p++;
-    }
     start = p;
 
     // Check for quote, in which case ignore spaces until the end quote is detecetd
-    if (*p == '"') {
+    if (*p == '"')
         quote_begin = p;
-    }
 
     while (*p != '\0') {
         // If the quote is complete, copy the file
@@ -77,28 +75,24 @@ static void parse_command(char *cmd, char *file, size_t file_size, char **params
                 p++;
 
                 // Skip any preceding white space for parameters
-                while (*p == ' ') {
+                while (*p == ' ')
                     p++;
-                }
 
                 // Copy parameters
-                if (*p != '\0') {
-                    copy_string_alloc(params, p);
+                if (*p != '\0')
+                    params = strdup(p);
                     break;
-                }
             }
 
             // If a space was detected after the quote
             else if (quote_begin && quote_end) {
                 // Skip any preceding white space for parameters
-                while (*p == ' ') {
+                while (*p == ' ')
                     p++;
-                }
 
                 // Copy rest of command as parameters
-                if (*p != '\0') {
-                    copy_string_alloc(params, p);
-                }
+                if (*p != '\0')
+                    params = strdup(p);
                 break;
             }
         }
@@ -106,9 +100,8 @@ static void parse_command(char *cmd, char *file, size_t file_size, char **params
     }
 
     // If there were no quotes or spaces, copy whole command into file buffer
-    if (start && file[0] == '\0') {
+    if (start && file[0] == '\0')
         copy_string(file, start, file_size);
-    }
 }
 
 void set_foreground_window()
@@ -181,7 +174,7 @@ int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
         if (handle != INVALID_HANDLE_VALUE) {
             do {
                 join_paths(file_output, sizeof(file_output), 2, directory, data.cFileName);
-                copy_string_alloc(&slideshow->images[num_images], file_output);
+                slideshow->images[num_images] = strdup(file_output);
                 num_images++;
             } while (FindNextFileA(handle, &data) != 0 && num_images < MAX_SLIDESHOW_IMAGES);
         }
@@ -285,9 +278,8 @@ void set_exit_hotkey(SDL_Keycode keycode)
     if (exit_hotkey) 
         return;
     exit_hotkey = sdl_to_win32_keycode(keycode);
-    if (!exit_hotkey) {
+    if (!exit_hotkey)
         log_error("Invalid exit hotkey keycode %X", keycode);
-    }
 }
 
 // A function to register the exit hotkey with Windows
@@ -319,9 +311,8 @@ static UINT sdl_to_win32_keycode(SDL_Keycode keycode)
 {
 #include "keycode_convert.h" // Import the conversion table
     for (int i = 0; i < sizeof(table) / sizeof(table[0]); i++) {
-        if (table[i].sdl == keycode) {
+        if (table[i].sdl == keycode)
             return table[i].win;
-        }
     }
     return 0;
 }
