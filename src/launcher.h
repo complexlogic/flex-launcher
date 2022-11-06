@@ -66,7 +66,8 @@ typedef enum {
 typedef enum {
     BACKGROUND_COLOR,
     BACKGROUND_IMAGE,
-    BACKGROUND_SLIDESHOW
+    BACKGROUND_SLIDESHOW,
+    BACKGROUND_TRANSPARENT
 } ModeBackground;
 
 typedef enum {
@@ -232,6 +233,7 @@ typedef struct {
     int fps_limit;
     ModeBackground background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
+    SDL_Color chroma_key_color;
     char *background_image; // Path to background image
     char *slideshow_directory;
     bool background_overlay;

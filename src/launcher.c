@@ -38,6 +38,10 @@ Config config = {
     .background_color.r               = DEFAULT_BACKGROUND_COLOR_R,
     .background_color.g               = DEFAULT_BACKGROUND_COLOR_G,
     .background_color.b               = DEFAULT_BACKGROUND_COLOR_B,
+    .chroma_key_color.r               = DEFAULT_CHROMA_KEY_COLOR_R,
+    .chroma_key_color.g               = DEFAULT_CHROMA_KEY_COLOR_G,
+    .chroma_key_color.b               = DEFAULT_CHROMA_KEY_COLOR_B,
+    .chroma_key_color.a               = DEFAULT_CHROMA_KEY_COLOR_A,
     .background_color.a               = 0xFF,
     .background_overlay               = DEFAULT_BACKGROUND_OVERLAY,
     .background_overlay_color.r       = DEFAULT_BACKGROUND_OVERLAY_COLOR_R,
@@ -169,12 +173,7 @@ static void init_sdl()
 
     // Initialize SDL
     if (SDL_Init(sdl_flags) < 0)
-    {
-        log_fatal(
-            "Fatal Error: Could not initialize SDL\n%s", 
-            SDL_GetError()
-        );
-    }
+        log_fatal("Fatal Error: Could not initialize SDL\n%s", SDL_GetError());
 
     int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
     geo.screen_width = display_mode.w;
@@ -186,19 +185,15 @@ static void init_sdl()
 // A function to create the window and renderer
 static void create_window()
 {
-    window = SDL_CreateWindow(PROJECT_NAME, 
+    window = SDL_CreateWindow(PROJECT_NAME,
                  SDL_WINDOWPOS_UNDEFINED,
                  SDL_WINDOWPOS_UNDEFINED,
                  0,
                  0,
                  SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS
              );
-    if (window == NULL) {
-        log_fatal(
-            "Fatal Error: Could not create SDL Window\n%s", 
-            SDL_GetError()
-        );
-    }
+    if (window == NULL)
+        log_fatal("Fatal Error: Could not create SDL Window\n%s", SDL_GetError());
     SDL_ShowCursor(SDL_DISABLE);
 
     // Create HW accelerated renderer, get screen resolution for geometry calculations
@@ -222,12 +217,8 @@ static void create_window()
 
     renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    if (renderer == NULL) {
-        log_fatal(
-            "Fatal Error: Could not initialize renderer\n%s", 
-            SDL_GetError()
-        );
-    }
+    if (renderer == NULL)
+        log_fatal("Fatal Error: Could not initialize renderer\n%s", SDL_GetError());
 
     // Set background color
     set_draw_color();
@@ -235,6 +226,8 @@ static void create_window()
 #ifdef _WIN32
     SDL_VERSION(&wm_info.version);
     SDL_GetWindowWMInfo(window, &wm_info);
+    if (config.background_mode == BACKGROUND_TRANSPARENT)
+        make_window_transparent();
 #endif
 }
 
@@ -242,40 +235,36 @@ static void create_window()
 static void init_sdl_image()
 {
     int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
-    // Initialize SDL_image
-    if (!(IMG_Init(img_flags) & img_flags)) {
-        log_fatal(
-            "Fatal Error: Could not initialize SDL_image\n%s", 
-            IMG_GetError()
-        );
-    }
+    if (!(IMG_Init(img_flags) & img_flags))
+        log_fatal("Fatal Error: Could not initialize SDL_image\n%s", IMG_GetError());
 }
 
 // A function to set the color of the renderer
 void set_draw_color()
 {
-    if (config.background_mode == BACKGROUND_COLOR) {
-        SDL_SetRenderDrawColor(renderer,
-            config.background_color.r,
-            config.background_color.g,
-            config.background_color.b,
-            config.background_color.a
-        );
-    }
-    else
+    SDL_Color *color = NULL;
+    if (config.background_mode == BACKGROUND_COLOR)
+        color = &config.background_color;
+    else if (config.background_mode == BACKGROUND_TRANSPARENT)
+        color = &config.chroma_key_color;
+
+    if (color == NULL)
         SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    else
+        SDL_SetRenderDrawColor(renderer,
+            color->r,
+            color->g,
+            color->b,
+            color->a
+        );
+
 }
 
 // A function to initialize SDL's TTF subsystem
 static void init_sdl_ttf()
 {
-    // Initialize SDL_ttf
-    if (TTF_Init() == -1) {
-        log_fatal(
-            "Fatal Error: Could not initialize SDL_ttf\n%s", 
-            TTF_GetError()
-        );
-     }
+    if (TTF_Init() == -1)
+        log_fatal("Fatal Error: Could not initialize SDL_ttf\n%s", TTF_GetError());
     
     title_info = (TextInfo) { 
         .font_size = config.title_font_size,
@@ -433,8 +422,7 @@ void quit_slideshow()
 static void init_slideshow()
 {
     if (!directory_exists(config.slideshow_directory)) {
-        log_error(
-            "Error: Slideshow directory '%s' does not exist, "
+        log_error("Error: Slideshow directory '%s' does not exist, "
             "Switching to color background mode",
             config.slideshow_directory
         );
@@ -454,8 +442,7 @@ static void init_slideshow()
     
     // Handle errors
     if (num_images == 0) {
-        log_error(
-            "Error: No images found in slideshow directory '%s', "
+        log_error("Error: No images found in slideshow directory '%s', "
             "Changing background mode to color", 
             config.slideshow_directory
         );
@@ -463,8 +450,7 @@ static void init_slideshow()
         quit_slideshow();
     } 
     else if (num_images == 1) {
-        log_error(
-            "Error: Only one image found in slideshow directory %s"
+        log_error("Error: Only one image found in slideshow directory %s"
             "Changing background mode to single image", 
             config.slideshow_directory
         );
@@ -547,10 +533,7 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
 
     // Return error if the menu doesn't contain entires
     if (current_menu->num_entries == 0) {
-        log_error(
-            "Error: No valid entries found for Menu '%s'", 
-            current_menu->name
-        );
+        log_error("Error: No valid entries found for Menu '%s'", current_menu->name);
         current_menu = previous_menu;
         return 1;
     }
@@ -821,10 +804,7 @@ static void connect_gamepad(int device_index, bool raise_error)
     gamepad = SDL_GameControllerOpen(device_index);
     if (gamepad == NULL) {
         if (raise_error)
-            log_error(
-                "Error: Could not open gamepad at device index %i", 
-                config.gamepad_device
-            );
+            log_error("Error: Could not open gamepad at device index %i", config.gamepad_device);
         return;
     }
     if (config.debug && raise_error) {
@@ -842,28 +822,22 @@ static void poll_gamepad()
         
         // Check if axis value exceeds dead zone
         if (i->type == TYPE_AXIS_POS || i->type == TYPE_AXIS_NEG) {
-            if (i->type == TYPE_AXIS_POS) {
+            if (i->type == TYPE_AXIS_POS)
                 value_multiplier = 1;
-            }
-            else if (i->type == TYPE_AXIS_NEG) {
+            else if (i->type == TYPE_AXIS_NEG)
                 value_multiplier = -1;
-            }
-            if (value_multiplier*SDL_GameControllerGetAxis(gamepad, i->index) > GAMEPAD_DEADZONE) {
+            if (value_multiplier*SDL_GameControllerGetAxis(gamepad, i->index) > GAMEPAD_DEADZONE)
                 i->repeat++;
-            }
-            else {
+            else
                 i->repeat = 0;
-            }
         }
 
         // Check buttons
         else if (i->type == TYPE_BUTTON) {
-            if (SDL_GameControllerGetButton(gamepad, i->index)) {
+            if (SDL_GameControllerGetButton(gamepad, i->index))
                 i->repeat++;
-            }
-            else {
+            else
                 i->repeat = 0;
-            }
         }
 
         // Execute command if first press or valid repeat
@@ -984,16 +958,13 @@ static void update_clock(bool block)
             get_time(clk);
             if (clk->render_time) {
                 state.clock_rendering = true;
-                if (block) {
+                if (block)
                     render_clock(clk);
-                }
-                else {
-                    clock_thread = SDL_CreateThread(render_clock_async, "Clock Thread", (void*) clk);
-                }    
+                else
+                    clock_thread = SDL_CreateThread(render_clock_async, "Clock Thread", (void*) clk); 
             }
-            else {
+            else
                 ticks.clock_update = ticks.main;
-            }
         }
 
         // Render texture
@@ -1056,6 +1027,8 @@ static inline void post_launch()
 
 #ifdef _WIN32
     SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+    if (config.background_mode == BACKGROUND_TRANSPARENT)
+        hide_cursor(current_entry);
 #endif
 }
 

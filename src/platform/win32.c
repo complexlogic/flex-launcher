@@ -109,6 +109,25 @@ void set_foreground_window()
     SetForegroundWindow(wm_info.info.win.window);
 }
 
+void make_window_transparent()
+{
+    HWND hwnd = wm_info.info.win.window;
+    SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+    SetLayeredWindowAttributes(hwnd,
+        RGB(config.chroma_key_color.r, config.chroma_key_color.g, config.chroma_key_color.b),
+        0,
+        LWA_COLORKEY
+    );
+}
+
+// When the window is transparent, we need to hide the cursor behind the non-transparent icon
+void hide_cursor(Entry *entry)
+{
+    SetCursorPos(entry->icon_rect.x + entry->icon_rect.w / 2,
+        entry->icon_rect.y + entry->icon_rect.h / 2
+    );
+}
+
 // A function to launch an application
 bool start_process(char *cmd, bool application)
 {

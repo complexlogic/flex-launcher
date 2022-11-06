@@ -20,13 +20,13 @@ extern Hotkey          *hotkeys;
 Menu                   *menu  = NULL;
 Entry                  *entry = NULL;
 
-static const char *mode_settings[][4] = {
-    {"Color", "Image", "Slideshow", NULL},    // Background Mode
-    {"Blank", "None", NULL, NULL},            // OnLaunch
-    {"Truncated", "Shrink", "None", NULL},    // OversizeMode
-    {"Left", "Right", NULL, NULL},            // Clock Alignment
-    {"24hr", "12hr", "Auto", NULL},           // Clock Format
-    {"Big", "Little", "Auto", NULL}           // Date Format
+static const char *mode_settings[][5] = {
+    {"Color", "Image", "Slideshow", "Transparent", NULL}, // Background Mode
+    {"Blank", "None", NULL, NULL, NULL},                  // OnLaunch
+    {"Truncated", "Shrink", "None", NULL, NULL},          // OversizeMode
+    {"Left", "Right", NULL, NULL, NULL},                  // Clock Alignment
+    {"24hr", "12hr", "Auto", NULL, NULL},                 // Clock Format
+    {"Big", "Little", "Auto", NULL, NULL}                 // Date Format
 };
 
 // A function to handle the arguments from the command line
@@ -46,7 +46,7 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
             { 0, 0, 0, 0 }
         };
     
-        while ((rc = getopt_long(argc, argv, short_opts, long_opts, NULL)) !=-1) {
+        while ((rc = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
             switch (rc) {
                 case 'h':
                     help = true;
@@ -101,9 +101,8 @@ void handle_arguments(int argc, char *argv[], char **config_file_path)
         *config_file_path = find_file(FILENAME_DEFAULT_CONFIG, 2, prefixes);
 #endif
 
-        if (*config_file_path == NULL) {
+        if (*config_file_path == NULL)
             log_fatal("No config file found");
-        }
     }
     log_debug("Config file found: %s", *config_file_path);
 }
@@ -199,6 +198,8 @@ int config_handler(void *user, const char *section, const char *name, const char
             slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME)
                 config.slideshow_transition_time = slideshow_transition_time;
         }
+        else if (MATCH(name, SETTING_CHROMA_KEY_COLOR))
+            hex_to_color(value, &config.chroma_key_color);
         else if (MATCH(name, SETTING_BACKGROUND_OVERLAY))
             convert_bool(value, &config.background_overlay);
         else if (MATCH(name, SETTING_BACKGROUND_OVERLAY_COLOR))
