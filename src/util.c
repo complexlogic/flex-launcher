@@ -129,6 +129,13 @@ int config_handler(void *user, const char *section, const char *name, const char
     if (MATCH(section, "General")) {
         if (MATCH(name, SETTING_DEFAULT_MENU))
             config.default_menu = strdup(value);
+        else if (MATCH(name, SETTING_VSYNC))
+            convert_bool(value, &config.vsync);
+        else if(MATCH(name, SETTING_FPS_LIMIT)) {
+            int fps = atoi(value);
+            if (value > MIN_FPS_LIMIT)
+                config.fps_limit = fps;
+        }
         else if (MATCH(name, SETTING_ON_LAUNCH))
             parse_mode_setting(MODE_SETTING_ON_LAUNCH, value, &config.on_launch);
         else if (MATCH(name, SETTING_RESET_ON_BACK))

@@ -22,6 +22,8 @@ Config config = {
     .background_image                 = NULL,
     .slideshow_directory              = NULL,
     .title_font_path                  = NULL,
+    .vsync                            = true,
+    .fps_limit                        = -1,
     .title_font_size                  = DEFAULT_FONT_SIZE,
     .title_font_color.r               = DEFAULT_TITLE_FONT_COLOR_R,
     .title_font_color.g               = DEFAULT_TITLE_FONT_COLOR_G,
@@ -173,14 +175,11 @@ static void init_sdl()
             SDL_GetError()
         );
     }
+
     int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
     geo.screen_width = display_mode.w;
     geo.screen_height = display_mode.h;
     refresh_period = 1000 / display_mode.refresh_rate;
-    if (config.gamepad_enabled) {
-        delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
-        repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
-    }
     geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
 }
 
@@ -203,7 +202,25 @@ static void create_window()
     SDL_ShowCursor(SDL_DISABLE);
 
     // Create HW accelerated renderer, get screen resolution for geometry calculations
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    int renderer_flags = SDL_RENDERER_PRESENTVSYNC;
+    if (!config.vsync) {
+        if (config.fps_limit > MIN_FPS_LIMIT && config.fps_limit <= display_mode.refresh_rate)
+            refresh_period = 1000 / config.fps_limit;
+        else
+            config.vsync = true;
+    }
+    if (config.vsync) {
+        refresh_period = 1000 / display_mode.refresh_rate;
+        renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
+    if (config.gamepad_enabled) {
+        delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
+        repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
+    }
+    if (slideshow != NULL)
+        slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) refresh_period);
+
+    renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     if (renderer == NULL) {
         log_fatal(
@@ -378,9 +395,9 @@ static void handle_keypress(SDL_Keysym *key)
     else if (key->sym == SDLK_RIGHT)
         move_right();
     else if (key->sym == SDLK_RETURN) {
-        log_debug("Selected Entry:"
-            "Title: %s"
-            "Icon Path: %s"
+        log_debug("Selected Entry:\n"
+            "Title: %s\n"
+            "Icon Path: %s\n"
             "Command: %s", 
             current_entry->title, 
             current_entry->icon_path, 
@@ -417,7 +434,7 @@ static void init_slideshow()
 {
     if (!directory_exists(config.slideshow_directory)) {
         log_error(
-            "Error: Slideshow directory %s does not exist"
+            "Error: Slideshow directory '%s' does not exist, "
             "Switching to color background mode",
             config.slideshow_directory
         );
@@ -431,7 +448,6 @@ static void init_slideshow()
     slideshow->num_images = 0;
     slideshow->transition_texture = NULL;
     slideshow->transition_alpha = 0.0f;
-    slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) refresh_period);
 
     // Find background images from directory
     int num_images = scan_slideshow_directory(slideshow, config.slideshow_directory);
@@ -439,7 +455,7 @@ static void init_slideshow()
     // Handle errors
     if (num_images == 0) {
         log_error(
-            "Error: No images found in slideshow directory %s"
+            "Error: No images found in slideshow directory '%s', "
             "Changing background mode to color", 
             config.slideshow_directory
         );
@@ -739,6 +755,11 @@ static void draw_screen()
 
     // Output to screen
     SDL_RenderPresent(renderer);
+    if (!config.vsync) {
+        int sleep_time = refresh_period - (SDL_GetTicks() - ticks.main);
+        if (sleep_time > 0)
+            SDL_Delay(refresh_period - (SDL_GetTicks() - ticks.main));
+    }
 }
 
 // A function to execute the user's command
@@ -996,7 +1017,7 @@ static void update_clock(bool block)
     }
 }
 
-static inline pre_launch()
+static inline void pre_launch()
 {
     if (gamepad != NULL) {
         SDL_GameControllerClose(gamepad);
@@ -1010,7 +1031,7 @@ static inline pre_launch()
 #endif
 }
 
-static inline post_launch()
+static inline void post_launch()
 {
     // Rebaseline the timing after the program is done
     ticks.main = SDL_GetTicks();
@@ -1277,14 +1298,16 @@ int main(int argc, char *argv[])
         }
 
         // Post-event loop updates
-        if (gamepad != NULL)
-            poll_gamepad();
-        if (config.background_mode == BACKGROUND_SLIDESHOW)
-            update_slideshow();
-        if (config.screensaver_enabled)
-            update_screensaver();
-        if (config.clock_enabled)
-            update_clock(false);
+        if (!state.application_running) {
+            if (gamepad != NULL)
+                poll_gamepad();
+            if (config.background_mode == BACKGROUND_SLIDESHOW)
+                update_slideshow();
+            if (config.screensaver_enabled)
+                update_screensaver();
+            if (config.clock_enabled)
+                update_clock(false);
+        }
         if (state.application_launching &&
         ticks.main - ticks.application_launched > APPLICATION_TIMEOUT) {
             state.application_launching = false;

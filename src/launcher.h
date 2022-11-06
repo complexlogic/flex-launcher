@@ -13,6 +13,7 @@
 #define COLOR_MASKS RMASK, GMASK, BMASK, AMASK
 
 // Launcher parameters
+#define MIN_FPS_LIMIT 10
 #define MIN_ICON_SIZE 32
 #define MAX_ICON_SIZE 1024
 #define MIN_RX_SIZE 0
@@ -227,6 +228,8 @@ typedef struct {
 typedef struct {
     char *default_menu;
     unsigned int max_buttons;
+    bool vsync;
+    int fps_limit;
     ModeBackground background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
     char *background_image; // Path to background image

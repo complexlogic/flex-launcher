@@ -2,6 +2,8 @@
 # For documentation of these settings, visit: https://complexlogic.github.io/flex-launcher/configuration
 [General]
 @SETTING_DEFAULT_MENU@=@DEFAULT_MENU@
+@SETTING_VSYNC@=@DEFAULT_VSYNC@
+#@SETTING_FPS_LIMIT@=
 @SETTING_ON_LAUNCH@=@DEFAULT_ON_LAUNCH@
 @SETTING_RESET_ON_BACK@=@DEFAULT_RESET_ON_BACK@
 @SETTING_MOUSE_SELECT@=@DEFAULT_MOUSE_SELECT@

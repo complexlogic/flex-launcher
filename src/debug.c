@@ -92,12 +92,13 @@ void print_compiler_info(FILE *stream)
 
 }
 
-
-// A function to print the parsed settings to the command line
+// A function to print the parsed settings to the log
 void debug_settings()
 {
     log_debug("======================= General ========================\n");
     DEBUG_STR(SETTING_DEFAULT_MENU, config.default_menu);
+    DEBUG_BOOL(SETTING_VSYNC, config.vsync);
+    DEBUG_INT(SETTING_FPS_LIMIT, config.fps_limit);
     DEBUG_MODE(SETTING_ON_LAUNCH, MODE_SETTING_ON_LAUNCH, config.on_launch);
     DEBUG_BOOL(SETTING_RESET_ON_BACK, config.reset_on_back);
     DEBUG_BOOL(SETTING_MOUSE_SELECT, config.mouse_select);
@@ -239,7 +240,7 @@ void debug_slideshow(Slideshow *slideshow)
       config.slideshow_directory
     );
     for (int i = 0; i < slideshow->num_images; i++)
-        log_debug("%s", slideshow->images[slideshow->order[i]]);
+        log_debug("  %s", slideshow->images[slideshow->order[i]]);
 }
 
 // A function to debug the video settings
