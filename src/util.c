@@ -877,7 +877,7 @@ void validate_settings(Geometry *geo)
         int i;
         for (i = config.max_buttons; i * config.icon_size > geo->screen_width && i > 0; i--);
         log_error(
-            "Error: Not enough screen space for %i buttons, reducing to %i", 
+            "Not enough screen space for %i buttons, reducing to %i", 
             config.max_buttons, 
             i
         );
@@ -967,14 +967,14 @@ void validate_settings(Geometry *geo)
         required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
     }
     if (config.highlight_hpadding != highlight_hpadding) {
-        log_error("Error: Highlight padding value %i too large to fit screen, shrinking to %i",
+        log_error("Highlight padding value %i too large to fit screen, shrinking to %i",
             config.highlight_hpadding, 
             highlight_hpadding
         );
         config.highlight_hpadding = highlight_hpadding;
     }
     if (config.icon_spacing != icon_spacing) {
-        log_error("Error: Icon spacing value %i too large to fit screen, shrinking to %i",
+        log_error("Icon spacing value %i too large to fit screen, shrinking to %i",
             config.icon_spacing, 
             icon_spacing
         );
@@ -984,7 +984,7 @@ void validate_settings(Geometry *geo)
     // Make sure title padding is in valid range
     if (config.title_padding < 0 || config.title_padding > config.icon_size / 2) {
         int title_padding = config.icon_size / 10;
-        log_error("Error: Text padding value %i invalid, changing to %i",
+        log_error("Text padding value %i invalid, changing to %i",
             config.title_padding, 
             title_padding
         );
@@ -1034,7 +1034,7 @@ Menu *get_menu(const char *menu_name)
         if (MATCH(menu_name, menu->name))
             return menu;
     }
-    log_error("Error: Menu '%s' not found in config file", menu_name);
+    log_error("Menu '%s' not found in config file", menu_name);
     return NULL;
 }
 

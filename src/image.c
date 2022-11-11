@@ -73,7 +73,7 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
     // Switch to color background mode if we failed to load any image from the array
     if (surface == NULL) {
         log_error(
-            "Error: Could not load any image from slideshow directory %s\n"
+            "Could not load any image from slideshow directory %s\n"
             "Changing background to color mode", 
             config.slideshow_directory
         );
@@ -86,7 +86,7 @@ SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transitio
     // single image background mode
     else if (slideshow->i == initial_index && surface != NULL) {
         log_error(
-            "Error: Could only load one image from slideshow directory %s\n"
+            "Could only load one image from slideshow directory %s\n"
             "Changing background to single image mode",
             config.slideshow_directory
         );
@@ -115,7 +115,7 @@ SDL_Texture *load_texture_from_file(const char *path)
         surface = IMG_Load(path);
         if (surface == NULL) {
             log_error(
-                "Error: Could not load image %s\n%s", 
+                "Could not load image %s\n%s", 
                 path, 
                 IMG_GetError()
             );

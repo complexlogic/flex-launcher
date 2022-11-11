@@ -173,7 +173,7 @@ static void init_sdl()
 
     // Initialize SDL
     if (SDL_Init(sdl_flags) < 0)
-        log_fatal("Fatal Error: Could not initialize SDL\n%s", SDL_GetError());
+        log_fatal("Could not initialize SDL\n%s", SDL_GetError());
 
     int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
     geo.screen_width = display_mode.w;
@@ -193,11 +193,11 @@ static void create_window()
                  SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS
              );
     if (window == NULL)
-        log_fatal("Fatal Error: Could not create SDL Window\n%s", SDL_GetError());
+        log_fatal("Could not create SDL Window\n%s", SDL_GetError());
     SDL_ShowCursor(SDL_DISABLE);
 
     // Create HW accelerated renderer, get screen resolution for geometry calculations
-    int renderer_flags = SDL_RENDERER_PRESENTVSYNC;
+    int renderer_flags = SDL_RENDERER_ACCELERATED;
     if (!config.vsync) {
         if (config.fps_limit > MIN_FPS_LIMIT && config.fps_limit <= display_mode.refresh_rate)
             refresh_period = 1000 / config.fps_limit;
@@ -218,7 +218,7 @@ static void create_window()
     renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     if (renderer == NULL)
-        log_fatal("Fatal Error: Could not initialize renderer\n%s", SDL_GetError());
+        log_fatal("Could not initialize renderer\n%s", SDL_GetError());
 
     // Set background color
     set_draw_color();
@@ -236,7 +236,7 @@ static void init_sdl_image()
 {
     int img_flags = IMG_INIT_PNG | IMG_INIT_JPG | IMG_INIT_WEBP;
     if (!(IMG_Init(img_flags) & img_flags))
-        log_fatal("Fatal Error: Could not initialize SDL_image\n%s", IMG_GetError());
+        log_fatal("Could not initialize SDL_image\n%s", IMG_GetError());
 }
 
 // A function to set the color of the renderer
@@ -264,7 +264,7 @@ void set_draw_color()
 static void init_sdl_ttf()
 {
     if (TTF_Init() == -1)
-        log_fatal("Fatal Error: Could not initialize SDL_ttf\n%s", TTF_GetError());
+        log_fatal("Could not initialize SDL_ttf\n%s", TTF_GetError());
     
     title_info = (TextInfo) { 
         .font_size = config.title_font_size,
@@ -422,7 +422,7 @@ void quit_slideshow()
 static void init_slideshow()
 {
     if (!directory_exists(config.slideshow_directory)) {
-        log_error("Error: Slideshow directory '%s' does not exist, "
+        log_error("Slideshow directory '%s' does not exist, "
             "Switching to color background mode",
             config.slideshow_directory
         );
@@ -442,7 +442,7 @@ static void init_slideshow()
     
     // Handle errors
     if (num_images == 0) {
-        log_error("Error: No images found in slideshow directory '%s', "
+        log_error("No images found in slideshow directory '%s', "
             "Changing background mode to color", 
             config.slideshow_directory
         );
@@ -450,7 +450,7 @@ static void init_slideshow()
         quit_slideshow();
     } 
     else if (num_images == 1) {
-        log_error("Error: Only one image found in slideshow directory %s"
+        log_error("Only one image found in slideshow directory %s"
             "Changing background mode to single image", 
             config.slideshow_directory
         );
@@ -533,7 +533,7 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
 
     // Return error if the menu doesn't contain entires
     if (current_menu->num_entries == 0) {
-        log_error("Error: No valid entries found for Menu '%s'", current_menu->name);
+        log_error("No valid entries found for Menu '%s'", current_menu->name);
         current_menu = previous_menu;
         return 1;
     }
@@ -804,7 +804,7 @@ static void connect_gamepad(int device_index, bool raise_error)
     gamepad = SDL_GameControllerOpen(device_index);
     if (gamepad == NULL) {
         if (raise_error)
-            log_error("Error: Could not open gamepad at device index %i", config.gamepad_device);
+            log_error("Could not open gamepad at device index %i", config.gamepad_device);
         return;
     }
     if (config.debug && raise_error) {
@@ -1095,7 +1095,7 @@ int main(int argc, char *argv[])
     if (config.gamepad_enabled && config.gamepad_mappings_file != NULL) {
         error = SDL_GameControllerAddMappingsFromFile(config.gamepad_mappings_file);
         if (error < 0) {
-            log_error("Error: Could not load gamepad mappings from %s\n%s", 
+            log_error("Could not load gamepad mappings from %s\n%s", 
                 config.gamepad_mappings_file,
                 SDL_GetError()
             );
