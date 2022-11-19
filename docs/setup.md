@@ -51,8 +51,6 @@ My recommended web browser for HTPC use is Chrome/Chromium. This browser has man
 - `--force-device-scale-factor=n`: This can be used to make web pages rendered larger for viewing from a distance. For example, try, 1.1 or 1.2 as `n`.
 - `--user-agent`: Sets a custom HTML user-agent string. This is necessary for [watching YouTube](#watching-youtube).
 
-For Windows, only 3 web browsers are supported: Chrome, Edge, and Firefox. If you try to use other browsers, including forks of the aforementioned, then you will encounter issues.
-
 ## Watching YouTube
 There is currently no desktop application for YouTube. However, there is a TV-friendly web interface located at [youtube.com/tv](https://www.youtube.com/tv) that is intended for use by Smart TVs . Google recently blocked access to this interface for desktop web browsers, but the block can be easily circumvented by spoofing the user-agent string of a Smart TV. A list of valid Smart TV user-agent strings is easily found online by search engine. The following example menu entries will launch an app-like YouTube experience in a browser:
 

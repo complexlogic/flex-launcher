@@ -15,7 +15,7 @@ title: Compilation Guide
  - SDL_ttf ≥ 2.0.15
 
 ## Linux
-Flex Launcher on Linux builds with GCC. This guide assumes you already have the tools Git, CMake, pkg-config, and GCC installed on your system. If not, consult your distro's documentation. 
+Flex Launcher on Linux builds with GCC. This guide assumes you already have the development tools Git, CMake, pkg-config, and GCC installed on your system. If not, consult your distro's documentation. 
 
 First, install the dependencies. The steps to do so are dependent on your distro:
 
@@ -45,7 +45,7 @@ Generate the Makefile:
 ```
 cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
-If you're building on Raspberry Pi, it's recommended to pass `-DRPI=1` to `cmake`, which tweaks the default configuration to be more Pi-centric.
+If you're building on Raspberry Pi, it's recommended to pass `-DRPI=1` to cmake, which tweaks the default configuration to be more Pi-centric.
 
 Build and test the program:
 ```
@@ -56,7 +56,7 @@ Optionally, install it into your system directories:
 ```
 sudo make install
 ```
-By default, this will install the program and assets with a prefix of `/usr/local`. If you wish to use a different prefix, re-run the cmake generation step with the `-DCMAKE_INSTALL_PREFIX` flag.
+By default, this will install the program and assets with a prefix of `/usr/local`. If you wish to use a different prefix, re-run the cmake generation step with `-DCMAKE_INSTALL_PREFIX=prefix`.
 
 ## Windows
 Flex Launcher on Windows builds with Visual Studio, and uses [vcpkg](https://vcpkg.io/en/index.html) to manage the dependencies. Before starting, make sure the following steps are completed:

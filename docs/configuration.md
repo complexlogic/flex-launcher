@@ -7,6 +7,12 @@ title: Configuration
 
 1. [Overview](#overview)
 2. [Settings](#settings)
+    - [General](#general)
+    - [Background](#background)
+    - [Layout](#layout)
+    - [Titles](#titles)
+    - [Highlight](#highlight)
+    - [Scroll Indicators](#scroll-indicators)
 3. [Creating Menus](#creating-menus)
     - [Special Commands](#special-commands)
     - [Desktop Files (Linux Only)](#desktop-files-linux-only)
@@ -23,17 +29,49 @@ Key1=value
 Key2=value
 ...
 ```
-A line can be commented out by using the # character at the beginning of the line, which will cause the line to be ignored by the program. Here are a few things to note about the configuration settings for Flex Launcher:
+A line can be commented out by using the # character at the beginning of the line, which will cause the line to be ignored by the program. In-line comments are not allowable. Here are a few things to note about the configuration settings for Flex Launcher:
 - All keys and values are case sensitive.
 - Full UTF-8 character set is supported for titles.
 - The following image formats are supported: JPEG, PNG, and WebP
 - Relative paths are evaluated with respect to the *current working directory*, which may not be the same as the directory that the config file is located in. It is recommended to use absolute paths whenever possible to eliminate any confusion.
-- Color is specified in 24 bit RGB HEX format, *without* a 0x or # prefix, e.g. the color red should be FF0000. HEX color pickers can be easily found online to assist color choices.
+- Color is specified in 24 bit RGB HEX format with a # prefix, e.g. the color red should be `#FF0000`. The letters can be uppercase or lowercase. HEX color pickers can be easily found online to assist color choices.
 - Several settings allow for values to be specified in pixels *or* as a percentage of another value. In this case, if no percent sign is detected it will be interpreted as pixels, and if the percent sign is present, than it will be interpreted as a percent value e.g. "5" means 5 pixels and "5%" means 5 percent.
 
 ## Settings
-Every config file must have a section titled "Settings". Within this section, the following keys may be used to control the behavior of Flex Launcher:
+The following sections contain settings that control the look and behavior of the launcher:
+- [General](#general)
+- [Background](#background)
+- [Layout](#layout)
+- [Titles](#titles)
+- [Highlight](#highlight)
+- [Scroll Indicators](#scroll-indicators)
+
+#### General
+The settings in this section control the general behavior of the launcher
+
 - [DefaultMenu](#defaultmenu)
+- [VSync](#vsync)
+- [FPSLimit](#fpslimit)
+- [OnLaunch](#onlaunch)
+- [ResetOnBack](#resetonback)
+- [MouseSelect](#mouseselect)
+
+##### DefaultMenu
+This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the [Creating Menus](#creating-menus) section for more information.
+
+##### VSync
+
+##### FPSLimit
+
+
+#### Background
+#### Layout
+#### Titles
+#### Highlight
+#### Scroll Indicators
+
+
+
 - [MaxButtons](#maxbuttons)
 - [BackgroundMode](#backgroundmode)
 - [BackgroundColor](#backgroundcolor)
@@ -68,22 +106,19 @@ Every config file must have a section titled "Settings". Within this section, th
 - [ScrollIndicatorOutlineSize](#scrollindicatoroutlinesize)
 - [ScrollIndicatorOutlineColor](#scrollindicatoroutlinecolor)
 - [ScrollIndicatorOpacity](#scrollindicatoropacity)
-- [OnLaunch](#onlaunch)
-- [ResetOnBack](#resetonback)
-- [MouseSelect](#mouseselect)
+
 - [InhibitOSScreensaver](#inhibitosscreensaver)
 - [StartupCmd](#startupcmd)
 - [QuitCmd](#quitcmd)
 
-#### DefaultMenu
-This is the title of the main menu that shows when Flex Launcher is started. The value *must* match the name of one of your menu sections, or there will be an error and Flex Launcher will refuse to start. See the [Creating Menus](#creating-menus) section for more information.
 
-#### MaxButtons
+
+##### MaxButtons
 The maximum number of buttons that can be displayed on the screen. If a menu has more entries than this value, it will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
 
 Default: 4
 
-#### BackgroundMode
+##### BackgroundMode
 Defines what mode the background will be. Possible values: "Color", "Image", and "Slideshow"
 - Color: The background will be a solid color.
 - Image: The background will be an image.
@@ -91,83 +126,83 @@ Defines what mode the background will be. Possible values: "Color", "Image", and
 
 Default: Color
 
-#### BackgroundColor
+##### BackgroundColor
 When `BackgroundMode` is set to "Color", this setting defines the color of the background.
 
 Default: 000000 (Black)
 
-#### BackgroundImage
+##### BackgroundImage
 When `BackgroundMode` is set to "Image", this setting defines the image to be displayed in the background. The value should be a path to an image file. If the image is not the same resolution as your desktop, it will be stretched accordingly.
 
-#### SlideshowDirectory
+##### SlideshowDirectory
 When `BackgroundMode` is set to "Slideshow", this setting defines the directory (folder) which contains the images to display in the background. The value should be a path to a directory on your filesystem. The number of images that may be scanned from the directory is limited to 250.
 
-#### SlideshowImageDuration
+##### SlideshowImageDuration
 When `BackgroundMode` is set to "Slideshow", this setting defines the amount of time in seconds to display each image. Must be an integer value.
 
 Default: 30
 
-#### SlideshowTransitionTime
+##### SlideshowTransitionTime
 When `BackgroundMode` is set to "Slideshow", this setting defines the amount of time in seconds that the next background image will fade in. The fading transition may be disabled by setting this to 0, which will yield a "hard" transition between images. Decimal values are acceptable.
 
 Default: 1.5
 
-#### BackgroundOverlay
+##### BackgroundOverlay
 Defines whether the background overlay feature is enabled. The background overlay is a solid color that is painted over your background, typically used improve the contrast between the background and the text/icons. This setting is a boolean "true" or "false".
 
 Default: false
 
-#### BackgroundOverlayColor
+##### BackgroundOverlayColor
 Defines the color of the background overlay.
 
 Default: 000000 (Black)
 
-#### BackgroundOverlayOpacity
+##### BackgroundOverlayOpacity
 Defines the opacity of the background overlay. Must be a percent value.
 
 Default: 50%
 
-#### IconSize
+##### IconSize
 The width and height of icons on the screen in pixels. If an icon is not the same resolution, it will be stretched accordingly.
 
 Default: 256
 
-#### IconSpacing
+##### IconSpacing
 Distance between the menu entry icons, in pixels or percent of the screen width.
 
 Default: 5%
 
-#### TitleFont
+##### TitleFont
 Defines the font to use for the titles of the menu entries. The value should be the path to a TrueType (TTF) font file. Non-TTF font formats are not supported. Flex Launcher ships with a handful of libre fonts.
 
 Default: OpenSans
 
-#### TitleFontSize
+##### TitleFontSize
 Defines the font size of each menu entry title.
 
 Default: 36
 
-#### TitleColor
+##### TitleColor
 Defines the color of the menu entry titles.
 
 Default: FFFFFF (White)
 
-#### TitleShadows
+##### TitleShadows
 Defines whether shadows are enabled for the menu titles. Shadows give a 3D textured appearance to the text to improve the contrast from the background. This setting is a boolean "true" or "false".
 
 Default: false
 
-#### TitleShadowColor
+##### TitleShadowColor
 Defines the color of the title shadows.
 
 Default: 000000 (Black)
 
-#### TitleOpacity
+##### TitleOpacity
 Defines the opacity of the menu entry titles. Must be a percent value.
 
 Default: 100%
 
-#### TitleOversizeMode
+##### TitleOversizeMode
 Defines the behavior when the width of a menu entry title exceeds the width of its icon (which is defined in `IconSize`). Possible values: "Truncate", "Shrink", and "None"
 - Truncate: Truncates the title at the maximum width and adds "..." to the end.
 - Shrink: Shrinks oversized titles to a smaller font size than `TitleFontSize` so that the entire title fits within the maximum width.
@@ -175,82 +210,82 @@ Defines the behavior when the width of a menu entry title exceeds the width of i
 
 Default: Truncate
 
-#### TitlePadding
+##### TitlePadding
 Defines the vertical spacing between an icon and its title, in pixels.
 
 Default: 20
 
-#### HighlightFillColor
+##### HighlightFillColor
 Defines the fill color of the highlight cursor.
 
 Default: FFFFFF (White)
 
-#### HighlightFillOpacity
+##### HighlightFillOpacity
 Defines the fill opacity of the highlight cursor. Must be a percent value.
 
 Default: 25%
 
-#### HighlightOutlineSize
+##### HighlightOutlineSize
 Defines the stroke width in pixels of the outline of the highlight cursor. Setting this to 0 will disable the outline.
 
 Default: 0
 
-#### HighlightOutlineColor
+##### HighlightOutlineColor
 Defines the outline color of the highlight cursor.
 
 Default: 0000FF (Blue)
 
-#### HighlightOutlineOpacity
+##### HighlightOutlineOpacity
 Defines the outline opacity of the highlight cursor. Must be a percent value.
 
 Default: 100%
 
-#### HighlightCornerRadius
+##### HighlightCornerRadius
 Defines the corner radius of the highlight cursor, in pixels. A value of 0 will yield a plain rectangle. Increasing the value will yield a rounded rectangle with increasingly round corners. The value of `HighlightOutlineSize` must be 0, otherwise this setting will be ignored.
 
 Default: 0
 
-#### HighlightVPadding
+##### HighlightVPadding
 Defines the amount of vertical distance that the highlight cursor extends beyond the top and bottom of the menu entry icon, in pixels.
 
 Default: 30
 
-#### HighlightHPadding
+##### HighlightHPadding
 Defines the amount of horizontal distance that the highlight cursor extends beyond the left and right of the menu entry icon, in pixels.
 
 Default: 30
 
-#### ButtonCenterline
+##### ButtonCenterline
 Defines the vertical centering of the menu entries in percent of the screen height. A value of 50% will cause the buttons to be centered halfway in the screen. Increasing the value will lower the buttons, and lowering it will raise them.
 
 Default: 50%
 
-#### ScrollIndicators
+##### ScrollIndicators
 Defines whether scroll indicators will be enabled in the event that a menu has multiple pages of entries. The scroll indicators are arrows which appear in the bottom left or bottom right of the screen to inform the user that the are other pages of buttons to scroll to. This setting is a boolean "true" or "false".
 
 Default: true
 
-#### ScrollIndicatorFillColor
+##### ScrollIndicatorFillColor
 Defines the fill color of the scroll indicators.
 
 Default: FFFFFF (White)
 
-#### ScrollIndicatorOutlineSize
+##### ScrollIndicatorOutlineSize
 Defines the stroke width in pixels of the scroll indicator outline. Setting this to 0 will disable the outline.
 
 Default: 0
 
-#### ScrollIndicatorOutlineColor
+##### ScrollIndicatorOutlineColor
 Defines the color of the scroll indicator outline.
 
 Default: 000000 (Black)
 
-#### ScrollIndicatorOpacity
+##### ScrollIndicatorOpacity
 Defines the opacity of the scroll indicators. Must be a percent value.
 
 Default: 100%
 
-#### OnLaunch
+##### OnLaunch
 Defines the action that Flex Launcher will take upon the launch of an application. Possible values: "Hide", "None", and "Blank"
 - Hide: Flex Launcher will hide its window while the application is running, and then show itself again after the application has closed. This avoids window focus conflicts between the launcher and the application, but will cause the desktop to be briefly visible when an application is launched.
 - None: Flex Launcher will maintain its window, and the launched application will have to draw itself over Flex Launcher. The desktop will never be visible, but this mode could cause window focusing conflicts depending on your configuration. This setting should only be used if all your applications launch in a fullscreen mode.
@@ -258,25 +293,25 @@ Defines the action that Flex Launcher will take upon the launch of an applicatio
 
 Default: Hide
 
-#### ResetOnBack
+##### ResetOnBack
 Defines whether Flex Launcher will remember the previous entry position when going back to a previous menu. If set to true, the highlight will be reset to the first entry in the menu when going back. This setting is a boolean "true" or "false".
 
 Default: false
 
-#### MouseSelect
+##### MouseSelect
 Defines whether the left mouse button can be used to select the highlighted entry. This setting is intended to support gyroscopic mouse devices where the enter/ok button functions as a mouse left click instead of the keyboard enter button. This setting is a boolean "true" or "false".
 
 Default: false
 
-#### InhibitOSScreensaver
+##### InhibitOSScreensaver
 Defines whether Flex Launcher will prevent your default OS screensaver from activating while it is running. On Windows, this will also inhibit any power saving features as well (e.g. autosleep). This setting is a boolean "true" or "false".
 
 Default: true
 
-#### StartupCmd
+##### StartupCmd
 Defines a command that Flex Launcher will execute immediately upon startup. This can be used to autostart your favorite application.
 
-#### QuitCmd
+##### QuitCmd
 Defines a command that Flex Launcher will execute immediately before quitting. This can be used to do any mode switching or appplication starting to prepare your desktop, e.g. for maintenance.
 
 ## Creating Menus
