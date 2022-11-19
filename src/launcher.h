@@ -113,6 +113,7 @@ typedef enum {
 typedef struct {
     bool application_launching;
     bool application_running;
+    bool has_focus;
     bool slideshow_transition;
     bool slideshow_background_rendering;
     bool slideshow_background_ready;

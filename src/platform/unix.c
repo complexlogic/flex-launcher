@@ -163,6 +163,21 @@ bool start_process(char *cmd, bool application)
     return true;
 }
 
+// A function to check if a child process is still running
+bool process_running()
+{
+    pid_t pid = waitpid(-1*child_pid, NULL, WNOHANG);
+    if (pid > 0) {
+        if (waitpid(-1*child_pid, NULL, WNOHANG) == -1) {
+            return false;
+        }
+    } 
+    else if (pid == -1) {
+        return false;
+    }
+    return true;
+}
+
 // A function to determine if a file is an image file
 int image_filter(const struct dirent *file)
 {

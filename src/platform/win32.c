@@ -17,6 +17,7 @@
 
 extern Config config;
 extern SDL_SysWMinfo wm_info;
+HANDLE child_process            = NULL;
 bool has_shutdown_privilege     = false;
 UINT exit_hotkey                = 0;
 
@@ -80,7 +81,7 @@ static void parse_command(char *cmd, char *file, size_t file_size, char **params
 
                 // Copy parameters
                 if (*p != '\0')
-                    params = strdup(p);
+                    *params = strdup(p);
                     break;
             }
 
@@ -92,7 +93,7 @@ static void parse_command(char *cmd, char *file, size_t file_size, char **params
 
                 // Copy rest of command as parameters
                 if (*p != '\0')
-                    params = strdup(p);
+                    *params = strdup(p);
                 break;
             }
         }
@@ -142,7 +143,7 @@ bool start_process(char *cmd, bool application)
     // Set up info struct
     SHELLEXECUTEINFOA info = {
         .cbSize = sizeof(SHELLEXECUTEINFOA),
-        .fMask = 0,
+        .fMask = SEE_MASK_NOCLOSEPROCESS,
         .hwnd = NULL,
         .lpVerb = "open",
         .lpFile = file,
@@ -161,6 +162,7 @@ bool start_process(char *cmd, bool application)
         if (successful) {
             HWND hwnd = wm_info.info.win.window;
             SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
+            child_process = info.hProcess;
             ret = true;
         }
         else {
@@ -170,6 +172,13 @@ bool start_process(char *cmd, bool application)
     }
     free(params);
     return ret;
+}
+
+// A function to determine if the previously launched process is still running
+bool process_running()
+{
+    DWORD status = WaitForSingleObject(child_process, 0);
+    return status == WAIT_OBJECT_0 ? false : true;
 }
 
 // A function to scan the slideshow directory for image files

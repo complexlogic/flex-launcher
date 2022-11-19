@@ -1016,11 +1016,13 @@ static inline void post_launch()
         set_draw_color();
 
 // Prevent any duplicate keypresses that were used to exit the program (Wayland workaround)
+/*
 #ifdef __unix__
     SDL_Delay(50);
     SDL_PumpEvents();
     SDL_FlushEvent(SDL_KEYDOWN);
 #endif
+*/
 
 #ifdef _WIN32
     SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
@@ -1242,6 +1244,7 @@ int main(int argc, char *argv[])
                 case SDL_WINDOWEVENT:
                     if (event.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
                         log_debug("Lost keyboard focus");
+                        state.has_focus = false;
                         if (state.application_launching) {
                             log_debug("Application detected");
                             state.application_launching = false;
@@ -1255,11 +1258,7 @@ int main(int argc, char *argv[])
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
                         log_debug("Gained keyboard focus");
-                        if (state.application_running) {
-                            state.application_running = false;
-                            post_launch();
-                            log_debug("Application finished");
-                        }
+                        state.has_focus = true;
                     }
                     else if (event.window.event == SDL_WINDOWEVENT_LEAVE)
                         log_debug("Lost mouse focus");
@@ -1270,6 +1269,13 @@ int main(int argc, char *argv[])
                     break;
 #endif
             }
+        }
+
+        // Update application state
+        if (state.application_running && state.has_focus && !process_running()) {
+            state.application_running = false;
+            post_launch();
+            log_debug("Application finished");
         }
 
         // Post-event loop updates
