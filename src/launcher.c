@@ -210,7 +210,9 @@ static void create_window()
     }
     if (config.gamepad_enabled) {
         delay_period = GAMEPAD_REPEAT_DELAY / refresh_period;
-        repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period; 
+        repeat_period = GAMEPAD_REPEAT_INTERVAL / refresh_period;
+        if (!repeat_period)
+            repeat_period = 1;
     }
     if (slideshow != NULL)
         slideshow->transition_change_rate = 255.0f / ((float) config.slideshow_transition_time / (float) refresh_period);
