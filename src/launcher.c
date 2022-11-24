@@ -140,7 +140,7 @@ Scroll *scroll                        = NULL;
 Slideshow *slideshow                  = NULL;
 Screensaver *screensaver              = NULL;
 FILE *log_file                        = NULL;
-SDL_GameController *gamepad           = NULL;
+Gamepad *gamepads                     = NULL;
 GamepadControl *gamepad_controls      = NULL;
 Hotkey *hotkeys                       = NULL;
 Clock *clk                            = NULL;
@@ -372,6 +372,9 @@ static void cleanup()
         tmp_gamepad = i;
     }
     free(tmp_gamepad);
+
+    if (config.gamepad_enabled)
+        disconnect_gamepad(-1, false, true);
 }
 
 // A function to handle key presses from keyboard
@@ -800,19 +803,91 @@ static void execute_command(const char *command)
     free(cmd);
 }
 
-// A function to connect to a gamepad
-static void connect_gamepad(int device_index, bool raise_error)
+// A function to initialize the gamepad struct
+static void init_gamepad(Gamepad **gamepad, int device_index)
 {
-    gamepad = SDL_GameControllerOpen(device_index);
-    if (gamepad == NULL) {
+    *gamepad = malloc(sizeof(Gamepad));
+    **gamepad = (Gamepad) {
+        .device_index = device_index,
+        .id = (int) SDL_JoystickGetDeviceInstanceID(device_index),
+        .controller = NULL,
+        .next = NULL,
+        .previous = NULL,
+    };
+}
+
+// A function to open the SDL controller
+static void open_controller(Gamepad *gamepad, int device_index, bool raise_error)
+{
+    gamepad->controller = SDL_GameControllerOpen(gamepad->device_index);
+    if (gamepad->controller == NULL) {
         if (raise_error)
             log_error("Could not open gamepad at device index %i", config.gamepad_device);
         return;
     }
     if (config.debug && raise_error) {
-        char *mapping = SDL_GameControllerMapping(gamepad);
+        char *mapping = SDL_GameControllerMapping(gamepad->controller);
         log_debug("Gamepad Mapping:\n%s", mapping);
         SDL_free(mapping);
+    }
+}
+
+// A function to connect gamepad(s)
+static void connect_gamepad(int device_index, bool open, bool raise_error)
+{
+    if (device_index >= 0) {
+        Gamepad *gamepad = NULL;
+        for (gamepad = gamepads; gamepad != NULL; gamepad = gamepad->next) {
+            if (gamepad->id == device_index)
+                break;
+        }
+        if (gamepad == NULL) {
+            init_gamepad(&gamepad, device_index);
+            if (gamepads == NULL)
+                gamepads = gamepad;
+
+            // Add to end of the linked list
+            else {
+                Gamepad *i;
+                for (i = gamepads; i->next != NULL; i = i->next);
+                i->next = gamepad;
+                gamepad->previous = i;
+            }
+        }
+        if (open)
+            open_controller(gamepad, device_index, raise_error);
+    }
+    else if (open) {
+        for (Gamepad *i = gamepads; i != NULL; i = i->next)
+            open_controller(i, device_index, raise_error);
+    }
+}
+
+// A function to disconnect gamepad(s)
+static void disconnect_gamepad(int id, bool disconnect, bool remove)
+{
+    for (Gamepad *i = gamepads; i != NULL;) {
+        if (id < 0 || i->id == id) {
+            if (disconnect)
+                SDL_GameControllerClose(i->controller);
+            if (remove) {
+                if (i->next != NULL)
+                    i->next->previous = i->previous;
+                if (i->previous != NULL)
+                    i->previous->next = i->next;
+                if (i == gamepads)
+                    gamepads = i->next;
+                Gamepad *tmp = i->next;
+                free(i);
+                i = tmp;
+            }
+            else {
+                i->controller = NULL;
+                i = i->next;
+            }
+        }
+        else
+            i = i->next;
     }
 }
 
@@ -820,26 +895,36 @@ static void connect_gamepad(int device_index, bool raise_error)
 static void poll_gamepad()
 {
     int value_multiplier; // Handles positive or negative axis
+    bool pressed;
     for (GamepadControl *i = gamepad_controls; i != NULL; i = i->next) {
-        
-        // Check if axis value exceeds dead zone
-        if (i->type == TYPE_AXIS_POS || i->type == TYPE_AXIS_NEG) {
-            if (i->type == TYPE_AXIS_POS)
-                value_multiplier = 1;
-            else if (i->type == TYPE_AXIS_NEG)
-                value_multiplier = -1;
-            if (value_multiplier*SDL_GameControllerGetAxis(gamepad, i->index) > GAMEPAD_DEADZONE)
-                i->repeat++;
-            else
-                i->repeat = 0;
-        }
+        pressed = false;
+        for (Gamepad *gamepad = gamepads; gamepad != NULL; gamepad = gamepad->next) {
 
-        // Check buttons
-        else if (i->type == TYPE_BUTTON) {
-            if (SDL_GameControllerGetButton(gamepad, i->index))
-                i->repeat++;
-            else
-                i->repeat = 0;
+            // Check if axis value exceeds dead zone
+            if (i->type == TYPE_AXIS_POS || i->type == TYPE_AXIS_NEG) {
+                if (i->type == TYPE_AXIS_POS)
+                    value_multiplier = 1;
+                else if (i->type == TYPE_AXIS_NEG)
+                    value_multiplier = -1;
+                if (value_multiplier*SDL_GameControllerGetAxis(gamepad->controller, i->index) > GAMEPAD_DEADZONE) {
+                    i->repeat++;
+                    pressed = true;
+                    break;
+                }
+            }
+
+            // Check buttons
+            else if (i->type == TYPE_BUTTON) {
+                if (SDL_GameControllerGetButton(gamepad->controller, i->index)) {
+                    i->repeat++;
+                    pressed = true;
+                    break;
+                }
+            }
+        }
+        if (!pressed) {
+            i->repeat = 0;
+            continue;
         }
 
         // Execute command if first press or valid repeat
@@ -989,10 +1074,8 @@ static void update_clock(bool block)
 
 static inline void pre_launch()
 {
-    if (gamepad != NULL) {
-        SDL_GameControllerClose(gamepad);
-        gamepad = NULL;
-    }
+    if (gamepads != NULL)
+        disconnect_gamepad(-1, true, false);
 
 // Initialize exit hotkey for Windows
 #ifdef _WIN32
@@ -1009,22 +1092,13 @@ static inline void post_launch()
 
     // Post-application updates
     if (config.gamepad_enabled)
-        connect_gamepad(config.gamepad_device, false);
+        connect_gamepad(-1, true, false);
     if (config.clock_enabled)
         update_clock(true);
     if (config.background_mode == BACKGROUND_SLIDESHOW)
         resume_slideshow();
     if (config.on_launch == ON_LAUNCH_BLANK)
         set_draw_color();
-
-// Prevent any duplicate keypresses that were used to exit the program (Wayland workaround)
-/*
-#ifdef __unix__
-    SDL_Delay(50);
-    SDL_PumpEvents();
-    SDL_FlushEvent(SDL_KEYDOWN);
-#endif
-*/
 
 #ifdef _WIN32
     SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
@@ -1109,7 +1183,7 @@ int main(int argc, char *argv[])
     // Render background
     if (config.background_mode == BACKGROUND_IMAGE) {
         if (config.background_image == NULL)
-            log_error("BackgroundImage not specified in config file");
+            log_error("Background 'Image' setting not specified in config file");
         else
             background_texture = load_texture_from_file(config.background_image);
 
@@ -1230,16 +1304,16 @@ int main(int argc, char *argv[])
                 case SDL_JOYDEVICEADDED:
                     if (SDL_IsGameController(event.jdevice.which) == SDL_TRUE) {
                         log_debug("Gamepad connected with device index %i", event.jdevice.which);
-                        if (event.jdevice.which == config.gamepad_device)
-                            connect_gamepad(event.jdevice.which, true);
+                        if (config.gamepad_device < 0 || config.gamepad_device == event.jdevice.which)
+                            connect_gamepad(event.jdevice.which, !state.application_running, true);
                     }
                     break;
 
                 case SDL_JOYDEVICEREMOVED:
-                    if (event.jdevice.which == config.gamepad_device && gamepad != NULL) {
+                    if (SDL_IsGameController(event.jdevice.which) == SDL_TRUE || 1) {
                         log_debug("Gamepad disconnected");
-                        SDL_GameControllerClose(gamepad);
-                        gamepad = NULL;
+                        if (config.gamepad_device < 0 || config.gamepad_device == event.jdevice.which)
+                            disconnect_gamepad(event.jdevice.which, true, true);
                     }
                     break;
 
@@ -1282,7 +1356,7 @@ int main(int argc, char *argv[])
 
         // Post-event loop updates
         if (!(state.application_running || state.application_launching)) {
-            if (gamepad != NULL)
+            if (gamepads != NULL)
                 poll_gamepad();
             if (config.background_mode == BACKGROUND_SLIDESHOW)
                 update_slideshow();

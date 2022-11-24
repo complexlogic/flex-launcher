@@ -164,6 +164,14 @@ typedef struct menu {
     struct menu  *back;
 } Menu;
 
+typedef struct gamepad {
+    SDL_GameController *controller;
+    int device_index;
+    int id;
+    struct gamepad *previous;
+    struct gamepad *next;
+} Gamepad;
+
 // Linked list of gamepad controls
 typedef struct gamepad_control {
     ControlType            type;
@@ -327,7 +335,10 @@ static void draw_screen(void);
 static void handle_keypress(SDL_Keysym *key);
 static void execute_command(const char *command);
 static void poll_gamepad(void);
-static void connect_gamepad(int device_index, bool raise_error);
+static void init_gamepad(Gamepad **gamepad, int device_index);
+static void connect_gamepad(int device_index, bool open, bool raise_error);
+static void disconnect_gamepad(int id, bool disconnect, bool remove);
+static void open_controller(Gamepad *gamepad, int device_index, bool raise_error);
 void quit(int status);
 void print_version(FILE *stream);
 static void cleanup(void);

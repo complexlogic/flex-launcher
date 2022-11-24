@@ -363,11 +363,8 @@ int config_handler(void *user, const char *section, const char *name, const char
     else if (MATCH(section, "Gamepad")) {
         if (MATCH(name, SETTING_GAMEPAD_ENABLED))
             convert_bool(value, &config.gamepad_enabled);
-        else if (MATCH(name, SETTING_GAMEPAD_DEVICE)) {
-            int device_index = atoi(value);
-            if (device_index >= 0)
-                config.gamepad_device = device_index;
-        }
+        else if (MATCH(name, SETTING_GAMEPAD_DEVICE))
+            config.gamepad_device = atoi(value);
         else if (MATCH(name, SETTING_GAMEPAD_MAPPINGS_FILE)) {
             config.gamepad_mappings_file = strdup(value);
             clean_path(config.gamepad_mappings_file);
