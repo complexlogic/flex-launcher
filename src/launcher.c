@@ -24,6 +24,7 @@ Config config = {
     .title_font_path                  = NULL,
     .vsync                            = true,
     .fps_limit                        = -1,
+    .titles_enabled                   = DEFAULT_TITLES_ENABLED,
     .title_font_size                  = DEFAULT_FONT_SIZE,
     .title_font_color.r               = DEFAULT_TITLE_FONT_COLOR_R,
     .title_font_color.g               = DEFAULT_TITLE_FONT_COLOR_G,
@@ -259,7 +260,6 @@ void set_draw_color()
             color->b,
             color->a
         );
-
 }
 
 // A function to initialize SDL's TTF subsystem
@@ -286,8 +286,7 @@ static void init_sdl_ttf()
     int error = load_font(&title_info, FILENAME_DEFAULT_FONT);
     if (error)
         log_fatal("Could not load title font");
-
-    TTF_SizeUTF8(title_info.font, "TEST STRING", NULL, &geo.font_height);
+    geo.font_height = config.titles_enabled ? TTF_FontHeight(title_info.font) : 0;
 }
 
 // A function to close subsystems and free memory before quitting
@@ -612,13 +611,11 @@ static void render_buttons(Menu *menu)
     for (entry = menu->first_entry; entry != NULL; entry = entry->next) {
         entry->icon = load_texture_from_file(entry->icon_path);
         entry->icon_selected = (entry->icon_selected_path != NULL) ? load_texture_from_file(entry->icon_selected_path) : NULL;
-        entry->title_texture = render_text_texture(entry->title,
-                                   &title_info, 
-                                   &entry->text_rect,
-                                   &h
-                               );
-        if (config.title_oversize_mode == OVERSIZE_SHRINK && h != geo.font_height)
-            entry->title_offset = (geo.font_height - h) / 2;
+        if (config.titles_enabled) {
+            entry->title_texture = render_text_texture(entry->title, &title_info, &entry->text_rect, &h);
+            if (config.title_oversize_mode == OVERSIZE_SHRINK && h != geo.font_height)
+                entry->title_offset = (geo.font_height - h) / 2;
+        }
     }
     menu->rendered = true;
 }
@@ -732,7 +729,8 @@ static void draw_screen()
         for (int i = 0; i < geo.num_buttons; i++) {
             icon = (entry->icon_selected != NULL && i == current_menu->highlight_position) ? entry->icon_selected : entry->icon;
             SDL_RenderCopy(renderer, icon, NULL, &entry->icon_rect);
-            SDL_RenderCopy(renderer, entry->title_texture, NULL, &entry->text_rect);
+            if (config.titles_enabled)
+                SDL_RenderCopy(renderer, entry->title_texture, NULL, &entry->text_rect);
             entry = entry-> next;
         }
 

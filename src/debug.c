@@ -124,6 +124,17 @@ void debug_settings()
     DEBUG_STR(SETTING_BUTTON_CENTERLINE, config.button_centerline[0] != '\0' ? config.button_centerline : "50%");
     log_debug("");
 
+    log_debug("======================== Titles ========================\n");
+    DEBUG_BOOL(SETTING_TITLES_ENABLED, config.titles_enabled);
+    DEBUG_STR(SETTING_TITLE_FONT, config.title_font_path);
+    DEBUG_INT(SETTING_TITLE_FONT_SIZE, config.title_font_size);
+    DEBUG_COLOR(SETTING_TITLE_FONT_COLOR, config.title_font_color);
+    DEBUG_BOOL(SETTING_TITLE_SHADOWS, config.title_shadows);
+    DEBUG_COLOR(SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color);
+    DEBUG_MODE(SETTING_TITLE_OVERSIZE_MODE, MODE_SETTING_OVERSIZE, config.title_oversize_mode);
+    DEBUG_INT(SETTING_TITLE_PADDING, config.title_padding);
+    log_debug("");
+
     log_debug("====================== Highlight =======================\n");
     DEBUG_COLOR(SETTING_HIGHLIGHT_FILL_COLOR, config.highlight_fill_color);
     DEBUG_INT(SETTING_HIGHLIGHT_OUTLINE_SIZE, config.highlight_outline_size);
@@ -138,16 +149,6 @@ void debug_settings()
     DEBUG_COLOR(SETTING_SCROLL_INDICATOR_FILL_COLOR, config.scroll_indicator_fill_color);
     DEBUG_INT(SETTING_SCROLL_INDICATOR_OUTLINE_SIZE, config.scroll_indicator_outline_size);
     DEBUG_COLOR(SETTING_SCROLL_INDICATOR_OUTLINE_COLOR, config.scroll_indicator_outline_color);
-    log_debug("");
-
-    log_debug("======================== Titles ========================\n");
-    DEBUG_STR(SETTING_TITLE_FONT, config.title_font_path);
-    DEBUG_INT(SETTING_TITLE_FONT_SIZE, config.title_font_size);
-    DEBUG_COLOR(SETTING_TITLE_FONT_COLOR, config.title_font_color);
-    DEBUG_BOOL(SETTING_TITLE_SHADOWS, config.title_shadows);
-    DEBUG_COLOR(SETTING_TITLE_SHADOW_COLOR, config.title_shadow_color);
-    DEBUG_MODE(SETTING_TITLE_OVERSIZE_MODE, MODE_SETTING_OVERSIZE, config.title_oversize_mode);
-    DEBUG_INT(SETTING_TITLE_PADDING, config.title_padding);
     log_debug("");
 
     log_debug("======================== Clock =========================\n");

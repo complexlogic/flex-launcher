@@ -211,7 +211,9 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
 
     else if (MATCH(section, "Titles")) {
-        if (MATCH(name, SETTING_TITLE_FONT)) {
+        if (MATCH(name, SETTING_TITLES_ENABLED))
+            convert_bool(value, &config.titles_enabled);
+        else if (MATCH(name, SETTING_TITLE_FONT)) {
             config.title_font_path = strdup(value);
             clean_path(config.title_font_path);
         }
@@ -880,6 +882,9 @@ void validate_settings(Geometry *geo)
         );
         config.max_buttons = i; 
     }
+
+    if (!config.titles_enabled)
+        config.title_padding = 0;
 
     // Convert % opacity settings to 0-255
     if (config.title_opacity[0] != '\0') {

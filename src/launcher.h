@@ -251,6 +251,7 @@ typedef struct {
     Uint16 icon_size;
     int icon_spacing;
     char icon_spacing_str[PERCENT_MAX_CHARS];
+    bool titles_enabled;
     char *title_font_path; // Path to title TTF font file
     unsigned int title_font_size;
     SDL_Color title_font_color; // Color struct for title text
