@@ -182,17 +182,16 @@ bool process_running()
 }
 
 // A function to scan the slideshow directory for image files
-int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
+void scan_slideshow_directory(Slideshow *slideshow, const char *directory)
 {
     WIN32_FIND_DATAA data;
     HANDLE handle;
     char file_search[MAX_PATH_CHARS + 1];
     char file_output[MAX_PATH_CHARS + 1];
     char extension[10];
-    int num_images = 0;
 
     // Generate a wildcard file search string for all supported image file extensions
-    for (int i = 0; i < NUM_IMAGE_EXTENSIONS && num_images < MAX_SLIDESHOW_IMAGES; i++) {
+    for (int i = 0; i < NUM_IMAGE_EXTENSIONS; i++) {
         copy_string(extension, "*", sizeof(extension));
         strcat(extension, extensions[i]);
         join_paths(file_search, sizeof(file_search), 2, directory, extension);
@@ -202,13 +201,12 @@ int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
         if (handle != INVALID_HANDLE_VALUE) {
             do {
                 join_paths(file_output, sizeof(file_output), 2, directory, data.cFileName);
-                slideshow->images[num_images] = strdup(file_output);
-                num_images++;
-            } while (FindNextFileA(handle, &data) != 0 && num_images < MAX_SLIDESHOW_IMAGES);
+                slideshow->images = realloc(slideshow->images, (slideshow->num_images + 1) * sizeof(char*));
+                slideshow->images[slideshow->num_images] = strdup(file_output);
+                slideshow->num_images++;
+            } while (FindNextFileA(handle, &data) != 0);
         }
     }
-    slideshow->num_images = num_images;
-    return num_images;
 }
 
 // A function to get the 2 letter region code

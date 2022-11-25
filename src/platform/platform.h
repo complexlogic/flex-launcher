@@ -8,7 +8,7 @@
 bool file_exists(const char *path);
 bool directory_exists(const char *path);
 void get_region(char *buffer);
-int scan_slideshow_directory(Slideshow *slideshow, const char *directory);
+void scan_slideshow_directory(Slideshow *slideshow, const char *directory);
 bool start_process(char *cmd, bool application);
 bool process_running();
 void scmd_shutdown(void);

@@ -29,7 +29,6 @@
 #define MAX_CLOCK_MARGIN 0.1F
 #define MIN_BUTTON_CENTERLINE 0.25F
 #define MAX_BUTTON_CENTERLINE 0.75F
-#define MAX_SLIDESHOW_IMAGES 250
 #define MIN_SLIDESHOW_IMAGE_DURATION 5000
 #define MAX_SLIDESHOW_IMAGE_DURATION 3600000
 #define MIN_SLIDESHOW_TRANSITION_TIME 0
@@ -216,8 +215,8 @@ typedef struct {
 
 // Slideshow
 typedef struct {
-    char *images[MAX_SLIDESHOW_IMAGES];
-    int order[MAX_SLIDESHOW_IMAGES];
+    char **images;
+    int *order;
     int i;
     int num_images;
     float transition_alpha;

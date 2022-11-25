@@ -419,6 +419,8 @@ void quit_slideshow()
     // Free allocated image paths
     for (int i = 0; i < slideshow->num_images; i++)
         free(slideshow->images[i]);
+    free(slideshow->images);
+    free(slideshow->order);
     free(slideshow);
 }
 
@@ -436,16 +438,22 @@ static void init_slideshow()
     }
     // Allocate and initialize slideshow struct
     slideshow = malloc(sizeof(Slideshow));
-    slideshow->i = -1;
-    slideshow->num_images = 0;
-    slideshow->transition_texture = NULL;
-    slideshow->transition_alpha = 0.0f;
+    *slideshow = (Slideshow) {
+        .i = -1,
+        .num_images = 0,
+        .transition_surface = NULL,
+        .transition_texture = NULL,
+        .transition_alpha = 0.f,
+        .transition_change_rate = 0.f,
+        .images = NULL,
+        .order = NULL
+    };
 
     // Find background images from directory
-    int num_images = scan_slideshow_directory(slideshow, config.slideshow_directory);
+    scan_slideshow_directory(slideshow, config.slideshow_directory);
     
     // Handle errors
-    if (num_images == 0) {
+    if (!slideshow->num_images) {
         log_error("No images found in slideshow directory '%s', "
             "Changing background mode to color", 
             config.slideshow_directory
@@ -453,7 +461,7 @@ static void init_slideshow()
         config.background_mode = BACKGROUND_COLOR;
         quit_slideshow();
     } 
-    else if (num_images == 1) {
+    else if (slideshow->num_images == 1) {
         log_error("Only one image found in slideshow directory %s"
             "Changing background mode to single image", 
             config.slideshow_directory
@@ -466,6 +474,7 @@ static void init_slideshow()
 
     // Generate array of random numbers for image order, load first image
     else {
+        slideshow->order = malloc(sizeof(int) * slideshow->num_images);
         random_array(slideshow->order, slideshow->num_images);
         if (config.debug)
             debug_slideshow(slideshow);

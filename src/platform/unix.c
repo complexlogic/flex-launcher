@@ -193,25 +193,18 @@ int image_filter(const struct dirent *file)
 }
 
 // A function to scan a directory for images
-int scan_slideshow_directory(Slideshow *slideshow, const char *directory)
+void scan_slideshow_directory(Slideshow *slideshow, const char *directory)
 {
     struct dirent **files;
-    int n = scandir(directory, &files, image_filter, NULL);
+    slideshow->num_images = scandir(directory, &files, image_filter, NULL);
+    slideshow->images = malloc(slideshow->num_images * sizeof(char*));
     char file_path[MAX_PATH_CHARS + 1];
-    for (int i = 0; i < n; i++) {
-        if (i < MAX_SLIDESHOW_IMAGES) {
-            join_paths(file_path, sizeof(file_path), 2, directory, files[i]->d_name);
-            slideshow->images[i] = strdup(file_path);
-        }
+    for (int i = 0; i < slideshow->num_images; i++) {
+        join_paths(file_path, sizeof(file_path), 2, directory, files[i]->d_name);
+        slideshow->images[i] = strdup(file_path);
         free(files[i]);
     }
     free(files);
-    if (n <= MAX_SLIDESHOW_IMAGES)
-        slideshow->num_images = n;
-    else
-        slideshow->num_images = MAX_SLIDESHOW_IMAGES;
-
-    return slideshow->num_images;
 }
 
 void get_region(char *buffer)
