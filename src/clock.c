@@ -186,13 +186,13 @@ void init_clock(Clock *clk)
 {
     // Initialize clock structure
     clk->text_info = (TextInfo) {
-                                    .font = NULL,
-                                    .font_size = config.clock_font_size,
-                                    .font_path = &config.clock_font_path,
-                                    .color = &config.clock_font_color,
-                                    .shadow = config.clock_shadows,
-                                    .oversize_mode = OVERSIZE_NONE
-                                };
+        .font = NULL,
+        .font_size = config.clock_font_size,
+        .font_path = &config.clock_font_path,
+        .color = &config.clock_font_color,
+        .shadow = config.clock_shadows,
+        .oversize_mode = OVERSIZE_NONE
+    };
     clk->time_format = config.clock_time_format;
     clk->date_format = config.clock_date_format;
     clk->time_info = NULL;
@@ -225,17 +225,17 @@ void init_clock(Clock *clk)
     // Render the time and date
     format_time(clk);
     clk->time_texture = render_text_texture(clk->time_string,
-                                       &clk->text_info,
-                                       &clk->time_rect,
-                                       NULL
-                                   );
+                            &clk->text_info,
+                            &clk->time_rect,
+                            NULL
+                        );
     if (config.clock_show_date) {
         format_date(clk);
         clk->date_texture = render_text_texture(clk->date_string,
-                                           &clk->text_info,
-                                           &clk->date_rect,
-                                           NULL
-                                       );
+                                &clk->text_info,
+                                &clk->date_rect,
+                                NULL
+                            );
     }
 
     // Calculate geometry
@@ -250,17 +250,17 @@ void render_clock(Clock *clk)
 {
     format_time(clk);
     clk->time_surface = render_text(clk->time_string,
-                                       &clk->text_info,
-                                       &clk->time_rect,
-                                       NULL
-                                   );
+                            &clk->text_info,
+                            &clk->time_rect,
+                            NULL
+                        );
     if (clk->render_date) {
         format_date(clk);
         clk->date_surface = render_text(clk->date_string,
-                                           &clk->text_info,
-                                           &clk->date_rect,
-                                           NULL
-                                       );
+                                &clk->text_info,
+                                &clk->date_rect,
+                                NULL
+                            );
         calculate_clock_geometry(clk);
     }
     calculate_clock_positioning(clk);
@@ -278,7 +278,8 @@ int render_clock_async(void *data)
 // A function to get the time format for a region
 TimeFormat get_time_format(const char *region)
 {
-    const char *countries[] = {"US",
+    const char *countries[] = {
+        "US",
         "CA",
         "GB",
         "AU",
@@ -298,9 +299,10 @@ TimeFormat get_time_format(const char *region)
 // A function to get the date format for a region
 DateFormat get_date_format(const char *region)
 {
-    const char *countries[] = {"US",
+    const char *countries[] = {
+        "US",
         "JP",
-        "CN",
+        "CN"
     };
     DateFormat format = FORMAT_DATE_LITTLE;
     for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
