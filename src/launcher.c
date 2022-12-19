@@ -1159,6 +1159,13 @@ int main(int argc, char *argv[])
     parse_config_file(config_file_path);
     free(config_file_path);
 
+    // Get default menu
+    if (config.default_menu == NULL)
+        log_fatal("No default menu defined in config file");
+    default_menu = get_menu(config.default_menu);
+    if (default_menu == NULL)
+        log_fatal("Default menu %s not found in config file", config.default_menu);
+
     // Initialize SDL, verify all settings are in their allowable range
     init_sdl();
     init_sdl_image();
@@ -1274,11 +1281,6 @@ int main(int argc, char *argv[])
     }
 
     // Load the default menu and display it
-    if (config.default_menu == NULL)
-        log_fatal("No default menu defined in config file");
-    default_menu = get_menu(config.default_menu);
-    if (default_menu == NULL)
-        log_fatal("Default menu %s not found in config file", config.default_menu);
     error = load_menu(default_menu, false, true);
     if (error)
         log_fatal("Could not load default menu %s", config.default_menu);
