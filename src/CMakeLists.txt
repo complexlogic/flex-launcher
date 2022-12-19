@@ -20,7 +20,7 @@ if (UNIX)
 else ()
   target_link_libraries(${EXECUTABLE_TITLE} 
     SDL2::SDL2main 
-	SDL2::SDL2_image 
+	$<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>
 	$<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static> 
 	${GETOPT} 
 	PowrProf

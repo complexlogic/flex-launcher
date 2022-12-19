@@ -1,0 +1,190 @@
+name: Build
+on:
+  push:
+    paths-ignore:
+      [
+        "**/**.md"
+      ]
+
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      [
+        "**/**.md"
+      ]
+
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  actions: none
+  checks: none
+  contents: write
+  deployments: none
+  issues: none
+  packages: read
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: read
+
+jobs:
+  build_windows:
+    name: Windows
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+
+    env:
+      CMAKE_BUILD_TYPE: Release
+      CMAKE_GENERATOR: Visual Studio 17 2022
+      VCPKG_TRIPLET: x64-windows-static
+
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - uses: friendlyanon/setup-vcpkg@v1
+        with: { committish: 6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2 }
+
+      - name: Configure
+        run: cmake -B build -G "${{env.CMAKE_GENERATOR}}" -D "CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=${{env.VCPKG_TRIPLET}}
+
+      - name: Build
+        run: cmake --build build --target package --config ${{ env.CMAKE_BUILD_TYPE }}
+
+      - uses: actions/upload-artifact@v3
+        name: Upload package
+        with:
+          name: Windows build
+          path: build/*.zip
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/*.zip
+
+  build_linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Debian
+            docker_image: debian:bullseye
+            package_ext: .deb
+
+    container:
+      image: ${{matrix.config.docker_image}}
+
+    env:
+      CMAKE_BUILD_TYPE: Release
+
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v3
+
+      - name: "Install dependencies"
+        run: |
+          if [[ "${{matrix.config.name}}" == "Debian" ]]; then
+            apt update && apt install -y build-essential git cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+          fi
+
+      - name: Build
+        run: |
+          if [[ "${{matrix.config.name}}" == "Debian" ]]; then
+            cmake -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=/usr -DPACKAGE=DEB -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=amd64
+            cmake --build build --target package --config ${{env.CMAKE_BUILD_TYPE}}
+          fi
+
+      - uses: actions/upload-artifact@v3
+        name: Upload Package
+        with:
+          name: Debian build
+          path: build/*.deb
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/*${{matrix.config.package_ext}}
+          token: ${{secrets.ACTIONS_SECRET}}
+
+  build_rpi:
+    name: Raspberry Pi
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+    env:
+      CMAKE_BUILD_TYPE: Release
+      IMAGE_VERSION: "2022-10-30"
+
+    steps:
+      - name: Setup
+        run: |
+          REPO=${{github.repository}}
+          echo "REPO_TITLE=${REPO#*/}" >> ${GITHUB_ENV}
+          sudo apt-get install -y qemu qemu-user-static binfmt-support wget tar
+          mkdir root
+
+      - name: Cache Image
+        id: image-cache
+        uses: actions/cache@v3
+        with:
+          path: image.tar.xz
+          key: ${{env.IMAGE_VERSION}}
+
+      - name: Download Image
+        if: steps.image-cache.outputs.cache-hit != 'true'   
+        run: wget -q https://github.com/complexlogic/rpi_image/releases/download/${{env.IMAGE_VERSION}}/image.tar.xz
+
+      - name: Extract Image
+        run: tar -xf image.tar.xz
+
+      - name: Checkout Git repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{env.REPO_TITLE}}
+
+      - name: Generate Build Script
+        run: |
+          echo '#!/bin/bash' >> rpi
+          echo "sudo apt update &&" >> rpi
+          echo "sudo apt install -y libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev &&" >> rpi
+          echo "cd ${{env.REPO_TITLE}} &&" >> rpi
+          echo "cmake -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=/usr -DPACKAGE=DEB -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=arm64 -DRPI=1 &&" >> rpi
+          echo "cmake --build build --target package --config ${{env.CMAKE_BUILD_TYPE}}" >> rpi
+          sudo chmod +x rpi
+
+      - name: Build
+        run: |
+          LOOPBACK=$(sudo losetup -f -P --show rpi.img)
+          sudo mount ${LOOPBACK}p2 -o rw root
+          sudo cp /usr/bin/qemu-aarch64-static root/usr/bin
+          sudo cp -r ${{env.REPO_TITLE}} root
+          sudo cp rpi root/usr/bin
+          sudo chroot root rpi
+
+      - uses: actions/upload-artifact@v3
+        name: Upload package
+        with:
+          name: Raspberry Pi build
+          path: root/${{env.REPO_TITLE}}/build/*.deb
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: root/${{env.REPO_TITLE}}/build/*.deb
+          token: ${{secrets.ACTIONS_SECRET}}
