@@ -328,6 +328,7 @@ static void cleanup()
     free(config.clock_font_path);
     free(config.gamepad_mappings_file);
     free(config.startup_cmd);
+    free(config.quit_cmd);
     free(highlight);
     free(scroll);
     free(screensaver);
@@ -1125,11 +1126,11 @@ void quit(int status)
             "A critical error occurred. Check the log file for details.", 
             NULL
         );
-    cleanup();
     if (config.quit_cmd != NULL) {
         execute_command(config.quit_cmd);
         free(config.quit_cmd);
     }
+    cleanup();
     exit(status);
 }
 
