@@ -52,7 +52,7 @@ The picom option `--window-shader-fg` can be used to specify a custom GLSL shade
 #define RESTORE_HIGHLIGHT 1
 
 // Set this to 1 to use a background overlay to darken the video
-#define BACKGROUND_OVERLAY 1
+#define BACKGROUND_OVERLAY 0
 
 #define BACKGROUND_OVERLAY_R 0x00
 #define BACKGROUND_OVERLAY_G 0x00
