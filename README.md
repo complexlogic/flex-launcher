@@ -40,7 +40,8 @@ Flex Launcher is compatible with both Windows and Linux (including Raspberry Pi 
 
 ## Screenshots
 ![Screenshot 1](docs/assets/screenshots/screenshot1.png "Screenshot 1")
-![Screenshot 2](docs/assets/screenshots/screenshot2.png "Screenshot 2")
+
+https://user-images.githubusercontent.com/95071366/208355237-11f00cbb-9cc3-436b-98f7-8de350e584a7.mp4
 
 ## Installation
 Executables are available for Windows 64 bit, Linux x86-64, and Raspberry Pi. You can also compile the program yourself using the [compilation guide](docs/compilation.md).
@@ -63,10 +64,10 @@ wget https://github.com/complexlogic/flex-launcher/releases/download/v2.0/flex-l
 sudo pacman -U flex-launcher-2.0-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
-This package is compatible with Raspbian Bullseye and later, 32 bit only.
+This package is compatible with Raspbian Bullseye and later, 64 bit only.
 ```Shell
-wget https://github.com/complexlogic/flex-launcher/releases/download/v2.0/flex-launcher_2.0_armhf.deb
-sudo apt install ./flex-launcher_2.0_armhf.deb
+wget https://github.com/complexlogic/flex-launcher/releases/download/v2.0/flex-launcher_2.0_arm64.deb
+sudo apt install ./flex-launcher_2.0_arm64.deb
 ```
 #### Copying Assets to Home Directory
 The Linux packages install a default config file and assets to `/usr/share/flex-launcher`. It is strongly recommended to *not* edit this config file directly, as it will be overwritten if you upgrade to a later version of Flex Launcher. Instead, copy these files to your home directory and edit it there.

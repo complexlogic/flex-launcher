@@ -34,15 +34,13 @@ Binary packages are available for Windows 64 bit, Linux x86-64, and Raspberry Pi
     <tr>
       <td class="download" width="170"><img src="/flex-launcher/assets/icons/raspberry_pi.svg" class="download" style="width:128px"></td>
       <td class="download">
-        <h4>Raspberry Pi</h4>
-        <ul><li><a href="https://github.com/complexlogic/flex-launcher/releases/download/v{{site.launcher_version}}/flex-launcher_{{site.launcher_version}}_armhf.deb">Flex Launcher v{{site.launcher_version}} armhf package (.deb)</a></li>
+        <h4>Raspberry Pi (64 bit only)</h4>
+        <ul><li><a href="https://github.com/complexlogic/flex-launcher/releases/download/v{{site.launcher_version}}/flex-launcher_{{site.launcher_version}}_arm64.deb">Flex Launcher v{{site.launcher_version}} arm64 package (.deb)</a></li>
 		</ul>
       </td>
     </tr>
 </tbody>
 </table>
-
-
 
 
 ## Source Code
