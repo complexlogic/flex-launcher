@@ -46,7 +46,7 @@ It may be desirable to use the desktop interface occasionally, e.g. during maint
 
 Using the `QuitCmd` setting in your config file, you can automatically restore your desktop after you quit Flex Launcher:
 ```INI
-[Settings]
+[General]
 ...
 QuitCmd=:fork explorer.exe
 ```

@@ -20,40 +20,40 @@ Flex Launcher on Linux builds with GCC. This guide assumes you already have the 
 First, install the dependencies. The steps to do so are dependent on your distro:
 
 #### APT-based Distributions (Debian, Ubuntu, Mint, Raspberry Pi OS etc.)
-```
+```bash
 sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 ```
 
 #### Pacman-based Distributions (Arch, Manjaro, etc.)
-```
+```bash
 sudo pacman -S sdl2 sdl2_image sdl2_ttf
 ```
 
 #### DNF-based Distributions (Fedora)
-```
+```bash
 sudo dnf install SDL2-devel SDL2_image-devel SDL2_ttf-devel
 ```
 
 ### Building
 Clone the master repo and create a build directory:
-```
+```bash
 git clone https://github.com/complexlogic/flex-launcher.git
 cd flex-launcher
 mkdir build && cd build
 ```
 Generate the Makefile:
-```
+```bash
 cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
 If you're building on Raspberry Pi, it's recommended to pass `-DRPI=1` to cmake, which tweaks the default configuration to be more Pi-centric.
 
 Build and test the program:
-```
+```bash
 make
 ./flex-launcher
 ```
 Optionally, install it into your system directories:
-```
+```bash
 sudo make install
 ```
 By default, this will install the program and assets with a prefix of `/usr/local`. If you wish to use a different prefix, re-run the cmake generation step with `-DCMAKE_INSTALL_PREFIX=prefix`.

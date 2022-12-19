@@ -9,9 +9,10 @@ title: Linux Setup Guide
 3. [Choosing a Distro](#choosing-a-distro)
 4. [Desktop Enviornment](#desktop-environment)
 5. [Display Protocol](#display-protocol)
-6. [Kiosk Mode Setup](#kiosk-mode-setup)
-7. [HTPC as Audio Receiver](#htpc-as-audio-receiver)
-8. [Using an IR Remote](#using-an-ir-remote)
+6. [Transparent Backgrounds](#transparent-backgrounds)
+7. [Kiosk Mode Setup](#kiosk-mode-setup)
+8. [HTPC as Audio Receiver](#htpc-as-audio-receiver)
+9. [Using an IR Remote](#using-an-ir-remote)
 
 ## Overview
 This page contains tips for setting up Flex Launcher on Linux-based systems, as well as general HTPC setup tips.
@@ -35,19 +36,145 @@ I recommend [Openbox](http://openbox.org/wiki/Main_Page), which is not a full-fl
 Openbox is lightweight and highly customizable. The basic install of Openbox provides only a black root window, over which Flex Launcher and your desired applications can be drawn.
 
 ## Display Protocol
-Being based on SDL, Flex Launcher has support for both X11 and Wayland display protocols. I recommend using X11 for now. The benefits that Wayland offers aren't broadly applicable to an HTPC, and Wayland support is still lacking in many areas. GNOME's Mutter seems to be the only well-implemented Wayland compositor, but GNOME is poorly-suited for HTPC use. 
-
-[Labwc](https://github.com/labwc/labwc) looks to be a good Openbox replacement candidate for Wayland, but it needs more development before it is ready for daily driving.
-
-### Wayland in SDL
-If your HTPC is running Wayland, and the Wayland compositor has an XWayland connection available, SDL may try to use that over native Wayland. If you are unsure if Flex Launcher is running in native Wayland or XWayland, run it in debug mode, then check the log. Under "Video Information", check the "Video Driver" entry. If it's running under XWayland, the value will be "x11".
-
-To force Flex Launcher to run natively under Wayland, you can use the environment variable `SDL_VIDEODRIVER` like so:
-```Shell
-SDL_VIDEODRIVER=wayland flex-launcher
-```
+Being based on SDL, Flex Launcher has support for both X11 and Wayland display protocols. I recommend using X11. The benefits that Wayland offers aren't broadly applicable to an HTPC, and Wayland support is still lacking in many areas.
 
 If you choose to run Flex Launcher in Wayland, it is strongly recommended to use it with the latest stable release of SDL, as later versions have seen significantly improved support.
+
+## Transparent Backgrounds
+Transparent backgrounds require compositor support. I recommend [picom](https://github.com/yshui/picom), which supports transparency via GLSL shaders. The method described below requires version 10 or later which, as of this writing, is not yet packaged for most Linux distros. If this is this case for your distro, you will need to build it from source yourself.
+
+The picom option `--window-shader-fg` can be used to specify a custom GLSL shader to apply to the windows. The below shader program can be used as a starting point to implement transparency with Flex Launcher. The macros should be changed to match the values in your Flex Launcher config file, if required.
+
+```GLSL
+#version 330
+
+// Set this to 1 to restore a semi-transparent highlight
+#define RESTORE_HIGHLIGHT 1
+
+// Set this to 1 to use a background overlay to darken the video
+#define BACKGROUND_OVERLAY 1
+
+#define BACKGROUND_OVERLAY_R 0x00
+#define BACKGROUND_OVERLAY_G 0x00
+#define BACKGROUND_OVERLAY_B 0x00
+#define BACKGROUND_OVERLAY_OPACITY 0.25
+
+// Replace with the values from your Flex Launcher config
+#define CHROMA_R 0x01
+#define CHROMA_G 0x01
+#define CHROMA_B 0x01
+#define HIGHLIGHT_R 0xFF
+#define HIGHLIGHT_G 0xFF
+#define HIGHLIGHT_B 0xFF
+#define HIGHLIGHT_OPACITY 0.25
+
+#define BLEND(src, dst) vec4(                \
+    src.x * src.w + (dst.x * (1.0 - src.w)), \
+    src.y * src.w + (dst.y * (1.0 - src.w)), \
+    src.z * src.w + (dst.z * (1.0 - src.w)), \
+    src.w + (dst.w * (1 - src.w))            \
+)
+
+in vec2 texcoord;
+uniform sampler2D tex;
+uniform vec4 chroma_key = vec4(float(CHROMA_R) / 255.0, float(CHROMA_G) / 255.0, float(CHROMA_B) / 255.0, 1.0);
+uniform vec4 highlight_color = vec4(float(HIGHLIGHT_R) / 255.0, float(HIGHLIGHT_G) / 255.0, float(HIGHLIGHT_B) / 255.0, float(int(HIGHLIGHT_OPACITY * 255.0)) / 255.0);
+#if BACKGROUND_OVERLAY
+uniform vec4 overlay_color = vec4(float(BACKGROUND_OVERLAY_R) / 255.0, float(BACKGROUND_OVERLAY_G) / 255.0, float(BACKGROUND_OVERLAY_B) / 255.0, float(int(BACKGROUND_OVERLAY_OPACITY * 255.0)) / 255.0);
+#endif
+
+vec4 window_shader() 
+{
+    vec4 c = texelFetch(tex, ivec2(texcoord), 0);
+
+    // Remove background
+    vec4 vdiff = abs(chroma_key - c);
+    float diff = max(max(max(vdiff.r, vdiff.g), vdiff.b), vdiff.a);
+    if (diff < 0.0001)
+#if BACKGROUND_OVERLAY
+        c = overlay_color;
+#else
+        c.w = 0.0;
+#endif
+       
+    // Restore highlight
+#if RESTORE_HIGHLIGHT
+    else {
+       vec4 blend = BLEND(highlight_color, chroma_key);
+        vdiff = abs(blend - c);
+        diff = max(max(max(vdiff.r, vdiff.g), vdiff.b), vdiff.a);
+        if (diff < 0.01) {
+#if BACKGROUND_OVERLAY
+            c = BLEND(highlight_color, overlay_color);
+#else
+            c = highlight_color;
+            c *= c.w;
+#endif
+        }
+    }
+#endif
+
+    return c;
+}
+
+```
+Save the shader program to a .glsl file in a directory of your choice.
+
+Since you will typically not want to run the compositor while your launched applications are running, you will need to start and stop it frequently. This is best accomplished with a systemd service. Create a new user unit file:
+```bash
+nano /etc/systemd/user/picom-transparent.service
+```
+Paste the following into the file:
+```INI
+[Unit]
+Description=X11 compositor with alpha transparency
+
+[Service]
+ExecStart=/usr/bin/picom --backend glx --force-win-blend --window-shader-fg=/path/to/shader.glsl
+
+[Install]
+WantedBy=multi-user.target
+```
+Replace `</path/to/shader.glsl>` with the appropriate path, then save the file. The compositor can be enabled/disabled with:
+```bash
+systemctl --user start picom-transparency.service
+systemctl --user stop picom-transparency.service
+```
+Use shell scripts to launch your applications and make sure to stop the compositor prior to launch, and start it again after the application has completed.
+
+### Animated Backgrounds
+For an animated transparent background implementation, I recommend [anipaper](https://github.com/Theldus/anipaper), which will play a video of your choice in a loop. anipaper should be run with the following options enabled:
+- `-b` (Borderless Fullscreen): Since this method requires a compositor, we will need to run anipaper as a borderless fullscreen window rather than as a wallpaper
+- `-p` (Pause): We will need to pause the playback when the application launches, and resume it after it finishes
+- `-d` (Hardware decoding): This will keep the CPU use as low as possible, and consequently fan noise and power consumption. Requires the hardware device name as an argument. This option is not absolutely required, but you should use it if your hardware is supported.
+
+In your autostart setup, make sure that anipaper starts *before* Flex Launcher. This ensures that Flex Launcher will have the window focus.
+
+#### Pausing anipaper
+When the `-p` option is enabled, anipaper can be paused when applications launch, and resumed when they finish. This is necessary to prevent anipaper from unecessarily consuming resources when the video is not visible. Use the following command in your scripts to pause and resume anipaper
+```bash
+pkill -SIGUSR1 anipaper
+```
+
+#### Example Script
+To handle the advanced functionality of starting and stopping various services when applications are launched, you will need to use a shell script. Here is a simple example:
+```bash
+# Pre-launch
+systemctl --user stop picom-transparent.service
+pkill -SIGUSR1 anipaper
+
+# Launch application
+if [[ "$1" == "kodi" ]]; then
+  ...
+elif [[ "$1" == "youtube" ]]; then
+ ...
+fi
+
+# Post-launch
+systemctl --user start picom-transparent.service
+pkill -SIGUSR1 anipaper
+```
+The above example script takes an argument which determines which application to launch. The script executes pre and post launch commands which are common to all applications, as well as commands that are specific to the particular application being launched. In your Flex Launcher config, your menu entry command should be the path to the script with the application you want to launch as the first argument.
 
 ## Kiosk Mode Setup
 "Kiosk Mode" typically refers to a user interface which resembles an embedded-style device that performs only a single function (as opposed to a multitasking PC with a desktop interface). This section contains instructions to set up my interpretation of a "Kiosk Mode" interface for a Linux HTPC. The design is based on my recommendations in the previous sections, consisting of Xorg, Openbox, and Flex Launcher.

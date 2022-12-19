@@ -2,8 +2,15 @@ Unreleased
 - Change application tracking to window focus-based instead of process based
 - Remove OnLaunch "Hide" mode
 - Reorganize configuration file into smaller sections
+- Make VSync optional
+- Add support for transparent backgrounds
+- Allow control from multiple gamepads
+- Allow unlimited number of slideshow backgrounds
 - Make highlight optional
-- Specify color with string beginning with # character
+- Make application titles optional
+- Specify color and key HEX codes with string beginning with # character
+- Create dialog box on fatal errors
+- Linux: Prefer native Wayland over XWayland
 
 v1.8 (2022-10-7)
 - Added inhibit OS screensaver feature
