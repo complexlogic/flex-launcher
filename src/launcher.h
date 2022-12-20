@@ -27,8 +27,8 @@
 #define MAX_SCROLL_INDICATOR_OUTLINE 0.01F
 #define SCREEN_MARGIN 0.05F
 #define MAX_CLOCK_MARGIN 0.1F
-#define MIN_BUTTON_CENTERLINE 0.25F
-#define MAX_BUTTON_CENTERLINE 0.75F
+#define MIN_VCENTER 0.25F
+#define MAX_VCENTER 0.75F
 #define MIN_SLIDESHOW_IMAGE_DURATION 5000
 #define MAX_SLIDESHOW_IMAGE_DURATION 3600000
 #define MIN_SLIDESHOW_TRANSITION_TIME 0
@@ -268,7 +268,7 @@ typedef struct {
     unsigned int highlight_rx;
     int highlight_vpadding;
     int highlight_hpadding;
-    char button_centerline[PERCENT_MAX_CHARS];
+    char vcenter[PERCENT_MAX_CHARS];
     bool scroll_indicators;
     SDL_Color scroll_indicator_fill_color;
     int scroll_indicator_outline_size;

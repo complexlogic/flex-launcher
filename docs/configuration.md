@@ -170,7 +170,7 @@ The settings in this section define the geometric layout of the launcher.
 - [MaxButtons](#maxbuttons)
 - [IconSize](#iconsize)
 - [IconSpacing](#iconspacing)
-- [ButtonCenterline](#buttoncenterline)
+- [VCenter](#vcenter)
 
 ##### MaxButtons
 The maximum number of buttons that can be displayed on the screen. If a menu has more entries than this value, it will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
@@ -187,7 +187,7 @@ Distance between the menu entry icons, in pixels or percent of the screen width.
 
 Default: 5%
 
-##### ButtonCenterline
+##### VCenter
 Defines the vertical centering of the menu entries in percent of the screen height. A value of 50% will cause the buttons to be centered halfway in the screen. Increasing the value will lower the buttons, and lowering it will raise them.
 
 Default: 50%

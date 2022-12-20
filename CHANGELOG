@@ -9,6 +9,7 @@ Unreleased
 - Make highlight optional
 - Make application titles optional
 - Specify color and key HEX codes with string beginning with # character
+- Rename ButtonCenterline setting to VCenter
 - Create dialog box on fatal errors
 - Linux: Prefer native Wayland over XWayland
 

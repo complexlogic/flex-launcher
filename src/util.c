@@ -167,9 +167,9 @@ int config_handler(void *user, const char *section, const char *name, const char
                     config.icon_spacing = icon_spacing;
             }
         }
-        else if (MATCH(name, SETTING_BUTTON_CENTERLINE)) {
+        else if (MATCH(name, SETTING_VCENTER)) {
             if (is_percent(value))
-                copy_string(config.button_centerline, value, sizeof(config.button_centerline));
+                copy_string(config.vcenter, value, sizeof(config.vcenter));
         }
     }
 
@@ -994,24 +994,24 @@ void validate_settings(Geometry *geo)
     }
 
     // Calculate y margin for buttons from centerline setting string, check limits
-    int button_centerline = INVALID_PERCENT_VALUE;
+    int vcenter = INVALID_PERCENT_VALUE;
     int button_height = config.icon_size + config.title_padding + geo->font_height;
     float f_screen_height = (float) geo->screen_height;
-    int lower_limit = (int) (MIN_BUTTON_CENTERLINE*f_screen_height);
-    int upper_limit = (int) (MAX_BUTTON_CENTERLINE*f_screen_height);
+    int lower_limit = (int) (MIN_VCENTER*f_screen_height);
+    int upper_limit = (int) (MAX_VCENTER*f_screen_height);
 
     // Convert percent to int
-    if (config.button_centerline[0] != '\0')
-        convert_percent_to_int(config.button_centerline, &button_centerline, geo->screen_height);
-    if (button_centerline == INVALID_PERCENT_VALUE)
-        convert_percent_to_int(DEFAULT_BUTTON_CENTERLINE, &button_centerline, geo->screen_height);
+    if (config.vcenter[0] != '\0')
+        convert_percent_to_int(config.vcenter, &vcenter, geo->screen_height);
+    if (vcenter == INVALID_PERCENT_VALUE)
+        convert_percent_to_int(DEFAULT_VCENTER, &vcenter, geo->screen_height);
 
     // Check limits, calculate margin
-    if (button_centerline < lower_limit)
-        button_centerline = lower_limit;
-    else if (button_centerline > upper_limit)
-        button_centerline = upper_limit;
-    geo->y_margin = button_centerline - button_height / 2;
+    if (vcenter < lower_limit)
+        vcenter = lower_limit;
+    else if (vcenter > upper_limit)
+        vcenter = upper_limit;
+    geo->y_margin = vcenter - button_height / 2;
 
     // Max highlight outline
     int max_highlight_outline_size = (config.highlight_hpadding < config.highlight_vpadding) 

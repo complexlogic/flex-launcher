@@ -121,7 +121,7 @@ void debug_settings()
     DEBUG_INT(SETTING_MAX_BUTTONS, config.max_buttons);
     DEBUG_INT(SETTING_ICON_SIZE, config.icon_size);
     DEBUG_INT(SETTING_ICON_SPACING, config.icon_spacing);
-    DEBUG_STR(SETTING_BUTTON_CENTERLINE, config.button_centerline[0] != '\0' ? config.button_centerline : "50%");
+    DEBUG_STR(SETTING_VCENTER, config.vcenter[0] != '\0' ? config.vcenter : "50%");
     log_debug("");
 
     log_debug("======================== Titles ========================\n");
