@@ -41,9 +41,9 @@ Being based on SDL, Flex Launcher has support for both X11 and Wayland display p
 If you choose to run Flex Launcher in Wayland, it is strongly recommended to use it with the latest stable release of SDL, as later versions have seen significantly improved support.
 
 ## Transparent Backgrounds
-Transparent backgrounds require compositor support. I recommend [picom](https://github.com/yshui/picom), which supports transparency via GLSL shaders. The method described below requires version 10 or later which, as of this writing, is not yet packaged for most Linux distros. If this is this case for your distro, you will need to build it from source yourself.
+Transparent backgrounds requires compositor support. I recommend [picom](https://github.com/yshui/picom), which supports transparency via GLSL shaders. The method described below requires version 10 or later which, as of this writing, is not yet packaged for most Linux distros. If this is this case for your distro, you will need to build it from source yourself.
 
-The picom option `--window-shader-fg` can be used to specify a custom GLSL shader to apply to the windows. The below shader program can be used as a starting point to implement transparency with Flex Launcher. The macros should be changed to match the values in your Flex Launcher config file, if required.
+The picom option `--window-shader-fg` can be used to specify a custom GLSL shader to apply to the windows. The below shader program can be used as a starting point to implement transparency with Flex Launcher. The macros should be changed to match the values in your Flex Launcher config file, if necessary.
 
 ```GLSL
 #version 330

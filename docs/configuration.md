@@ -546,7 +546,7 @@ Only the function keys F1-F24 may be used as an exit hotkey, with the exception 
 
 The following example maps F10 as an exit hotkey:
 ```
-Hotkey=40000043;:exit
+Hotkey=#40000043;:exit
 ```
 Linux users that desire similar functionality should check the documentation of their desktop environment and/or window manager. Most support global hotkeys that can be configured to close the active window.
 

@@ -17,7 +17,7 @@ This page contains tips for setting up Flex Launcher on Windows-based systems. T
 ## Editing Your Config File
 I recommend editing your configuration file with a development-oriented text editor such as [Notepad++](https://notepad-plus-plus.org/) instead of the default Windows Notepad program. These text editors have color syntax highlighting for the INI format which makes sections, keys, values, and comments visually distinct.
 
-Several settings require a path as a value. In Windows Explorer, hold shift on your keyboard, then right click on a file or folder and select "Copy as path" from the context menu to copy the file path. You can then paste the path into your configuration file. This way, you don't have to type the path manually.
+Several settings require a path as a value. In Windows Explorer, hold shift on your keyboard, then right click on a file or folder and select "Copy as path" from the context menu to copy the file path. You can then paste the path into your configuration file so you don't have to type the path manually.
 
 ## Autostarting
 In a typical HTPC setup, Flex Launcher should be configured to autostart after login. Right click `flex-launcher.exe` and selct "Create shortcut" in the context menu. Use Windows key + R to bring up the run box, then type `shell:startup` and press enter. This will bring up a Windows Explorer window of your autostart folder. Move the shortcut created in the previous step into this folder, which will cause Flex Launcher to autostart.
