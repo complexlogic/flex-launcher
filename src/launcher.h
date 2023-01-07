@@ -71,7 +71,8 @@ typedef enum {
 
 typedef enum {
     ON_LAUNCH_BLANK,
-    ON_LAUNCH_NONE
+    ON_LAUNCH_NONE,
+    ON_LAUNCH_QUIT
 } ModeOnLaunch;
 
 typedef enum {
