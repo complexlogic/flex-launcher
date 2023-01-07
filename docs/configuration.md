@@ -73,9 +73,10 @@ Default: true
 When `VSync` is set to false, this setting defines the maximum number of frames per second that Flex Launcher will render. The minimum is 10, and the maximum is the same as the refresh rate of your monitor.
 
 ##### OnLaunch
-Defines the action that Flex Launcher will take upon the launch of an application. Possible values: "None" and "Blank"
+Defines the action that Flex Launcher will take upon the launch of an application. Possible values: "None", "Blank", and "Quit"
 - None: Flex Launcher will maintain its window while waiting for the launched application to initialize.
-- Blank: Same as "None", except Flex Launcher will change to a blank, black screen.
+- Blank: Flex Launcher will change to a blank, black screen while waiting for the launched application to initialize.
+- Quit: Flex Launcher will quit immediately after the successful launch of an application.
 
 Default: Blank
 
