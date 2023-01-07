@@ -1,3 +1,6 @@
+v2.1 (2023-1-7)
+- Added OnLaunch 'Quit' mode
+
 v2.0 (2022-12-19)
 - Change application tracking to window focus-based instead of process based
 - Remove OnLaunch "Hide" mode
