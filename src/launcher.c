@@ -807,6 +807,8 @@ static void execute_command(const char *command)
             ticks.application_launched = ticks.main;
             if (config.on_launch == ON_LAUNCH_BLANK)
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+            else if (config.on_launch == ON_LAUNCH_QUIT)
+                quit(EXIT_SUCCESS);
         }
     }
     free(cmd);
