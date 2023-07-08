@@ -98,6 +98,7 @@ void debug_settings()
     DEBUG_STR(SETTING_DEFAULT_MENU, config.default_menu);
     DEBUG_BOOL(SETTING_VSYNC, config.vsync);
     DEBUG_INT(SETTING_FPS_LIMIT, config.fps_limit);
+    DEBUG_INT(SETTING_APPLICATION_TIMEOUT, config.application_timeout / 1000);
     DEBUG_MODE(SETTING_ON_LAUNCH, MODE_SETTING_ON_LAUNCH, config.on_launch);
     DEBUG_BOOL(SETTING_RESET_ON_BACK, config.reset_on_back);
     DEBUG_BOOL(SETTING_MOUSE_SELECT, config.mouse_select);

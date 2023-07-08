@@ -133,6 +133,13 @@ int config_handler(void *user, const char *section, const char *name, const char
             if (fps > MIN_FPS_LIMIT)
                 config.fps_limit = fps;
         }
+        else if (MATCH(name, SETTING_APPLICATION_TIMEOUT)) {
+            int application_timeout = atoi(value);
+            if (application_timeout >= MIN_APPLICATION_TIMEOUT
+                && application_timeout <= MAX_APPLICATION_TIMEOUT) {
+                config.application_timeout = 1000 * application_timeout;
+            }
+        }
         else if (MATCH(name, SETTING_ON_LAUNCH))
             parse_mode_setting(MODE_SETTING_ON_LAUNCH, value, (int*) &config.on_launch);
         else if (MATCH(name, SETTING_RESET_ON_BACK))

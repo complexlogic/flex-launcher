@@ -37,7 +37,8 @@
 #define MAX_SCREENSAVER_IDLE_TIME 900
 #define SCREENSAVER_TRANSITION_TIME 1500
 #define APPLICATION_WAIT_PERIOD 100
-#define APPLICATION_TIMEOUT 7000
+#define MIN_APPLICATION_TIMEOUT 3
+#define MAX_APPLICATION_TIMEOUT 30
 
 // Special commands
 #define SCMD_SELECT ":select"
@@ -240,6 +241,7 @@ typedef struct {
     unsigned int max_buttons;
     bool vsync;
     int fps_limit;
+    int application_timeout;
     ModeBackground background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
     SDL_Color chroma_key_color;

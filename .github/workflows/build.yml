@@ -51,7 +51,7 @@ jobs:
           submodules: true
 
       - uses: friendlyanon/setup-vcpkg@v1
-        with: { committish: 6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2 }
+        with: { committish: f6a5d4e8eb7476b8d7fc12a56dff300c1c986131 }
 
       - name: Configure
         run: cmake -B build -G "${{env.CMAKE_GENERATOR}}" -D "CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=${{env.VCPKG_TRIPLET}}

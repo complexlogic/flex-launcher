@@ -24,6 +24,7 @@ Config config = {
     .title_font_path                  = NULL,
     .vsync                            = true,
     .fps_limit                        = -1,
+    .application_timeout              = DEFAULT_APPLICATION_TIMEOUT * 1000,
     .titles_enabled                   = DEFAULT_TITLES_ENABLED,
     .title_font_size                  = DEFAULT_FONT_SIZE,
     .title_font_color.r               = DEFAULT_TITLE_FONT_COLOR_R,
@@ -1379,7 +1380,7 @@ int main(int argc, char *argv[])
                 update_clock(false);
         }
         if (state.application_launching &&
-        ticks.main - ticks.application_launched > APPLICATION_TIMEOUT) {
+        ticks.main - ticks.application_launched > config.application_timeout) {
             state.application_launching = false;
             if (config.on_launch == ON_LAUNCH_BLANK)
                 set_draw_color();
