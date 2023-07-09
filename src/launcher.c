@@ -113,6 +113,7 @@ Config config = {
     .scroll_indicator_outline_color.a = DEFAULT_SCROLL_INDICATOR_OUTLINE_COLOR_A,
     .scroll_indicator_opacity[0]      = '\0',
     .title_oversize_mode              = OVERSIZE_TRUNCATE,
+    .wrap_entries                     = DEFAULT_WRAP_ENTRIES,
     .reset_on_back                    = DEFAULT_RESET_ON_BACK,
     .mouse_select                     = DEFAULT_MOUSE_SELECT,
     .inhibit_os_screensaver           = DEFAULT_INHIBIT_OS_SCREENSAVER,
@@ -670,15 +671,33 @@ static void move_left()
         current_entry = current_entry->previous;
     }
 
-    // If we are in leftmost position, but there is a previous page, load the previous page
-    else if (current_menu->highlight_position == 0 && current_menu->page > 0) {
-        unsigned int buttons = config.max_buttons;
+    // If we are in leftmost position...
+    else if (current_menu->highlight_position == 0 && (current_menu->page > 0 || config.wrap_entries)) {
+        unsigned int buttons;
         current_entry = current_entry->previous;
-        current_menu->root_entry = advance_entries(current_menu->root_entry, (int) buttons, DIRECTION_LEFT);
+
+        // Load the previous page if there is a valid previous entry
+        if (current_entry) {
+            buttons = config.max_buttons;
+            current_menu->root_entry = advance_entries(current_menu->root_entry, (int) buttons, DIRECTION_LEFT);
+            current_menu->page--;
+        }
+
+        // If the user has the wrap entries setting, select the last entry in the menu
+        else {
+            current_entry = advance_entries(current_menu->first_entry, (int) current_menu->num_entries - 1, DIRECTION_RIGHT);
+            unsigned int num_pages = DIV_ROUND_UP(current_menu->num_entries, config.max_buttons);
+            current_menu->root_entry = advance_entries(current_menu->root_entry,
+                (int) ((num_pages - 1 - current_menu->page) * config.max_buttons),
+                DIRECTION_RIGHT
+            );
+            current_menu->page = num_pages - 1;
+            buttons = current_menu->num_entries - current_menu->page * config.max_buttons;
+        }
+
         calculate_button_geometry(current_menu->root_entry, (int) buttons);
         if (config.highlight)
             highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-        current_menu->page--;
         current_menu->highlight_position = buttons - 1;
     }
 }
@@ -707,6 +726,17 @@ static void move_right()
             highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page++;
         current_menu->highlight_position = 0;
+    }
+
+    // If user has the wrap entries setting, reset menu to first entry
+    else if (config.wrap_entries) {
+        current_entry = current_menu->first_entry;
+        current_menu->root_entry = current_entry;
+        current_menu->highlight_position = 0;
+        current_menu->page = 0;
+        if (config.highlight)
+            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
+        calculate_button_geometry(current_menu->root_entry, (int) MIN(current_menu->num_entries, config.max_buttons));
     }
 }
 

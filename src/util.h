@@ -13,6 +13,9 @@
 #define LEN(x) ((sizeof(x)/sizeof(x[0])) - sizeof(x[0]))
 #define MATCH(x, y) !strcmp(x, y)
 
+#define DIV_ROUND_UP(a, b) ((a + (b - 1)) / b)
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
 struct gamepad_info {
     const char *label;
     int type;

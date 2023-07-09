@@ -276,6 +276,7 @@ typedef struct {
     int scroll_indicator_outline_size;
     SDL_Color scroll_indicator_outline_color;
     char scroll_indicator_opacity[PERCENT_MAX_CHARS];
+    bool wrap_entries;
     bool reset_on_back;
     bool mouse_select;
     bool inhibit_os_screensaver;
@@ -310,8 +311,6 @@ typedef struct {
     Uint32 slideshow_image_duration;
     Uint32 slideshow_transition_time;
 } Config;
-
-// Function prototypes
 
 void quit_slideshow(void);
 void set_draw_color(void);

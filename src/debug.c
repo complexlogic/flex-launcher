@@ -102,6 +102,7 @@ void debug_settings()
     DEBUG_INT(SETTING_FPS_LIMIT, config.fps_limit);
     DEBUG_INT(SETTING_APPLICATION_TIMEOUT, config.application_timeout / 1000);
     DEBUG_MODE(SETTING_ON_LAUNCH, MODE_SETTING_ON_LAUNCH, config.on_launch);
+    DEBUG_BOOL(SETTING_WRAP_ENTRIES, config.wrap_entries);
     DEBUG_BOOL(SETTING_RESET_ON_BACK, config.reset_on_back);
     DEBUG_BOOL(SETTING_MOUSE_SELECT, config.mouse_select);
     DEBUG_BOOL(SETTING_INHIBIT_OS_SCREENSAVER, config.inhibit_os_screensaver);

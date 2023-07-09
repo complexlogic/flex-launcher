@@ -148,6 +148,8 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
         else if (MATCH(name, SETTING_ON_LAUNCH))
             parse_mode_setting(MODE_SETTING_ON_LAUNCH, value, (int*) &config.on_launch);
+        else if (MATCH(name, SETTING_WRAP_ENTRIES))
+            convert_bool(value, &config.wrap_entries);
         else if (MATCH(name, SETTING_RESET_ON_BACK))
             convert_bool(value, &config.reset_on_back);
         else if (MATCH(name, SETTING_MOUSE_SELECT))
