@@ -31,7 +31,6 @@
 #define MAX_VCENTER 0.75F
 #define MIN_SLIDESHOW_IMAGE_DURATION 5000
 #define MAX_SLIDESHOW_IMAGE_DURATION 3600000
-#define MIN_SLIDESHOW_TRANSITION_TIME 0
 #define MAX_SLIDESHOW_TRANSITION_TIME 3000
 #define MIN_SCREENSAVER_IDLE_TIME 3
 #define MAX_SCREENSAVER_IDLE_TIME 900
@@ -154,10 +153,10 @@ typedef struct entry {
 // Linked list for menus
 typedef struct menu {
     char         *name;
-    int          num_entries;
+    unsigned int num_entries;
     bool         rendered;
-    int          page;
-    int          highlight_position;
+    unsigned int page;
+    unsigned int highlight_position;
     Entry        *first_entry;
     Entry        *root_entry;
     Entry        *last_selected_entry;
@@ -177,7 +176,7 @@ typedef struct gamepad {
 typedef struct gamepad_control {
     ControlType            type;
     int                    index;
-    int                    repeat;
+    Uint32                 repeat;
     const char             *label;
     char                   *cmd;
     struct gamepad_control *next;
@@ -241,7 +240,7 @@ typedef struct {
     unsigned int max_buttons;
     bool vsync;
     int fps_limit;
-    int application_timeout;
+    Uint32 application_timeout;
     ModeBackground background_mode; // Defines image or color background mode
     SDL_Color background_color; // Background color
     SDL_Color chroma_key_color;
@@ -261,7 +260,7 @@ typedef struct {
     SDL_Color title_shadow_color;
     char title_opacity[PERCENT_MAX_CHARS];
     ModeOversize title_oversize_mode; 
-    unsigned int title_padding;
+    int title_padding;
     bool highlight;
     SDL_Color highlight_fill_color;
     SDL_Color highlight_outline_color;
@@ -293,7 +292,7 @@ typedef struct {
     bool debug;
     char *exe_path;
     Menu *first_menu;
-    int num_menus;
+    size_t num_menus;
     bool clock_enabled;
     bool clock_show_date;
     Alignment clock_alignment;
@@ -313,35 +312,8 @@ typedef struct {
 } Config;
 
 // Function prototypes
-static void init_sdl(void);
-static void init_sdl_image(void);
-static void create_window(void);
-static void init_sdl_ttf(void);
-static int load_menu(Menu *menu, bool set_back_menu, bool reset_position);
-static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position);
-static void update_slideshow(void);
-static void resume_slideshow(void);
-static void update_screensaver(void);
-static void update_clock(bool block);
-static void init_slideshow(void);
-static void init_screensaver(void);
+
 void quit_slideshow(void);
 void set_draw_color(void);
-static void get_display_info(void);
-static void calculate_button_geometry(Entry *entry, int buttons);
-static void render_buttons(Menu *menu);
-static void move_left(void);
-static void move_right(void);
-static void load_submenu(const char *submenu);
-static void load_back_menu(Menu *menu);
-static void draw_screen(void);
-static void handle_keypress(SDL_Keysym *key);
-static void execute_command(const char *command);
-static void poll_gamepad(void);
-static void init_gamepad(Gamepad **gamepad, int device_index);
-static void connect_gamepad(int device_index, bool open, bool raise_error);
-static void disconnect_gamepad(int id, bool disconnect, bool remove);
-static void open_controller(Gamepad *gamepad, int device_index, bool raise_error);
 void quit(int status);
 void print_version(FILE *stream);
-static void cleanup(void);

@@ -15,6 +15,11 @@
 #include "platform.h"
 #include "slideshow.h"
 
+static int desktop_handler(void *user, const char *section, const char *name, const char *value);
+static void strip_field_codes(char *cmd);
+static bool ends_with(const char *string, const char *phrase);
+static int image_filter(const struct dirent *file);
+
 pid_t child_pid;
 
 // A function to handle .desktop lines
@@ -23,6 +28,7 @@ static int desktop_handler(void *user, const char *section, const char *name, co
     Desktop *pdesktop = (Desktop*) user;
     if (!strcmp(pdesktop->section, section) && !strcmp(name, KEY_EXEC))
         pdesktop->exec = strdup(value);
+    return 0;
 }
 
 // A function to determine if a file exists in the filesystem
@@ -41,8 +47,8 @@ bool directory_exists(const char *path)
 // A function to remove field codes from .desktop file Exec line
 static void strip_field_codes(char *cmd)
 {
-    int start = 0;
-    for (int i = 0; i < strlen(cmd); i++) {
+    size_t start = 0;
+    for (size_t i = 0; i < strlen(cmd); i++) {
         if (cmd[i] == '%' && i > 0 && cmd[i - 1] == ' ')
             start = i;
         else if (start && i > start + 2 && cmd[i] != ' ') {
@@ -60,7 +66,7 @@ void make_directory(const char *directory)
 {
     char buffer[MAX_PATH_CHARS + 1];
     char *i = NULL;
-    int length;
+    size_t length;
     snprintf(buffer, sizeof(buffer), "%s", directory);
     length = strlen(buffer);
     if (buffer[length - 1] == '/')
@@ -78,8 +84,8 @@ void make_directory(const char *directory)
 // A function to determine if a string ends with a phrase
 static bool ends_with(const char *string, const char *phrase)
 {
-    int len_string = strlen(string);
-    int len_phrase = strlen(phrase);
+    size_t len_string = strlen(string);
+    size_t len_phrase = strlen(phrase);
     if (len_phrase > len_string)
         return false;
     char *p = (char*) string + len_string - len_phrase;
@@ -98,7 +104,7 @@ bool start_process(char *cmd, bool application)
         desktop.exec = NULL;
 
         // Parse the desktop action from the command (if any)
-        char *action = strtok(NULL, DELIMITER_ACTION);
+        const char* const action = strtok(NULL, DELIMITER_ACTION);
         if (action == NULL)
             copy_string(desktop.section, DESKTOP_SECTION_HEADER, sizeof(desktop.section));
         else
@@ -151,7 +157,7 @@ bool start_process(char *cmd, bool application)
 
             // Check to see if the shell successfully launched
             SDL_Delay(10);
-            pid_t pid = waitpid(child_pid, &status, WNOHANG);
+            waitpid(child_pid, &status, WNOHANG);
             if (WIFEXITED(status) && WEXITSTATUS(status) > 126) {
                 log_error("Application failed to launch");
                 return false;
@@ -181,9 +187,9 @@ bool process_running()
 // A function to determine if a file is an image file
 int image_filter(const struct dirent *file)
 {
-    int len_file = strlen(file->d_name);
-    int len_extension;
-    for (int i = 0; i < NUM_IMAGE_EXTENSIONS; i++) {
+    size_t len_file = strlen(file->d_name);
+    size_t len_extension;
+    for (size_t i = 0; i < NUM_IMAGE_EXTENSIONS; i++) {
         len_extension = strlen(extensions[i]);
         if (len_file > len_extension && 
         !strcmp(file->d_name + len_file - len_extension, extensions[i]))
@@ -197,7 +203,7 @@ void scan_slideshow_directory(Slideshow *slideshow, const char *directory)
 {
     struct dirent **files;
     slideshow->num_images = scandir(directory, &files, image_filter, NULL);
-    slideshow->images = malloc(slideshow->num_images * sizeof(char*));
+    slideshow->images = malloc((size_t) slideshow->num_images * sizeof(char*));
     char file_path[MAX_PATH_CHARS + 1];
     for (int i = 0; i < slideshow->num_images; i++) {
         join_paths(file_path, sizeof(file_path), 2, directory, files[i]->d_name);

@@ -16,6 +16,34 @@
 #include "clock.h"
 #include "platform/platform.h"
 
+static void init_sdl(void);
+static void init_sdl_image(void);
+static void create_window(void);
+static void init_sdl_ttf(void);
+static int load_menu(Menu *menu, bool set_back_menu, bool reset_position);
+static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool reset_position);
+static void update_slideshow(void);
+static void resume_slideshow(void);
+static void update_screensaver(void);
+static void update_clock(bool block);
+static void init_slideshow(void);
+static void init_screensaver(void);
+static void calculate_button_geometry(Entry *entry, int buttons);
+static void render_buttons(Menu *menu);
+static void move_left(void);
+static void move_right(void);
+static void load_submenu(const char *submenu);
+static void load_back_menu(Menu *menu);
+static void draw_screen(void);
+static void handle_keypress(SDL_Keysym *key);
+static void execute_command(const char *command);
+static void poll_gamepad(void);
+static void init_gamepad(Gamepad **gamepad, int device_index);
+static void connect_gamepad(int device_index, bool open, bool raise_error);
+static void disconnect_gamepad(int id, bool disconnect, bool remove);
+static void open_controller(Gamepad *gamepad, bool raise_error);
+static void cleanup(void);
+
 // Initialize default settings
 Config config = {
     .default_menu                     = NULL,
@@ -155,16 +183,16 @@ SDL_DisplayMode display_mode;
 TextInfo title_info;
 Ticks ticks;
 Geometry geo;
-int refresh_period;
-int delay_period;
-int repeat_period; 
+Uint32 refresh_period;
+Uint32 delay_period;
+Uint32 repeat_period;
 
 
 // A function to initialize SDL
 static void init_sdl()
 {    
     // Set flags, hints
-    int sdl_flags = SDL_INIT_VIDEO;
+    Uint32 sdl_flags = SDL_INIT_VIDEO;
 #ifdef __unix__
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
     setenv("SDL_VIDEODRIVER", "wayland,x11", 0);
@@ -178,10 +206,10 @@ static void init_sdl()
     if (SDL_Init(sdl_flags) < 0)
         log_fatal("Could not initialize SDL\n%s", SDL_GetError());
 
-    int ret = SDL_GetDesktopDisplayMode(0, &display_mode);
+    SDL_GetDesktopDisplayMode(0, &display_mode);
     geo.screen_width = display_mode.w;
     geo.screen_height = display_mode.h;
-    refresh_period = 1000 / display_mode.refresh_rate;
+    refresh_period = 1000 / (Uint32) display_mode.refresh_rate;
     geo.screen_margin = (int) (SCREEN_MARGIN * (float) geo.screen_height);
 }
 
@@ -200,15 +228,15 @@ static void create_window()
     SDL_ShowCursor(SDL_DISABLE);
 
     // Create HW accelerated renderer, get screen resolution for geometry calculations
-    int renderer_flags = SDL_RENDERER_ACCELERATED;
+    Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
     if (!config.vsync) {
         if (config.fps_limit > MIN_FPS_LIMIT && config.fps_limit <= display_mode.refresh_rate)
-            refresh_period = 1000 / config.fps_limit;
+            refresh_period = 1000 / (Uint32) config.fps_limit;
         else
             config.vsync = true;
     }
     if (config.vsync) {
-        refresh_period = 1000 / display_mode.refresh_rate;
+        refresh_period = 1000 / (Uint32) display_mode.refresh_rate;
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
     }
     if (config.gamepad_enabled) {
@@ -271,7 +299,7 @@ static void init_sdl_ttf()
         log_fatal("Could not initialize SDL_ttf\n%s", TTF_GetError());
     
     title_info = (TextInfo) { 
-        .font_size = config.title_font_size,
+        .font_size = (int) config.title_font_size,
         .shadow = config.title_shadows,
         .font_path = &config.title_font_path,
         .max_width = config.icon_size,
@@ -340,10 +368,10 @@ static void cleanup()
     Entry *tmp_entry = NULL;
     Menu *menu = config.first_menu;
     Menu *tmp_menu = NULL;
-    for (int i = 0; i < config.num_menus; i++) {
+    for (size_t i = 0; i < config.num_menus; i++) {
         free(menu->name);
         entry = menu->first_entry;
-        for(int j = 0; j < menu->num_entries; j++) {
+        for(size_t j = 0; j < menu->num_entries; j++) {
             free(entry->title);
             free(entry->icon_path);
             free(entry->icon_selected_path);
@@ -477,7 +505,7 @@ static void init_slideshow()
 
     // Generate array of random numbers for image order, load first image
     else {
-        slideshow->order = malloc(sizeof(int) * slideshow->num_images);
+        slideshow->order = malloc(sizeof(int) * (size_t) slideshow->num_images);
         random_array(slideshow->order, slideshow->num_images);
         if (config.debug)
             debug_slideshow(slideshow);
@@ -496,9 +524,9 @@ static void init_screensaver()
         copy_string(intensity, config.screensaver_intensity_str, sizeof(intensity));
     else
         copy_string(intensity, DEFAULT_SCREENSAVER_INTENSITY, sizeof(intensity));
-    int length = strlen(intensity);
+    size_t length = strlen(intensity);
     intensity[length - 1] = '\0';
-    float percent = atof(intensity);
+    float percent = (float) atof(intensity);
 
     // Calculate alpha end value
     screensaver->alpha_end_value = 255.0f * percent / 100.0f;
@@ -541,7 +569,7 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
     if (menu == NULL)
         return 1;
 
-    int buttons;
+    unsigned int buttons;
     Menu *previous_menu = current_menu;
 
     current_menu = menu;
@@ -576,7 +604,7 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
         buttons = config.max_buttons;
     
     // Recalculate the screen geometry
-    calculate_button_geometry(current_menu->root_entry, buttons);
+    calculate_button_geometry(current_menu->root_entry, (int) buttons);
     if (config.highlight) {
         highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
@@ -595,7 +623,6 @@ static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool res
 static void calculate_button_geometry(Entry *entry, int buttons)
 {
     // Calculate proper spacing
-    int button_height = config.icon_size + config.title_padding + geo.font_height;
     geo.x_margin = (geo.screen_width - config.icon_size*buttons -
                    buttons*config.icon_spacing + config.icon_spacing) / 2;
     geo.x_advance = config.icon_size + config.icon_spacing;
@@ -645,10 +672,10 @@ static void move_left()
 
     // If we are in leftmost position, but there is a previous page, load the previous page
     else if (current_menu->highlight_position == 0 && current_menu->page > 0) {
-        int buttons = config.max_buttons;
+        unsigned int buttons = config.max_buttons;
         current_entry = current_entry->previous;
-        current_menu->root_entry = advance_entries(current_menu->root_entry,buttons,DIRECTION_LEFT);
-        calculate_button_geometry(current_menu->root_entry, buttons);
+        current_menu->root_entry = advance_entries(current_menu->root_entry, (int) buttons, DIRECTION_LEFT);
+        calculate_button_geometry(current_menu->root_entry, (int) buttons);
         if (config.highlight)
             highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page--;
@@ -660,7 +687,7 @@ static void move_left()
 static void move_right()
 {
     // If we are not in the rightmost position, move highlight right
-    if (current_menu->highlight_position < (geo.num_buttons - 1)) {
+    if ((int) current_menu->highlight_position < (geo.num_buttons - 1)) {
         if (config.highlight)
             highlight->rect.x += geo.x_advance;
         current_menu->highlight_position++;
@@ -670,12 +697,12 @@ static void move_right()
     // If we are in the rightmost postion, but there are more entries in the menu, load next page
     else if (current_menu->highlight_position + current_menu->page*config.max_buttons <
     (current_menu->num_entries - 1)) {
-        int buttons = current_menu->num_entries - (current_menu->page + 1)*config.max_buttons;
+        unsigned int buttons = current_menu->num_entries - (current_menu->page + 1)*config.max_buttons;
         if (buttons > config.max_buttons)
             buttons = config.max_buttons;
         current_entry = current_entry->next;
         current_menu->root_entry = current_entry;
-        calculate_button_geometry(current_menu->root_entry, buttons);
+        calculate_button_geometry(current_menu->root_entry, (int) buttons);
         if (config.highlight)
             highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page++;
@@ -714,7 +741,7 @@ static void draw_screen()
 
         // Draw scroll indicators
         if (config.scroll_indicators &&
-        (current_menu->page*config.max_buttons + geo.num_buttons) <= (current_menu->num_entries - 1))
+        (current_menu->page*config.max_buttons + (unsigned int) geo.num_buttons) <= (current_menu->num_entries - 1))
             SDL_RenderCopy(renderer, scroll->texture, NULL, &scroll->rect_right);
 
         if (config.scroll_indicators && current_menu->page > 0)
@@ -739,7 +766,7 @@ static void draw_screen()
         Entry *entry = current_menu->root_entry;
         SDL_Texture *icon;
         for (int i = 0; i < geo.num_buttons; i++) {
-            icon = (entry->icon_selected != NULL && i == current_menu->highlight_position) ? entry->icon_selected : entry->icon;
+            icon = (entry->icon_selected != NULL && i == (int) current_menu->highlight_position) ? entry->icon_selected : entry->icon;
             SDL_RenderCopy(renderer, icon, NULL, &entry->icon_rect);
             if (config.titles_enabled)
                 SDL_RenderCopy(renderer, entry->title_texture, NULL, &entry->text_rect);
@@ -754,7 +781,7 @@ static void draw_screen()
     // Output to screen
     SDL_RenderPresent(renderer);
     if (!config.vsync) {
-        int sleep_time = refresh_period - (SDL_GetTicks() - ticks.main);
+        Uint32 sleep_time = refresh_period - (SDL_GetTicks() - ticks.main);
         if (sleep_time > 0)
             SDL_Delay(sleep_time);
     }
@@ -829,7 +856,7 @@ static void init_gamepad(Gamepad **gamepad, int device_index)
 }
 
 // A function to open the SDL controller
-static void open_controller(Gamepad *gamepad, int device_index, bool raise_error)
+static void open_controller(Gamepad *gamepad, bool raise_error)
 {
     gamepad->controller = SDL_GameControllerOpen(gamepad->device_index);
     if (gamepad->controller == NULL) {
@@ -867,11 +894,11 @@ static void connect_gamepad(int device_index, bool open, bool raise_error)
             }
         }
         if (open)
-            open_controller(gamepad, device_index, raise_error);
+            open_controller(gamepad, raise_error);
     }
     else if (open) {
         for (Gamepad *i = gamepads; i != NULL; i = i->next)
-            open_controller(i, device_index, raise_error);
+            open_controller(i, raise_error);
     }
 }
 
@@ -1237,7 +1264,6 @@ int main(int argc, char *argv[])
         highlight = malloc(sizeof(Highlight));
         highlight->texture = render_highlight(config.icon_size + 2*config.highlight_hpadding,
                                 button_height + 2*config.highlight_vpadding,
-                                config.highlight_rx,
                                 &highlight->rect
                             );
     }

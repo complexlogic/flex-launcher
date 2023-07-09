@@ -10,6 +10,15 @@ set(EXECUTABLE_TITLE "flex-launcher")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}")
 include_directories(${PROJECT_BINARY_DIR})
 
+option(EXTRA_WARNINGS "Enable extra compiler warnings" OFF)
+if (EXTRA_WARNINGS)
+  if (MSVC)
+    add_compile_options(/W4 /WX)
+  else ()
+    add_compile_options(-Wall -Wextra -Wpedantic -Wconversion)
+  endif ()
+endif ()
+
 # Set Visual Studio solution startup project
 if (WIN32)
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXECUTABLE_TITLE})

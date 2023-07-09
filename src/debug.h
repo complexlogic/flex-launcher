@@ -4,14 +4,13 @@ typedef enum {
     LOGLEVEL_FATAL
 } LogLevel;
 
-static int init_log(void);
 void output_log(LogLevel log_level, const char *format, ...);
 void print_compiler_info(FILE *stream);
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode);
 void debug_settings(void);
 void debug_gamepad(GamepadControl *gamepad_controls);
 void debug_hotkeys(Hotkey *hotkeys);
-void debug_menu_entries(Menu *first_menu, int num_menus);
+void debug_menu_entries(Menu *first_menu, size_t num_menus);
 void debug_slideshow(Slideshow *slideshow);
 void debug_button_positions(Entry *entry, Menu *current_menu, Geometry *geo);
 

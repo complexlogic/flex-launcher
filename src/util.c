@@ -14,6 +14,10 @@
 #include "platform/platform.h"
 #include "external/ini.h"
 
+static void add_gamepad_control(const char *label, const char *cmd);
+static bool parse_mode_setting(ModeSettingType type, const char *value, int *setting);
+static Menu *create_menu(const char *menu_name, size_t *num_menus);
+
 extern Config          config;
 extern GamepadControl  *gamepad_controls;
 extern Hotkey          *hotkeys;
@@ -123,6 +127,8 @@ void parse_config_file(const char *config_file_path)
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
 {
+    UNUSED(user);
+
     if (MATCH(section, "General")) {
         if (MATCH(name, SETTING_DEFAULT_MENU))
             config.default_menu = strdup(value);
@@ -134,7 +140,7 @@ int config_handler(void *user, const char *section, const char *name, const char
                 config.fps_limit = fps;
         }
         else if (MATCH(name, SETTING_APPLICATION_TIMEOUT)) {
-            int application_timeout = atoi(value);
+            Uint32 application_timeout = (Uint32) atoi(value);
             if (application_timeout >= MIN_APPLICATION_TIMEOUT
                 && application_timeout <= MAX_APPLICATION_TIMEOUT) {
                 config.application_timeout = 1000 * application_timeout;
@@ -201,8 +207,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         }
         else if (MATCH(name, SETTING_SLIDESHOW_TRANSITION_TIME)) {
             Uint32 slideshow_transition_time = (Uint32) (atof(value)*1000.0f);
-            if (slideshow_transition_time >= MIN_SLIDESHOW_TRANSITION_TIME && 
-            slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME)
+            if (slideshow_transition_time <= MAX_SLIDESHOW_TRANSITION_TIME)
                 config.slideshow_transition_time = slideshow_transition_time;
         }
         else if (MATCH(name, SETTING_CHROMA_KEY_COLOR))
@@ -241,7 +246,7 @@ int config_handler(void *user, const char *section, const char *name, const char
         else if (MATCH(name, SETTING_TITLE_PADDING)) {
             int title_padding = atoi(value);
             if (title_padding >= 0)
-                config.title_padding = (unsigned int) title_padding;
+                config.title_padding = title_padding;
         }
     }
 
@@ -258,9 +263,9 @@ int config_handler(void *user, const char *section, const char *name, const char
                 config.highlight_outline_size = highlight_outline_size;
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_CORNER_RADIUS)) {
-            Uint16 rx = (Uint16) atoi(value);
+            int rx = atoi(value);
             if (rx >= MIN_RX_SIZE && rx <= MAX_RX_SIZE)
-                config.highlight_rx = rx;
+                config.highlight_rx = (Uint16) rx;
         }
         else if (MATCH(name, SETTING_HIGHLIGHT_FILL_OPACITY)) {
             if (is_percent(value))
@@ -386,7 +391,7 @@ int config_handler(void *user, const char *section, const char *name, const char
 
     // Parse menus/entries
     else {
-        Entry *previous_entry;
+        Entry *previous_entry = NULL;
 
         // Check if menu struct exists for current section
         if (config.first_menu == NULL) {
@@ -495,7 +500,7 @@ const char *get_mode_setting(int type, int value)
 // A function to determine if a string is a percent value
 bool is_percent(const char *string)
 {
-    int length = strlen(string);
+    size_t length = strlen(string);
     if (length > 0 && length < PERCENT_MAX_CHARS && strchr(string, '%') == string + length - 1)
         return true;
     else
@@ -506,11 +511,10 @@ bool is_percent(const char *string)
 // because SDL cannot handle them
 void clean_path(char *path)
 {
-    char *out = NULL;
-    int length = strlen(path);
+    size_t length = strlen(path);
     if (length >= 3 && path[0] == '"' && path[length - 1] == '"') {
         path[length - 1] = '\0';
-        for (int i = 1; i <= length; i++)
+        for (size_t i = 1; i <= length; i++)
             *(path + i - 1) = *(path + i);
     }    
 }
@@ -519,7 +523,7 @@ void clean_path(char *path)
 char *selected_path(const char *path)
 {
     char buffer[MAX_PATH_CHARS + 1];
-    int length = strlen(path);
+    size_t length = strlen(path);
     char *out = NULL;
 
     // Find file extension
@@ -550,7 +554,7 @@ bool hex_to_color(const char *string, SDL_Color *color)
     char *p = (char*) string + 1;
 
     // If strtoul returned 0, and the hex string wasn't 000..., then there was an error
-    int length = strlen(p);
+    size_t length = strlen(p);
     Uint32 hex = (Uint32) strtoul(p, NULL, 16);
     if ((!hex && strcmp(p,"000000")) || (length != 6))
         return false;
@@ -588,7 +592,7 @@ char *join_paths(char *buffer, size_t bytes, int num_paths, ...)
 {
     va_list list;
     char *arg;
-    int length;
+    size_t length;
     va_start(list, num_paths);
 
     // Add each subdirectory to path
@@ -745,8 +749,7 @@ void random_array(int *array, int array_size)
         array[i] = i;
 
     // Shuffle array indices randomly, see https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-    srand(time(NULL));
-    int j;
+    srand((unsigned int) time(NULL));
     int tmp;
     for (int i = 0; i < array_size - 1; i++) {
         int j = (rand() % (array_size - i)) + i;
@@ -759,7 +762,7 @@ void random_array(int *array, int array_size)
 // A function to calculate the total width of all screen objects
 unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int highlight_hpadding)
 {
-    return (buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding;
+    return (unsigned int) ((buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding);
 }
 
 // A function to add a hotkey to the linked list
@@ -831,7 +834,7 @@ static void add_gamepad_control(const char *label, const char *cmd)
     };
 
     // Find correct gamepad info for label, return if none found
-    int i;
+    size_t i;
     for (i = 0; i < sizeof(info) / sizeof(info[0]); i++) {
         if (MATCH(info[i].label, label))
             break;
@@ -866,11 +869,11 @@ static void add_gamepad_control(const char *label, const char *cmd)
 // A function to convert a string percent setting to an int value
 void convert_percent_to_int(char *string, int *result, int max_value)
 {
-    int length = strlen(string);
+    size_t length = strlen(string);
     char tmp[PERCENT_MAX_CHARS];
     copy_string(tmp, string, sizeof(tmp));
     tmp[length - 1] = '\0';
-    float percent = atof(tmp);
+    float percent = (float) atof(tmp);
     if (percent >= 0.0F && percent <= 100.0F)
         *result = (int) ((percent / 100.0F) * (float) max_value);
 }
@@ -879,9 +882,9 @@ void convert_percent_to_int(char *string, int *result, int max_value)
 void validate_settings(Geometry *geo)
 {
     // Reduce number of buttons if they can't all fit on screen
-    if (config.icon_size * config.max_buttons > geo->screen_width) {
-        int i;
-        for (i = config.max_buttons; i * config.icon_size > geo->screen_width && i > 0; i--);
+    if (config.icon_size * config.max_buttons > (unsigned int) geo->screen_width) {
+        unsigned int i;
+        for (i = config.max_buttons; i * config.icon_size > (unsigned int) geo->screen_width && i > 0; i--);
         log_error(
             "Not enough screen space for %i buttons, reducing to %i", 
             config.max_buttons, 
@@ -922,9 +925,10 @@ void validate_settings(Geometry *geo)
     if (config.scroll_indicator_opacity[0] != '\0') {
         int scroll_indicator_opacity = INVALID_PERCENT_VALUE;
         convert_percent_to_int(config.scroll_indicator_opacity, &scroll_indicator_opacity, 255);
-        if (scroll_indicator_opacity != INVALID_PERCENT_VALUE)
+        if (scroll_indicator_opacity != INVALID_PERCENT_VALUE) {
             config.scroll_indicator_fill_color.a = (Uint8) scroll_indicator_opacity;
             config.scroll_indicator_outline_color.a = config.scroll_indicator_fill_color.a;
+        }
     }
     if (config.clock_opacity[0] != '\0') {
         int clock_opacity = INVALID_PERCENT_VALUE;
@@ -961,19 +965,19 @@ void validate_settings(Geometry *geo)
         config.highlight_hpadding = config.icon_spacing / 2;
 
     // Reduce icon spacing and highlight padding if too large to fit onscreen
-    unsigned int required_length = calculate_width(config.max_buttons,
+    unsigned int required_length = calculate_width((int) config.max_buttons,
                                        config.icon_spacing,
                                        config.icon_size,
                                        config.highlight_hpadding
                                    );
     int highlight_hpadding = config.highlight_hpadding;
     int icon_spacing = config.icon_spacing;
-    for (int i = 0; i < 100 && required_length > geo->screen_width; i++) {
+    for (int i = 0; i < 100 && required_length > (unsigned int) geo->screen_width; i++) {
         if (highlight_hpadding > 0)
             highlight_hpadding = (highlight_hpadding * 9) / 10;
         if (icon_spacing > 0)
             icon_spacing = (icon_spacing * 9) / 10;
-        required_length = calculate_width(config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
+        required_length = calculate_width((int) config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
     }
     if (config.highlight_hpadding != highlight_hpadding) {
         log_error("Highlight padding value %i too large to fit screen, shrinking to %i",
@@ -1048,7 +1052,7 @@ Menu *get_menu(const char *menu_name)
 }
 
 // A function to allocate memory to and initialize a menu struct
-Menu *create_menu(const char *menu_name, int *num_menus)
+Menu *create_menu(const char *menu_name, size_t *num_menus)
 {
     Menu *menu = malloc(sizeof(Menu));
     *menu = (Menu) {
@@ -1088,7 +1092,7 @@ void sprintf_alloc(char **buffer, const char *format, ...)
     va_start(args1, format);
     va_copy(args2, args1);
     
-    int length = vsnprintf(NULL, 0, format, args1);
+    size_t length = (size_t) vsnprintf(NULL, 0, format, args1);
     if (length) {
         *buffer = malloc(length + 1);
         vsnprintf(*buffer, length + 1, format, args2);

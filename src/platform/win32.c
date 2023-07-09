@@ -10,10 +10,16 @@
 #include "../launcher.h"
 #include <launcher_config.h>
 #include "platform.h"
-#include "win32.h"
 #include "../util.h"
 #include "../debug.h"
 #include "slideshow.h"
+
+static void parse_command(char *cmd, char *file, size_t file_size, char **params);
+static char *path_basename(const char *path);
+static bool process_running_name(const char *target_process);
+static bool is_browser(const char *exe_basename);
+static UINT sdl_to_win32_keycode(SDL_Keycode keycode);
+static bool get_shutdown_privilege(void);
 
 extern Config config;
 extern SDL_SysWMinfo wm_info;

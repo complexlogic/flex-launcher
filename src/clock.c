@@ -14,6 +14,12 @@
 #include "debug.h"
 #include "platform/platform.h"
 
+static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int *x_offset);
+static void calculate_clock_geometry(Clock *clk);
+static void format_time(Clock *clk);
+static void format_date(Clock *clk);
+static void calculate_clock_positioning(Clock *clk);
+
 extern Config config;
 extern State state;
 extern Geometry geo;
@@ -131,7 +137,7 @@ static void format_date(Clock *clk)
         format = DATE_STRING_BIG;
     char weekday[MAX_CLOCK_CHARS + 1];
     char date[MAX_CLOCK_CHARS + 1];
-    unsigned int bytes = sizeof(clk->date_string);
+    size_t bytes = sizeof(clk->date_string);
 
     // Get weekday name
     if (config.clock_include_weekday) {
@@ -187,7 +193,7 @@ void init_clock(Clock *clk)
     // Initialize clock structure
     clk->text_info = (TextInfo) {
         .font = NULL,
-        .font_size = config.clock_font_size,
+        .font_size = (int) config.clock_font_size,
         .font_path = &config.clock_font_path,
         .color = &config.clock_font_color,
         .shadow = config.clock_shadows,
@@ -287,7 +293,7 @@ TimeFormat get_time_format(const char *region)
         "IN"
     };
     TimeFormat format = FORMAT_TIME_24HR;
-    for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
+    for (size_t i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
         if (!strcmp(region, countries[i])) {
             format = FORMAT_TIME_12HR;
             break;
@@ -305,7 +311,7 @@ DateFormat get_date_format(const char *region)
         "CN"
     };
     DateFormat format = FORMAT_DATE_LITTLE;
-    for (int i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
+    for (size_t i = 0; i < sizeof(countries) / sizeof(countries[0]); i++) {
         if (!strcmp(region, countries[i])) {
             format = FORMAT_DATE_BIG;
             break;

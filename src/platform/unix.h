@@ -14,8 +14,3 @@ typedef struct {
     char section[MAX_INI_SECTION + 1];
     char *exec;
 } Desktop;
-
-static int desktop_handler(void *user, const char *section, const char *name, const char *value);
-static void strip_field_codes(char *cmd);
-static bool ends_with(const char *string, const char *phrase);
-static int image_filter(const struct dirent *file);

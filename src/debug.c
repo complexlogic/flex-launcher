@@ -13,6 +13,8 @@
 #include "platform/unix.h"
 #endif
 
+static int init_log(void);
+
 extern Config config;
 extern FILE *log_file;
 
@@ -64,7 +66,7 @@ void output_log(LogLevel log_level, const char *format, ...)
     static char buffer[MAX_LOG_LINE_BYTES];
     va_list args;
     va_start(args, format);
-    int length = vsnprintf(buffer, MAX_LOG_LINE_BYTES - 1, format, args);
+    size_t length = (size_t) vsnprintf(buffer, MAX_LOG_LINE_BYTES - 1, format, args);
     fwrite(buffer, 1, length, log_file);
     if (config.debug)
         fflush(log_file);
@@ -176,7 +178,7 @@ void debug_settings()
 }
 
 // A function to print the parsed menu entries to the command line
-void debug_menu_entries(Menu *first_menu, int num_menus) 
+void debug_menu_entries(Menu *first_menu, size_t num_menus)
 {
     if (first_menu == NULL) {
         log_debug("No valid menus found");
@@ -185,11 +187,11 @@ void debug_menu_entries(Menu *first_menu, int num_menus)
     log_debug("======================= Menu Entries =======================\n");
     Menu *menu = first_menu;
     Entry *entry;
-    for (int i = 0; i < num_menus; i ++) {
+    for (size_t i = 0; i < num_menus; i ++) {
         log_debug("Menu Name: %s",menu->name);
         log_debug("Number of Entries: %i",menu->num_entries);
         entry = menu->first_entry;
-        for (int j = 0; j < menu->num_entries; j++) {
+        for (size_t j = 0; j < menu->num_entries; j++) {
             log_debug("Entry %i Title: %s",j,entry->title);
             log_debug("Entry %i Icon Path: %s",j,entry->icon_path);
             log_debug("Entry %i Command: %s",j,entry->cmd);
@@ -255,7 +257,7 @@ void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
     SDL_RendererInfo info;
     SDL_GetRendererInfo(renderer, &info);
     log_debug("Supported Texture formats:");
-    for(int i = 0; i < info.num_texture_formats; i++)
+    for(size_t i = 0; i < info.num_texture_formats; i++)
         log_debug("  %s", SDL_GetPixelFormatName(info.texture_formats[i]));
     log_debug("");
 }

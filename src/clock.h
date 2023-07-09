@@ -24,11 +24,6 @@ typedef struct {
     bool render_date;
 } Clock;
 
-static void calculate_text_metrics(TTF_Font *font, const char *text, int *h, int *x_offset);
-static void calculate_clock_geometry(Clock *clk);
-static void format_time(Clock *clk);
-static void format_date(Clock *clk);
-static void calculate_clock_positioning(Clock *clk);
 void init_clock(Clock *clk);
 void get_time(Clock *clk);
 void render_clock(Clock *clk);

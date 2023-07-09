@@ -12,9 +12,9 @@
 #include "debug.h"
 #include "external/ini.h"
 #define NANOSVG_IMPLEMENTATION
-#include "external/nanosvg.h"
+#include <nanosvg.h>
 #define NANOSVGRAST_IMPLEMENTATION
-#include "external/nanosvgrast.h"
+#include <nanosvgrast.h>
 
 extern Config config;
 extern State state;
@@ -180,7 +180,7 @@ SDL_Texture *rasterize_svg(char *buffer, int w, int h, SDL_Rect *rect)
     
     // Allocate memory
     pitch = 4*width;
-    pixel_buffer = malloc(4*width*height);
+    pixel_buffer = malloc((size_t) (4*width*height));
     if (pixel_buffer == NULL) {
         log_error("Could not alloc SVG pixel buffer.");
         return NULL;
@@ -207,7 +207,7 @@ SDL_Texture *rasterize_svg(char *buffer, int w, int h, SDL_Rect *rect)
 }
 
 // A function to render the highlight for the buttons
-SDL_Texture *render_highlight(int width, int height, unsigned int rx, SDL_Rect *rect)
+SDL_Texture *render_highlight(int width, int height, SDL_Rect *rect)
 {
     // Insert user config variables into SVG-formatted text buffer
     char *buffer = NULL;
@@ -291,7 +291,6 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
     char *text_buffer = strdup(text);
 
     // Calculate size of the rendered title
-    int title_length = strlen(text_buffer);
     TTF_SizeUTF8(info->font, text_buffer, &w, &h);
 
     // If title is too large to fit
@@ -305,7 +304,7 @@ SDL_Surface *render_text(const char *text, TextInfo *info, SDL_Rect *rect, int *
 
         // Shrink mode:
         else if (info->oversize_mode == OVERSIZE_SHRINK) {
-            int reduced_font_size = info->font_size - 1;
+            int reduced_font_size = (int) info->font_size - 1;
             reduced_font = TTF_OpenFont(*info->font_path, reduced_font_size);
             TTF_SizeUTF8(reduced_font, text_buffer, &w, &h);
 
