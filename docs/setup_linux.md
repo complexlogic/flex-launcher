@@ -21,7 +21,7 @@ This page contains tips for setting up Flex Launcher on Linux-based systems, as 
 In a typical HTPC setup, Flex Launcher is autostarted after boot. On Linux, this can be accomplished in multiple ways. The most widely implemented is [XDG Autostart](https://specifications.freedesktop.org/autostart-spec/autostart-spec-latest.html). Application .desktop files in `~/.config/autostart` will be autostarted upon user login. The .desktop file for Flex Launcher is installed to `/usr/share/applications`. Copy it to your autostart directory:
 ```Shell
 mkdir -p ~/.config/autostart
-cp /usr/share/flex-launcher.desktop ~/.config/autostart
+cp /usr/share/applications/flex-launcher.desktop ~/.config/autostart
 ```
 Additionally, some desktop enviornments have their own, separate autostart protocol. Consult your DE's documentation for more details.
 
