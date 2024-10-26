@@ -19,6 +19,8 @@ on:
 defaults:
   run:
     shell: bash
+env:
+  VCPKG_COMMITTISH: 10b7a178346f3f0abef60cecd5130e295afd8da4
 
 permissions:
   actions: none
@@ -51,7 +53,8 @@ jobs:
           submodules: true
 
       - uses: friendlyanon/setup-vcpkg@v1
-        with: { committish: 501cb01e517ee5689577bb01ba8bd1b4c1041a53 }
+        with:
+          committish: ${{env.VCPKG_COMMITTISH}}
 
       - name: Configure
         run: cmake -B build -G "${{env.CMAKE_GENERATOR}}" -D "CMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=${{env.VCPKG_TRIPLET}}
@@ -97,7 +100,7 @@ jobs:
       - name: "Install dependencies"
         run: |
           if [[ "${{matrix.config.name}}" == "Debian" ]]; then
-            apt update && apt install -y build-essential git cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+            apt update && apt install -y build-essential git cmake pkg-config libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libinih-dev
           fi
 
       - name: Build
@@ -161,7 +164,7 @@ jobs:
         run: |
           echo '#!/bin/bash' >> rpi
           echo "sudo apt update &&" >> rpi
-          echo "sudo apt install -y libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev &&" >> rpi
+          echo "sudo apt install -y libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libinih-dev &&" >> rpi
           echo "cd ${{env.REPO_TITLE}} &&" >> rpi
           echo "cmake -B build -DCMAKE_BUILD_TYPE=${{env.CMAKE_BUILD_TYPE}} -DCMAKE_INSTALL_PREFIX=/usr -DPACKAGE=DEB -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=arm64 -DRPI=1 &&" >> rpi
           echo "cmake --build build --target package --config ${{env.CMAKE_BUILD_TYPE}}" >> rpi

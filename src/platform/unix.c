@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <SDL.h>
-#include "../external/ini.h"
+#include <ini.h>
 #include "../launcher.h"
 #include <launcher_config.h>
 #include "unix.h"

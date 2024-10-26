@@ -12,7 +12,7 @@
 #include "util.h"
 #include "debug.h"
 #include "platform/platform.h"
-#include "external/ini.h"
+#include <ini.h>
 
 static void add_gamepad_control(const char *label, const char *cmd);
 static bool parse_mode_setting(ModeSettingType type, const char *value, int *setting);

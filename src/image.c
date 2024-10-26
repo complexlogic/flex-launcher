@@ -10,7 +10,7 @@
 #include "image.h"
 #include "util.h"
 #include "debug.h"
-#include "external/ini.h"
+#include <ini.h>
 #define NANOSVG_IMPLEMENTATION
 #include <nanosvg.h>
 #define NANOSVGRAST_IMPLEMENTATION
