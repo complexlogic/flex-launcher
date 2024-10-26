@@ -16,14 +16,12 @@
 
 static void parse_command(char *cmd, char *file, size_t file_size, char **params);
 static char *path_basename(const char *path);
-static bool process_running_name(const char *target_process);
 static bool is_browser(const char *exe_basename);
 static UINT sdl_to_win32_keycode(SDL_Keycode keycode);
 static bool get_shutdown_privilege(void);
 
 extern Config config;
 extern SDL_SysWMinfo wm_info;
-HANDLE child_process            = NULL;
 bool has_shutdown_privilege     = false;
 UINT exit_hotkey                = 0;
 
@@ -168,7 +166,6 @@ bool start_process(char *cmd, bool application)
         if (successful) {
             HWND hwnd = wm_info.info.win.window;
             SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOREDRAW | SWP_NOSIZE | SWP_NOMOVE);
-            child_process = info.hProcess;
             ret = true;
         }
         else {
@@ -178,13 +175,6 @@ bool start_process(char *cmd, bool application)
     }
     free(params);
     return ret;
-}
-
-// A function to determine if the previously launched process is still running
-bool process_running()
-{
-    DWORD status = WaitForSingleObject(child_process, 0);
-    return status == WAIT_OBJECT_0 ? false : true;
 }
 
 // A function to scan the slideshow directory for image files

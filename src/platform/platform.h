@@ -10,7 +10,6 @@ bool directory_exists(const char *path);
 void get_region(char *buffer);
 void scan_slideshow_directory(Slideshow *slideshow, const char *directory);
 bool start_process(char *cmd, bool application);
-bool process_running();
 void scmd_shutdown(void);
 void scmd_restart(void);
 void scmd_sleep(void);

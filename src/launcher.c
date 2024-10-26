@@ -1418,7 +1418,7 @@ int main(int argc, char *argv[])
         }
 
         // Update application state
-        if (state.application_running && state.has_focus && !process_running()) {
+        if (state.application_running && state.has_focus) {
             state.application_running = false;
             post_launch();
             log_debug("Application finished");

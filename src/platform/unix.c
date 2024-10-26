@@ -20,8 +20,6 @@ static void strip_field_codes(char *cmd);
 static bool ends_with(const char *string, const char *phrase);
 static int image_filter(const struct dirent *file);
 
-pid_t child_pid;
-
 // A function to handle .desktop lines
 static int desktop_handler(void *user, const char *section, const char *name, const char *value)
 {
@@ -129,7 +127,7 @@ bool start_process(char *cmd, bool application)
     free(tmp);
 
     // Fork new system shell process
-    child_pid = fork();
+    pid_t child_pid = fork();
     switch(child_pid) {
         case -1:
             log_error("Could not fork new process for application");
@@ -166,21 +164,6 @@ bool start_process(char *cmd, bool application)
             break;
     }
     free(exec);
-    return true;
-}
-
-// A function to check if a child process is still running
-bool process_running()
-{
-    pid_t pid = waitpid(-1*child_pid, NULL, WNOHANG);
-    if (pid > 0) {
-        if (waitpid(-1*child_pid, NULL, WNOHANG) == -1) {
-            return false;
-        }
-    } 
-    else if (pid == -1) {
-        return false;
-    }
     return true;
 }
 
