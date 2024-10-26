@@ -19,7 +19,7 @@ This page contains tips for setting up Flex Launcher on Linux-based systems, as 
 
 ## Autostarting
 In a typical HTPC setup, Flex Launcher is autostarted after boot. On Linux, this can be accomplished in multiple ways. The most widely implemented is [XDG Autostart](https://specifications.freedesktop.org/autostart-spec/autostart-spec-latest.html). Application .desktop files in `~/.config/autostart` will be autostarted upon user login. The .desktop file for Flex Launcher is installed to `/usr/share/applications`. Copy it to your autostart directory:
-```Shell
+```bash
 mkdir -p ~/.config/autostart
 cp /usr/share/applications/flex-launcher.desktop ~/.config/autostart
 ```
@@ -45,7 +45,7 @@ Transparent backgrounds requires compositor support. I recommend [picom](https:/
 
 The picom option `--window-shader-fg` can be used to specify a custom GLSL shader to apply to the windows. The below shader program can be used as a starting point to implement transparency with Flex Launcher. The macros should be changed to match the values in your Flex Launcher config file, if necessary.
 
-```GLSL
+```glsl
 #version 330
 
 // Set this to 1 to restore a semi-transparent highlight
@@ -125,7 +125,7 @@ Since you will typically not want to run the compositor while your launched appl
 nano /etc/systemd/user/picom-transparent.service
 ```
 Paste the following into the file:
-```INI
+```ini
 [Unit]
 Description=X11 compositor with alpha transparency
 
@@ -182,7 +182,7 @@ The above example script takes an argument which determines which application to
 ### Prerequisites
 Before starting I assume that you have one of the following operating systems installed *without* a desktop evironnment (only a console login):
 - Arch Linux
-- Debian Bullseye or later
+- Debian Bookworm or later
 - Raspberry Pi OS Lite
 
 I also assume that you can use the Linux command line at an intermediate level or higher.
@@ -203,35 +203,33 @@ sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf
 ```
 Paste the following into the file:
 
-```INI
+```ini
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty --autologin <your_username> --noclear %I $TERM
 ```
 Replace `<your_username>` with your username, then save the file. Reboot your HTPC and verify that it logs you into the console automatically.
 
-
-
 ### Install Packages
 Install the necessary packages.
 
 **Arch:**
-```Shell
+```bash
 sudo pacman -S xorg xorg-xinit openbox unclutter pulseaudio wget
 ```
 **Debian/Raspberry Pi:**
-```Shell
-sudo apt install xorg openbox pulseaudio wget
+```bash
+sudo apt install xorg openbox unclutter-xfixes pulseaudio wget
 ```
 Then, install Flex Launcher according to the instructions on the [README](https://github.com/complexlogic/flex-launcher#linux). Also, make sure to [copy the assets to your home directory](https://github.com/complexlogic/flex-launcher#copying-assets-to-home-directory).
 
 ### Configure Xorg
 Configure X to start after user login with `.bash_profile` and `startx`:
-```Shell
+```bash
 nano ~/.bash_profile
 ```
 Paste the following into the file and save it:
-```Shell
+```bash
 if [ "x${SSH_TTY}" = "x" ]; then
   startx
 fi
@@ -239,11 +237,11 @@ fi
 The `.bash_profile` script will execute every time the user logs in, *including remote logins via SSH*. The purpose of the `if` block is to ensure that `startx` will only be executed during a local login, not remote logins via SSH.
 
 The `startx` program will look for an `xinitrc` script to run: first in the user's home directory, then in the system directory. We will define a basic user `xinitrc` script to configure X and start Openbox:
-```Shell
+```bash
 nano ~/.xinitrc
 ```
 Paste the following into the file:
-```Shell
+```bash
 #!/bin/sh
 userresources=$HOME/.Xresources
 usermodmap=$HOME/.Xmodmap
@@ -280,26 +278,14 @@ exec openbox-session
 ```
 You can make additions to this script if you wish. For example, the screen resolution can be forced using the `xrandr` utility. However, note that the `exec openbox-session` line of the script will never return. Therefore, any additions you make must come *before* this line.
 
-#### Unclutter
-The `unclutter` program that starts in the second to last line of the `xinitrc` script makes the mouse cursor invisible by default, and it only becomes visible when it is being used. This prevents the user from seeing a mouse cursor when the Openbox root window is visible before Flex Launcher starts, and between applications.
-
-For Arch users, this program was already installed via pacman in a previous step. This program is also in the Debian/Raspbian package repos, but it is an outdated version that doesn't have the `--start-hidden` option. Therefore, I strongly recommend Debian/Raspberry Pi users build it from source rather than using the packaged version:
-```Shell
-sudo apt install libev-dev libx11-dev libxi-dev asciidoc-base git
-git clone https://github.com/Airblader/unclutter-xfixes
-cd unclutter-xfixes
-make
-sudo make install
-```
-
 ### Configure Openbox
 Openbox ships with default configuration files installed to `/etc/xdg/openbox`. These files should be copied to your home directory:
-```Shell
+```bash
 mkdir -p ~/.config/openbox
 cp -a /etc/xdg/openbox/ ~/.config/
 ```
 Among these configuration files is `autostart`, which Openbox will execute after initialization. This is the best way to autostart Flex Launcher:
-```Shell
+```bash
 nano ~/.config/openbox/autostart
 ```
 Add `flex-launcher` to the file, then save it.
@@ -311,11 +297,11 @@ You can also install taskbars and various other graphical interfaces for Openbox
 
 #### Keybinds
 [Keybinds](http://openbox.org/wiki/Help:Bindings) can be set in the `rc.xml` file, which maps a keypress to an [Action](http://openbox.org/wiki/Help:Actions). The "Close" action closes the active window, which is very useful for an HTPC. It allows you to quit the current application and return back to the launcher by using a button on your remote. For example, you can use the F10 key to quit the current application like so:
-```Shell
+```bash
 nano ~/.config/openbox/rc.xml
 ```
 In the `<keyboard>` section, paste the following:
-```XML
+```xml
 <keybind key="F10">
   <action name="Close"/>
 </keybind>
@@ -341,12 +327,12 @@ Spotify has a feature called Spotify Connect that allows Premium subscribers to 
 First, install Librespot. I recommend building it from source. The instructions are available on GitHub. 
 
 I manage Librespot with a systemd user service:
-```Shell
+```bash
 mkdir -p ~/.config/systemd/user
 nano ~/.config/systemd/user/librespot.service
 ```
 Paste the following into the file:
-```INI
+```ini
 [Unit]
 Description=Librespot Spotify Connect daemon
 After=network-online.target
@@ -368,16 +354,16 @@ WantedBy=network-online.target
 Verify that the path of the `librespot` executable is the same on your system, or change it if necessary. The `--bitrate` controls the bitrate of the streamed audio in kbps. The `--name` controls which name your HTPC will show up as in the Spotify app devices menu. Change them if desired.
 
 If you want Librespot to always run, you can simply enable the service:
-```Shell
+```bash
 systemctl --user enable librespot
 ```
 If you want Librespot to stop when you launch an application, you will have to use scripts and manually start and stop it:
-```Shell
+```bash
 systemctl --user start librespot
 systemctl --user stop librespot
 ```
 Verify Librespot is running with:
-```Shell
+```bash
 systemctl --user status librespot
 ```
 Then, try to connect to it with the Spotify app on your phone.
@@ -386,7 +372,7 @@ Then, try to connect to it with the Spotify app on your phone.
 Some mini PCs have an integrated IR receiver, which can receive signals from a conventional TV remote. The Linux kernel has built-in support for decoding IR signals, which allows you to translate them into keyboard presses. Before starting, make sure the IR receiver is enabled in your motherboard settings.
 
 The IR signal decoding can be controlled with the `ir-keytable` utility. This program is packaged with `v4l-utils` on most distros. First, check to see that your IR receiver is recognized:
-```Shell
+```bash
 sudo ir-keytable
 ```
 The result should look something like this:
@@ -403,7 +389,7 @@ Found /sys/class/rc/rc0/ with:
         Repeat delay = 500 ms, repeat period = 125 ms
 ```
 Take note of the supported kernel protocols. Test the receiving with `-t`:
-```Shell
+```bash
 ir-keytable -v -t -p irc,rc-5,rc-5-sz,jvc,sony,nec,sanyo,mce_kbd,rc-6,sharp,xmp,imon,rc-mm
 ```
 The protocols specified with `-p` should be comma delimited, and must *not* contain a space. You should update the protocols of the above command based on your output of `sudo ir-keytable` in the previous step.
@@ -420,22 +406,22 @@ The `-t` mode will output information for each received signal. Point your remot
 0x800f7425   KEY_ESC
 ```
 The table name is arbitrary, but the `type` must match one of the supported protocols from the previous step. You can find a comprehensive list of valid button names by running:
-```Shell
+```bash
 irrecord -l
 ```
 Save your mapping file as `/etc/rc_keymaps/default.txt`. Then, test the mapping:
-```Shell
+```bash
 sudo ir-keytable -c -w /etc/rc_keymaps/default.txt
 ```
 Open a program on your HTPC, press the mapped buttons on your remote, and verify that the proper keys are being triggered on the HTPC.
 
 ### Make the Mapping Persistent
 The mapping will not persist between reboots. Therefore, you will need to set up a way to run the `ir-keytable` command automatically after boot. One way to do that is with a systemd service.
-```Shell
+```bash
 sudo nano /etc/systemd/system/remote-setup.service
 ```
 Paste the following into the file:
-```INI
+```ini
 [Unit]
 Description=Set up IR remotes
 After=multi-user.target
@@ -448,7 +434,7 @@ ExecStart=/usr/bin/ir-keytable -c -w /etc/rc_keymaps/default.txt
 WantedBy=multi-user.target
 ```
 Save the file, then enable the service:
-```Shell
+```bash
 sudo systemctl enable remote-setup
 ```
 Reboot your HTPC and verify that the remote still works.

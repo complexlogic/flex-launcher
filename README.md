@@ -54,24 +54,24 @@ Binary packages are available on the [release page](https://github.com/complexlo
 
 #### APT-based x86-64 Distributions (Debian, Ubuntu, etc.)
 This package is compatible with Debian Bullseye and later, Ubuntu 21.04 and later.
-```Shell
+```bash
 wget https://github.com/complexlogic/flex-launcher/releases/download/v2.1/flex-launcher_2.1_amd64.deb
 sudo apt install ./flex-launcher_2.1_amd64.deb
 ```
 #### Pacman-based x86-64 Distributions (Arch, Manjaro, etc.)
-```Shell
+```bash
 wget https://github.com/complexlogic/flex-launcher/releases/download/v2.1/flex-launcher-2.1-1-x86_64.pkg.tar.zst
 sudo pacman -U flex-launcher-2.1-1-x86_64.pkg.tar.zst
 ```
 #### Raspberry Pi
 This package is compatible with Raspbian Bullseye and later, 64 bit only.
-```Shell
+```bash
 wget https://github.com/complexlogic/flex-launcher/releases/download/v2.1/flex-launcher_2.1_arm64.deb
 sudo apt install ./flex-launcher_2.1_arm64.deb
 ```
 #### Copying Assets to Home Directory
 The Linux packages install a default config file and assets to `/usr/share/flex-launcher`. It is strongly recommended to *not* edit this config file directly, as it will be overwritten if you upgrade to a later version of Flex Launcher. Instead, copy these files to your home directory and edit it there.
-```Shell
+```bash
 cp -r /usr/share/flex-launcher ~/.config
 sed -i "s|/usr/share/flex-launcher|$HOME/.config/flex-launcher|g" ~/.config/flex-launcher/config.ini
 ```
@@ -84,7 +84,7 @@ Flex Launcher uses an INI file to configure the menus and settings. Upon  startu
 4. Linux only: `/usr/share/flex-launcher`
 
 If your config file is in one of the above locations, Flex Launcher can be started simply by double clicking the executable file or adding it to autostart. If your config file is in a non-standard location, you must specify the path via command line argument:
-```Shell
+```bash
 flex-launcher -c /path/to/config.ini
 ```
 Flex Launcher ships with a default config file which is intended strictly for demonstration purposes. If you try to start one of the applications, it is possible that nothing will happen because the install path is different on your system, or you don't have the application installed at all. See the [configuration file documentation](docs/configuration.md#configuring-flex-launcher) for instuctions on how to change the menus and settings.
@@ -100,7 +100,7 @@ Gamepad controls are built-in to the program, but are disabled by default. To en
 
 ### Debugging
 Flex Launcher has a debug mode which may be enabled as follows:
-```Shell
+```bash
 flex-launcher -d
 ```
 This will output a logfile named `flex-launcher.log` in the same directory as `flex-launcher.exe` on Windows, and in `~/.local/share/flex-launcher` on Linux. 
