@@ -196,7 +196,6 @@ static void init_sdl()
     Uint32 sdl_flags = SDL_INIT_VIDEO;
 #ifdef __unix__
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
-    setenv("SDL_VIDEODRIVER", "wayland,x11", 0);
 #endif
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, config.inhibit_os_screensaver ? "0" : "1");
