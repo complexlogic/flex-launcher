@@ -26,7 +26,7 @@ Any icon that is not the same resolution as the `IconSize` setting in your confi
 inkscape --export-width=<width> --export-type=png /path/to/file.svg
 ```
 You can easily write a script to rasterize all SVGs in a directory to PNG at a given resolution. Here is an example in Python:
-```Python
+```python
 import glob
 import subprocess
 WIDTH=300 # Width of the PNG in pixels
@@ -55,12 +55,12 @@ My recommended web browser for HTPC use is Chrome/Chromium. This browser has man
 There is currently no desktop application for YouTube. However, there is a TV-friendly web interface located at [youtube.com/tv](https://www.youtube.com/tv) that is intended for use by Smart TVs . Google recently blocked access to this interface for desktop web browsers, but the block can be easily circumvented by spoofing the user-agent string of a Smart TV. A list of valid Smart TV user-agent strings is easily found online by search engine. The following example menu entries will launch an app-like YouTube experience in a browser:
 
 **Windows:**
-```
+```ini
 Entry=YouTube;C:\icons\youtube.png;"C:\Program Files\Google\Chrome\Application\chrome.exe" --start-fullscreen --user-agent="Mozilla/5.0 (Linux; Tizen 2.3; SmartHub; SMART-TV; SmartTV; U; Maple2012) AppleWebKit/538.1+ (KHTML, like Gecko) TV Safari/538.1+" youtube.com/tv
 ```
 
 **Linux:**
-```
+```ini
 Entry=YouTube;/path/to/icons/youtube.png;chromium --start-fullscreen --user-agent="Mozilla/5.0 (Linux; Tizen 2.3; SmartHub; SMART-TV; SmartTV; U; Maple2012) AppleWebKit/538.1+ (KHTML, like Gecko) TV Safari/538.1+" youtube.com/tv
 ```
 
@@ -75,12 +75,12 @@ The one caveat to this method is that the exit button in the menu doesn't work. 
 Steam users may desire to launch their most frequently played games directly from Flex Launcher to avoid having to navigate through the Steam client UI first. Valve provides a [protocol](https://developer.valvesoftware.com/wiki/Steam_browser_protocol) to directly launch games, among other actions. To do so, pass `steam://run/<id>` as an argument to Steam, where `<id>` is replaced by the id of the game you want to watch. You can find the id of a game by searching [steamdb](https://steamdb.info/). For example, the id of Portal 2 is 620. You would structure your menu entry to launch Portal 2 like so:
 
 **Windows:**
-```
+```ini
 Entry=Portal 2;C:\icons\portal_2.png;"C:\Program Files (x86)\Steam\steam.exe" steam://run/620
 ```
 
 **Linux:**
-```
+```ini
 Entry=Portal 2;/path/to/icons/portal_2.png;steam steam://run/620
 ```
 

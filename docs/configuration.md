@@ -24,7 +24,7 @@ title: Configuration
 
 ## Overview
 Flex Launcher uses an [INI file](https://en.wikipedia.org/wiki/INI_file) to configure settings and menus. The INI file consists of sections enclosed in square brackets, and in each section there are entries which consist of a key and a value. Example:
-```INI
+```ini
 [Section]
 Key1=value
 Key2=value
@@ -72,6 +72,11 @@ Default: true
 ##### FPSLimit
 When `VSync` is set to false, this setting defines the maximum number of frames per second that Flex Launcher will render. The minimum is 10, and the maximum is the same as the refresh rate of your monitor.
 
+##### ApplicationTimeout
+Defines the time in seconds that the launcher will wait for an application to launch. If the launcher does not lose the window focus before the timeout occurs, it assumes there was an error with the launched application.
+
+Default: 15
+
 ##### OnLaunch
 Defines the action that Flex Launcher will take upon the launch of an application. Possible values: "None", "Blank", and "Quit"
 - None: Flex Launcher will maintain its window while waiting for the launched application to initialize.
@@ -79,6 +84,11 @@ Defines the action that Flex Launcher will take upon the launch of an applicatio
 - Quit: Flex Launcher will quit immediately after the successful launch of an application.
 
 Default: Blank
+
+##### WrapEntries
+Defines whether the highlight will wrap to the other side of the screen after reaching its leftmost or rightmost position. This setting is a boolean "true" or "false".
+
+Default: false
 
 ##### ResetOnBack
 Defines whether Flex Launcher will remember the previous entry position when going back to a previous menu. If set to true, the highlight will be reset to the first entry in the menu when going back. This setting is a boolean "true" or "false".
@@ -350,7 +360,7 @@ Default: 100%
 At least one menu must be defined in the configuration file, and the title must match the `DefaultMenu` setting value. The title of a menu is its section name. Any title may be used that is not reserved for another section, such as "Settings", "Gamepad", etc. The entries of the menu are implemented as key=value pairs. The name of the key will be ignored by the program, and is therefore arbtrary. However, it is recommended to pick something intutitive such as Entry1, Entry2, Entry3, etc. The entry information is contained in the value.
 
 Each entry value contains 3 parts of information in order: the title, the icon image path, and the command to run when the button is clicked. These are delimited by semicolons:
-```
+```ini
 Entry=title;icon_path;command
 ```
 The command is typically one of the following:
@@ -361,7 +371,7 @@ The command is typically one of the following:
 5. The path to an executable script, in the case that you want to perform multiple actions upon program launch.
 
  A simple example menu titled `Media` is shown below:
-```
+```ini
 [Media]
 Entry1=Kodi;C:\Pictures\Icons\kodi.png;"C:\Program Shortcuts\kodi.lnk"
 Entry2=Netflix;C:\Pictures\Icons\netflix.png;"C:\Program Shortcuts\netflix.lnk"
@@ -528,13 +538,13 @@ Default: true
 
 ## Hotkeys
 Flex Launcher supports configurable hotkeys, which executes a command when a specified key is pressed. Each hotkey consists of a key=value pair, where the key is an arbitrary name, and the value contains the SDL keycode of the hotkey and the command to run when it is pressed, delimited by a semicolon:
-```
+```ini
 Hotkey=keycode;command
 ```
 The keycode is a HEX prefixed with the # character. There are two ways to find a keycode for a given key. The first is to use the [lookup table provided by SDL](https://wiki.libsdl.org/SDLKeycodeLookup). The name of each key is in the right column of the table, and the corresponding HEX keycode is in the center column. The second is to run Flex Launcher in debug mode, press the key, then check the log. For each keystroke, the name of the key will be printed and the HEX value will be in parenthesis next to it.
 
 Any key can be set as a hotkey, except keys that are reserved for the default controls: the left and right arrow keys, enter/return, and backspace. Hotkeys may be used to "speed dial" your favorite applications, or to add controls via [special commands](#special-commands). As an example configuration below, the first hotkey is mapped to F1 and will launch Kodi when it is pressed, and the second hotkey is mapped to F12 and will cause Flex Launcher to quit when it is pressed:
-```
+```ini
 [Hotkeys]
 Hotkey1=#4000003A;"C:\Program Shortcuts\kodi.lnk"
 Hotkey2=#40000045;:quit
@@ -546,7 +556,7 @@ The exit hotkey feature allows a user to quit the running application using a bu
 Only the function keys F1-F24 may be used as an exit hotkey, with the exception of F12 which is forbidden by Windows. Pressing an exit hotkey is functionally equivalent to using the Alt+F4 keyboard shortcut on the active window; it is not a forceful method, so the application is able to close cleanly. However, the application could also choose to ignore it, display a confirmation dialog, or not respond if it's hung.
 
 The following example maps F10 as an exit hotkey:
-```
+```ini
 Hotkey=#40000043;:exit
 ```
 Linux users that desire similar functionality should check the documentation of their desktop environment and/or window manager. Most support global hotkeys that can be configured to close the active window.

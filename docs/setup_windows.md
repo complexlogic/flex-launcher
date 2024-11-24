@@ -45,7 +45,7 @@ Reboot your HTPC for the change to take effect.
 It may be desirable to use the desktop interface occasionally, e.g. during maintenance or installation of new software. You can get your desktop back by running `explorer.exe`. This can be accomplished in a few ways.
 
 Using the `QuitCmd` setting in your config file, you can automatically restore your desktop after you quit Flex Launcher:
-```INI
+```ini
 [General]
 ...
 QuitCmd=:fork explorer.exe
