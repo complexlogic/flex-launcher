@@ -806,6 +806,8 @@ static void draw_screen()
         if (state.screensaver_active)
             SDL_RenderCopy(renderer, screensaver->texture, NULL, NULL);
     }
+    else
+        SDL_RenderFillRect(renderer, NULL);
 
     // Output to screen
     SDL_RenderPresent(renderer);
@@ -1243,6 +1245,7 @@ int main(int argc, char *argv[])
     // Initialize timing
     ticks.main = SDL_GetTicks();
     ticks.last_input = ticks.main;
+    ticks.program_start = ticks.main;
 
     // Load gamepad overrides
     if (config.gamepad_enabled && config.gamepad_mappings_file != NULL) {
@@ -1397,7 +1400,10 @@ int main(int argc, char *argv[])
                             pre_launch();
                         }
 #ifdef _WIN32
-                        else // Sometimes the launcher loses focus when autostarting on Windows
+                        // Sometimes the launcher will lose focus on Windows when autostarting
+                        // So if we lose the window focus within 10 seconds of the launcher starting
+                        // we will grab back th Window focus. This is a bit of a hack
+                        else if (ticks.main - ticks.program_start < 10000)
                             set_foreground_window();
 #endif
                     }

@@ -127,6 +127,7 @@ typedef struct {
 // Timing information
 typedef struct {
     Uint32 main;
+    Uint32 program_start;
     Uint32 application_launched;
     Uint32 slideshow_load;
     Uint32 last_input;
