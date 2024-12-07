@@ -250,7 +250,10 @@ void debug_slideshow(Slideshow *slideshow)
 // A function to debug the video settings
 void debug_video(SDL_Renderer *renderer, SDL_DisplayMode *display_mode)
 {
+    SDL_RendererInfo ri;
+    SDL_GetRendererInfo(renderer, &ri);
     log_debug("================== Video Information ===================\n");
+    log_debug("Renderer:      %s", ri.name);
     log_debug("Resolution:    %ix%i", display_mode->w, display_mode->h);
     log_debug("Refresh rate:  %i Hz", display_mode->refresh_rate);
     log_debug("Video driver:  %s", SDL_GetCurrentVideoDriver());

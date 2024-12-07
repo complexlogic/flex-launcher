@@ -228,7 +228,9 @@ static void create_window()
     SDL_ShowCursor(SDL_DISABLE);
 
     // Create HW accelerated renderer, get screen resolution for geometry calculations
-    Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
+    //Uint32 renderer_flags = SDL_RENDERER_ACCELERATED;
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+    Uint32 renderer_flags = 0;
     if (!config.vsync) {
         if (config.fps_limit > MIN_FPS_LIMIT && config.fps_limit <= display_mode.refresh_rate)
             refresh_period = 1000 / (Uint32) config.fps_limit;
