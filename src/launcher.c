@@ -221,7 +221,7 @@ static void create_window()
                  SDL_WINDOWPOS_UNDEFINED,
                  0,
                  0,
-                 SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS
+                 SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS | SDL_WINDOW_OPENGL
              );
     if (window == NULL)
         log_fatal("Could not create SDL Window\n%s", SDL_GetError());
