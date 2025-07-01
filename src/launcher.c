@@ -1448,6 +1448,8 @@ int main(int argc, char *argv[])
         }
         if (state.application_running)
             SDL_Delay(APPLICATION_WAIT_PERIOD);
+        else if (state.screensaver_active && !state.screensaver_transition)
+            SDL_Delay(1000);
         else
             draw_screen();
     }
