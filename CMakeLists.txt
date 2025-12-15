@@ -62,7 +62,9 @@ endif ()
 
 # Build configuration - Linux
 if (UNIX)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
+  if (NOT CMAKE_BUILD_TYPE MATCHES "Debug")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -s")
+  endif ()
   set(CMAKE_SHARED_LINKER_FLAGS "--as-needed")
 endif ()
 
