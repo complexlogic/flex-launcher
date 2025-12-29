@@ -11,6 +11,7 @@
 #include "util.h"
 #include "debug.h"
 #include <ini.h>
+#include <string.h>
 #define NANOSVG_IMPLEMENTATION
 #include <nanosvg.h>
 #define NANOSVGRAST_IMPLEMENTATION
@@ -106,6 +107,42 @@ int load_next_slideshow_background_async(void *data)
     return 0;
 }
 
+#ifdef __unix__
+SDL_Surface *load_surface_from_xdg(const char *path){
+    // TODO: allow the user to specify a specific theme in the config.ini
+    // then prefer that to `hicolor`.
+    // Spec for this is here: https://specifications.freedesktop.org/icon-theme/latest/#icon_lookup
+    SDL_Surface *surface = NULL;
+    const char* xdg_dirs = getenv("XDG_DATA_DIRS");
+    const char* icon_path = "/icons/hicolor/scalable/apps/";
+    if(xdg_dirs != NULL){
+        ssize_t last_delim = -1;
+        ssize_t dirs_len = strlen(xdg_dirs);
+        while(surface == NULL && last_delim < dirs_len){
+            char xdg_path[4096] = {0};
+            ssize_t start_ind = last_delim;
+            if(start_ind < 0)
+                start_ind = 0;
+
+            ssize_t end = strcspn(&xdg_dirs[start_ind], ":");
+            memcpy(&xdg_path, &xdg_dirs[start_ind], end);
+            memcpy(&xdg_path[end], icon_path, strlen(icon_path));
+            memcpy(&xdg_path[end + strlen(icon_path)], path, strlen(path));
+            surface = IMG_Load(xdg_path);
+            if (surface == NULL) {
+                log_error(
+                    "Could not load image from xdg %s\n%s",
+                    xdg_path,
+                    IMG_GetError()
+                );
+            }
+            last_delim += end + 1;
+        }
+    }
+    return surface;
+}
+#endif
+
 // A function to load a texture from a file
 SDL_Texture *load_texture_from_file(const char *path)
 {
@@ -119,8 +156,13 @@ SDL_Texture *load_texture_from_file(const char *path)
                 path, 
                 IMG_GetError()
             );
+#ifdef __unix__
+            // we failed to find the image normally, lets try xdg on unix
+            surface = load_surface_from_xdg(path);
+#endif
         }
-        else
+
+        if(surface != NULL)
             texture = load_texture(surface);
     }
     return texture;
