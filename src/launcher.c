@@ -723,6 +723,7 @@ static void move_right()
         calculate_button_geometry(current_menu->root_entry, (int) buttons);
         if (config.highlight)
             highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
+            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page++;
         current_menu->highlight_position = 0;
     }

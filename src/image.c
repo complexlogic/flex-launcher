@@ -122,8 +122,9 @@ SDL_Surface *load_surface_from_xdg(const char *path){
         "64x64",
         "32x32"
     };
+    const char* exts[] = {"", ".svg", ".png"};
 
-    for(int i = 0; i < sizeof(sizes) / sizeof(void*); i++){
+    for(int i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i++){
         char icon_path[128] = {};
         snprintf(icon_path, 127, "/icons/hicolor/%s/apps/", sizes[i]);
 
@@ -140,9 +141,14 @@ SDL_Surface *load_surface_from_xdg(const char *path){
                 memcpy(&xdg_path, &xdg_dirs[start_ind], end);
                 memcpy(&xdg_path[end], icon_path, strlen(icon_path));
                 memcpy(&xdg_path[end + strlen(icon_path)], path, strlen(path));
-                surface = IMG_Load(xdg_path);
-                if (surface != NULL)
-                    return surface;
+                for(int j = 0; j < sizeof(exts) / sizeof(exts[0]); j++){
+                    memcpy(&xdg_path[end + strlen(icon_path) + strlen(path)], exts[j], strlen(exts[j]));
+                    surface = IMG_Load(xdg_path);
+                    if (surface != NULL)
+                        return surface;
+                }
+
+
 
                 last_delim += end + 1;
             }

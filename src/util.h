@@ -23,6 +23,11 @@ struct gamepad_info {
 };
 
 int config_handler(void *user, const char *section, const char *name, const char *value);
+#ifdef __unix__
+int desktop_config_handler(void *user, const char *section, const char *name, const char *value);
+Entry parse_possible_desktop_file(const char* name);
+#endif
+
 int convert_percent(const char *string, int max_value);
 const char *get_mode_setting(int type, int value);
 int utf8_length(const char *string);

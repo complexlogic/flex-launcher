@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -123,6 +124,65 @@ void parse_config_file(const char *config_file_path)
     if (error < 0)
         log_fatal("Could not parse config file");
 }
+
+#ifdef __unix__
+int desktop_config_handler(void *user, const char *section, const char *name, const char *value){
+    Entry* entry = (Entry*)(user);
+    if(MATCH(section, "Desktop Entry")){
+        if(MATCH(name, "Icon"))
+            entry->icon_path = strdup(value);
+
+        if(MATCH(name, "Exec")){
+            ssize_t end = strcspn(value, "%@");
+            char* cmd = malloc(end + 1);
+            cmd[end] = '\0';
+            memcpy(cmd, value, end);
+            entry->cmd = cmd;
+            log_error("Parsed command '%s' from desktop file.", cmd);
+        }
+
+        if(MATCH(name, "Name"))
+            entry->title = strdup(value);
+        return 0;
+    }
+    return 1;
+}
+
+
+Entry parse_possible_desktop_file(const char* name){
+    const char* xdg_dirs = getenv("XDG_DATA_DIRS");
+    const char* app_path = "/applications/";
+
+    Entry result = {};
+    if(xdg_dirs != NULL){
+        ssize_t last_delim = -1;
+        ssize_t dirs_len = strlen(xdg_dirs);
+        while(last_delim < dirs_len){
+            char xdg_path[4096] = {0};
+            ssize_t start_ind = last_delim;
+            if(start_ind < 0)
+                start_ind = 0;
+
+            ssize_t end = strcspn(&xdg_dirs[start_ind], ":");
+            memcpy(&xdg_path, &xdg_dirs[start_ind], end);
+            memcpy(&xdg_path[end], app_path, strlen(app_path));
+            memcpy(&xdg_path[end + strlen(app_path)], name, strlen(name));
+
+            FILE *file = fopen(xdg_path, "r");
+            if(file != NULL){
+                int error = ini_parse_file(file, desktop_config_handler, &result);
+                fclose(file);
+                if(error == 0)
+                    return result;
+            }
+            last_delim += end + 1;
+        }
+    }
+    return result;
+
+}
+#endif
+
 
 // A function to handle config file parsing
 int config_handler(void *user, const char *section, const char *name, const char *value)
@@ -445,8 +505,19 @@ int config_handler(void *user, const char *section, const char *name, const char
         // Store data in entry struct
         int i;
         for (i = 0;i < 3 && token != NULL; i++) {
-            if (i == 0)
+            if (i == 0){
                 entry->title = strdup(token);
+#ifdef __unix__
+                Entry ent = parse_possible_desktop_file(entry->title);
+                if(ent.cmd != NULL || ent.icon_path != NULL || ent.title != NULL){
+                    entry->cmd = ent.cmd;
+                    entry->icon_path = ent.icon_path;
+                    entry->title = ent.title;
+                    i = 3;
+                    break;
+                }
+#endif
+            }
             else if (i == 1) {
                 entry->icon_path = strdup(token);
                 clean_path(entry->icon_path);
