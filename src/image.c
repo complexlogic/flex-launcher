@@ -114,32 +114,45 @@ SDL_Surface *load_surface_from_xdg(const char *path){
     // Spec for this is here: https://specifications.freedesktop.org/icon-theme/latest/#icon_lookup
     SDL_Surface *surface = NULL;
     const char* xdg_dirs = getenv("XDG_DATA_DIRS");
-    const char* icon_path = "/icons/hicolor/scalable/apps/";
-    if(xdg_dirs != NULL){
-        ssize_t last_delim = -1;
-        ssize_t dirs_len = strlen(xdg_dirs);
-        while(surface == NULL && last_delim < dirs_len){
-            char xdg_path[4096] = {0};
-            ssize_t start_ind = last_delim;
-            if(start_ind < 0)
-                start_ind = 0;
+    const char* sizes[] = {
+        "scalable",
+        "512x512",
+        "256x256",
+        "128x128",
+        "64x64",
+        "32x32"
+    };
 
-            ssize_t end = strcspn(&xdg_dirs[start_ind], ":");
-            memcpy(&xdg_path, &xdg_dirs[start_ind], end);
-            memcpy(&xdg_path[end], icon_path, strlen(icon_path));
-            memcpy(&xdg_path[end + strlen(icon_path)], path, strlen(path));
-            surface = IMG_Load(xdg_path);
-            if (surface == NULL) {
-                log_error(
-                    "Could not load image from xdg %s\n%s",
-                    xdg_path,
-                    IMG_GetError()
-                );
+    for(int i = 0; i < sizeof(sizes) / sizeof(void*); i++){
+        char icon_path[128] = {};
+        snprintf(icon_path, 127, "/icons/hicolor/%s/apps/", sizes[i]);
+
+        if(xdg_dirs != NULL){
+            ssize_t last_delim = -1;
+            ssize_t dirs_len = strlen(xdg_dirs);
+            while(surface == NULL && last_delim < dirs_len){
+                char xdg_path[4096] = {0};
+                ssize_t start_ind = last_delim;
+                if(start_ind < 0)
+                    start_ind = 0;
+
+                ssize_t end = strcspn(&xdg_dirs[start_ind], ":");
+                memcpy(&xdg_path, &xdg_dirs[start_ind], end);
+                memcpy(&xdg_path[end], icon_path, strlen(icon_path));
+                memcpy(&xdg_path[end + strlen(icon_path)], path, strlen(path));
+                surface = IMG_Load(xdg_path);
+                if (surface != NULL)
+                    return surface;
+
+                last_delim += end + 1;
             }
-            last_delim += end + 1;
         }
     }
-    return surface;
+
+    log_error(
+        "Could not load %s from XDG_DATA_DIRS",
+        path
+    );
 }
 #endif
 
