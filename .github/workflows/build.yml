@@ -138,7 +138,7 @@ jobs:
         run: |
           REPO=${{github.repository}}
           echo "REPO_TITLE=${REPO#*/}" >> ${GITHUB_ENV}
-          sudo apt-get install -y qemu-system-aarch64 qemu-user-static binfmt-support wget tar
+          sudo apt update && sudo apt-get install -y qemu-system-aarch64 qemu-user-static binfmt-support wget tar
           mkdir root
 
       - name: Cache Image
