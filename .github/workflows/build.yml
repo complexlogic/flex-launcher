@@ -62,7 +62,7 @@ jobs:
       - name: Build
         run: cmake --build build --target package --config ${{ env.CMAKE_BUILD_TYPE }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         name: Upload package
         with:
           name: Windows build
@@ -110,7 +110,7 @@ jobs:
             cmake --build build --target package --config ${{env.CMAKE_BUILD_TYPE}}
           fi
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         name: Upload Package
         with:
           name: Debian build
@@ -138,7 +138,7 @@ jobs:
         run: |
           REPO=${{github.repository}}
           echo "REPO_TITLE=${REPO#*/}" >> ${GITHUB_ENV}
-          sudo apt-get install -y qemu qemu-user-static binfmt-support wget tar
+          sudo apt update && sudo apt-get install -y qemu-system-aarch64 qemu-user-static binfmt-support wget tar
           mkdir root
 
       - name: Cache Image
@@ -179,7 +179,7 @@ jobs:
           sudo cp rpi root/usr/bin
           sudo chroot root rpi
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         name: Upload package
         with:
           name: Raspberry Pi build
