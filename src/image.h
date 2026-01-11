@@ -28,6 +28,9 @@ void render_scroll_indicators(Scroll *scroll, int height, Geometry *geo);
 SDL_Surface *load_next_slideshow_background(Slideshow *slideshow, bool transition);
 int load_next_slideshow_background_async(void *data);
 SDL_Texture *load_texture(SDL_Surface *surface);
+#ifdef __unix__
+SDL_Surface *load_surface_from_xdg(const char *path);
+#endif
 SDL_Texture *load_texture_from_file(const char *path);
 SDL_Texture *rasterize_svg(char *buffer, int w, int h, SDL_Rect *rect);
 SDL_Texture *rasterize_svg_from_file(const char *path, int w, int h, SDL_Rect *rect);
