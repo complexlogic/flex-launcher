@@ -812,9 +812,9 @@ static void draw_screen()
     // Output to screen
     SDL_RenderPresent(renderer);
     if (!config.vsync) {
-        Uint32 sleep_time = refresh_period - (SDL_GetTicks() - ticks.main);
-        if (sleep_time > 0)
-            SDL_Delay(sleep_time);
+        Uint32 elapsed = SDL_GetTicks() - ticks.main;
+        if (elapsed < refresh_period)
+            SDL_Delay(refresh_period - elapsed);
     }
 }
 
