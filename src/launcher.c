@@ -625,18 +625,18 @@ static void calculate_button_geometry(Entry *entry, int buttons)
 {
     // Calculate proper spacing
     //center entries if less than full row
-    int col_entries = buttons;
-    if (col_entries > config.col_count)
-        col_entries = config.col_count;
+    int col_entries = config.col_count;
+    if (current_menu->num_entries < config.col_count)
+        col_entries = current_menu->num_entries;
     geo.x_margin = (geo.screen_width - config.icon_size*col_entries -
                    col_entries*config.icon_spacing + config.icon_spacing) / 2;
                    
     //if row_count > 1 then we ignore the y_margin calculated from the the vcenter config, and instead just dynamically center it vertically as well
     if (config.row_count > 1) {
         int button_height = config.icon_size + config.icon_spacing + config.title_padding + geo.font_height;
-        int row_entries = (buttons / config.col_count) + 1;
-        if (row_entries > config.row_count) 
-            row_entries = config.row_count;
+        int row_entries = config.row_count;
+        if (current_menu->num_entries < config.row_count * config.col_count) 
+            row_entries = (buttons / config.col_count) + 1;
         geo.y_margin = (geo.screen_height - button_height * row_entries) / 2;
     }
     geo.x_advance = config.icon_size + config.icon_spacing;
@@ -771,7 +771,8 @@ static void move_up() {
 static void move_down() {
     if (config.row_count > 1) {
         int current_position = current_menu->highlight_position + current_menu->page * config.col_count * config.row_count;
-        if (!config.wrap_entries && current_position + config.col_count >= current_menu->num_entries)
+        bool last_page = (current_menu->page + 1) * config.col_count * config.row_count >= current_menu->num_entries;
+        if (!config.wrap_entries && last_page && current_position + config.col_count >= current_menu->num_entries)
             return;
             
         for (size_t i = 0; i < config.col_count; i++) 
@@ -790,7 +791,8 @@ static void page_left() {
 
 static void page_right() {
     int current_position = current_menu->highlight_position + current_menu->page * config.col_count * config.row_count;
-    if (!config.wrap_entries && current_position + config.col_count * config.row_count >= current_menu->num_entries)
+    bool last_page = (current_menu->page + 1) * config.col_count * config.row_count >= current_menu->num_entries;
+    if (!config.wrap_entries && last_page && current_position + config.col_count * config.row_count >= current_menu->num_entries)
         return;
             
     for (size_t i = 0; i < config.col_count*config.row_count; i++) 
