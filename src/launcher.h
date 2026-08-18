@@ -46,6 +46,10 @@
 #define SCMD_EXIT ":exit"
 #define SCMD_LEFT ":left"
 #define SCMD_RIGHT ":right"
+#define SCMD_UP ":up"
+#define SCMD_DOWN ":down"
+#define SCMD_PAGE_LEFT ":page_left"
+#define SCMD_PAGE_RIGHT ":page_right"
 #define SCMD_HOME ":home"
 #define SCMD_BACK ":back"
 #define SCMD_QUIT ":quit"
@@ -199,6 +203,7 @@ typedef struct {
     int x_margin; // Distance between left edge of screen and x coordinate of root_entry icon
     int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
     int x_advance; // Distance between icon x coordinate of adjacent entries
+    int y_advance; // Distance between icon y coordinate of adjacent entries
     int num_buttons; // Number of buttons shown on the screen
 } Geometry;
 
@@ -238,7 +243,8 @@ typedef struct {
 // Configuration settings
 typedef struct {
     char *default_menu;
-    unsigned int max_buttons;
+    unsigned int col_count;
+    unsigned int row_count;
     bool vsync;
     int fps_limit;
     Uint32 application_timeout;

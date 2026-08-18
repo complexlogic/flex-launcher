@@ -1,6 +1,7 @@
 # Config setting keys
 set(SETTING_DEFAULT_MENU "DefaultMenu")
-set(SETTING_MAX_BUTTONS "MaxButtons")
+set(SETTING_COL_COUNT "ColCount")
+set(SETTING_ROW_COUNT "RowCount")
 set(SETTING_VSYNC "VSync")
 set(SETTING_FPS_LIMIT "FPSLimit")
 set(SETTING_APPLICATION_TIMEOUT "ApplicationTimeout")
@@ -95,7 +96,8 @@ set(SETTING_GAMEPAD_BUTTON_DPAD_RIGHT "ButtonDPadRight")
 
 # Default settings
 set(DEFAULT_MENU "Main")
-set(DEFAULT_MAX_BUTTONS 4)
+set(DEFAULT_COL_COUNT 4)
+set(DEFAULT_ROW_COUNT 1)
 set(DEFAULT_VSYNC "true")
 set(DEFAULT_APPLICATION_TIMEOUT "15")
 set(DEFAULT_WRAP_ENTRIES "false")

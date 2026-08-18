@@ -122,7 +122,8 @@ void debug_settings()
     log_debug("");
 
     log_debug("======================= Layout =========================\n");
-    DEBUG_INT(SETTING_MAX_BUTTONS, config.max_buttons);
+    DEBUG_INT(SETTING_COL_COUNT, config.col_count);
+    DEBUG_INT(SETTING_ROW_COUNT, config.row_count);
     DEBUG_INT(SETTING_ICON_SIZE, config.icon_size);
     DEBUG_INT(SETTING_ICON_SPACING, config.icon_spacing);
     DEBUG_STR(SETTING_VCENTER, config.vcenter[0] != '\0' ? config.vcenter : "50%");
