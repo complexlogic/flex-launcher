@@ -635,8 +635,8 @@ static void calculate_button_geometry(Entry *entry, int buttons)
     if (config.row_count > 1) {
         int button_height = config.icon_size + config.icon_spacing + config.title_padding + geo.font_height;
         int row_entries = config.row_count;
-        if (current_menu->num_entries < config.row_count * config.col_count) 
-            row_entries = (buttons / config.col_count) + 1;
+        if (buttons > 0 && current_menu->num_entries < config.row_count * config.col_count) 
+            row_entries = ((buttons - 1) / config.col_count) + 1;
         geo.y_margin = (geo.screen_height - button_height * row_entries) / 2;
     }
     geo.x_advance = config.icon_size + config.icon_spacing;
