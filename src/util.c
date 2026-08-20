@@ -163,10 +163,20 @@ int config_handler(void *user, const char *section, const char *name, const char
     }
 
     else if (MATCH(section, "Layout")) {
-        if (MATCH(name, SETTING_MAX_BUTTONS)) {
-            int max_buttons = atoi(value);
-            if (max_buttons > 0)
-                config.max_buttons = (unsigned int) max_buttons;
+        //MaxButtons becomes col count for backwards compatibility
+        if (MATCH(name, "MaxButtons")) {
+            int col_count = atoi(value);
+            if (col_count > 0)
+                config.col_count = (unsigned int) col_count;
+        } else if (MATCH(name, SETTING_COL_COUNT)) {
+            int col_count = atoi(value);
+            if (col_count > 0)
+                config.col_count = (unsigned int) col_count;
+        }
+        else if (MATCH(name, SETTING_ROW_COUNT)) {
+            int row_count = atoi(value);
+            if (row_count > 0)
+                config.row_count = (unsigned int) row_count;
         }
         else if (MATCH(name, SETTING_ICON_SIZE)) {
             Uint16 icon_size = (Uint16) atoi(value);
@@ -884,17 +894,28 @@ void convert_percent_to_int(char *string, int *result, int max_value)
 void validate_settings(Geometry *geo)
 {
     // Reduce number of buttons if they can't all fit on screen
-    if (config.icon_size * config.max_buttons > (unsigned int) geo->screen_width) {
+    if (config.icon_size * config.col_count > (unsigned int) geo->screen_width) {
         unsigned int i;
-        for (i = config.max_buttons; i * config.icon_size > (unsigned int) geo->screen_width && i > 0; i--);
+        for (i = config.col_count; i * config.icon_size > (unsigned int) geo->screen_width && i > 0; i--);
         log_error(
-            "Not enough screen space for %i buttons, reducing to %i", 
-            config.max_buttons, 
+            "Not enough screen space for %i buttons horizontally, reducing to %i", 
+            config.col_count, 
             i
         );
-        config.max_buttons = i; 
+        config.col_count = i; 
     }
 
+    if (config.icon_size * config.row_count > (unsigned int) geo->screen_height) {
+        unsigned int i;
+        for (i = config.row_count; i * config.icon_size > (unsigned int) geo->screen_height && i > 0; i--);
+        log_error(
+            "Not enough screen space for %i buttons vertically, reducing to %i", 
+            config.row_count, 
+            i
+        );
+        config.row_count = i; 
+    }
+    
     if (!config.titles_enabled)
         config.title_padding = 0;
 
@@ -967,7 +988,7 @@ void validate_settings(Geometry *geo)
         config.highlight_hpadding = config.icon_spacing / 2;
 
     // Reduce icon spacing and highlight padding if too large to fit onscreen
-    unsigned int required_length = calculate_width((int) config.max_buttons,
+    unsigned int required_length = calculate_width((int) config.col_count,
                                        config.icon_spacing,
                                        config.icon_size,
                                        config.highlight_hpadding
@@ -979,7 +1000,7 @@ void validate_settings(Geometry *geo)
             highlight_hpadding = (highlight_hpadding * 9) / 10;
         if (icon_spacing > 0)
             icon_spacing = (icon_spacing * 9) / 10;
-        required_length = calculate_width((int) config.max_buttons,icon_spacing,config.icon_size,highlight_hpadding);
+        required_length = calculate_width((int) config.col_count,icon_spacing,config.icon_size,highlight_hpadding);
     }
     if (config.highlight_hpadding != highlight_hpadding) {
         log_error("Highlight padding value %i too large to fit screen, shrinking to %i",
@@ -1008,7 +1029,7 @@ void validate_settings(Geometry *geo)
 
     // Calculate y margin for buttons from centerline setting string, check limits
     int vcenter = INVALID_PERCENT_VALUE;
-    int button_height = config.icon_size + config.title_padding + geo->font_height;
+    int button_height = config.icon_size + config.icon_spacing + config.title_padding + geo->font_height;
     float f_screen_height = (float) geo->screen_height;
     int lower_limit = (int) (MIN_VCENTER*f_screen_height);
     int upper_limit = (int) (MAX_VCENTER*f_screen_height);

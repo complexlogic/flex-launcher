@@ -92,7 +92,8 @@ Config config = {
     .highlight_outline_size           = DEFAULT_HIGHLIGHT_OUTLINE_SIZE,
     .highlight_rx                     = DEFAULT_HIGHLIGHT_CORNER_RADIUS,
     .title_padding                    = -1,
-    .max_buttons                      = DEFAULT_MAX_BUTTONS,
+    .col_count                        = DEFAULT_COL_COUNT,
+    .row_count                        = DEFAULT_ROW_COUNT,
     .icon_spacing                     = -1,
     .highlight_vpadding               = -1,
     .highlight_hpadding               = -1,
@@ -599,9 +600,9 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
     else
         current_entry = current_menu->last_selected_entry;
 
-    buttons = current_menu->num_entries - (current_menu->page)*config.max_buttons;
-    if (buttons > config.max_buttons)
-        buttons = config.max_buttons;
+    buttons = current_menu->num_entries - (current_menu->page)*config.col_count*config.row_count;
+    if (buttons > config.col_count*config.row_count)
+        buttons = config.col_count*config.row_count;
     
     // Recalculate the screen geometry
     calculate_button_geometry(current_menu->root_entry, (int) buttons);
@@ -623,15 +624,31 @@ static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool res
 static void calculate_button_geometry(Entry *entry, int buttons)
 {
     // Calculate proper spacing
-    geo.x_margin = (geo.screen_width - config.icon_size*buttons -
-                   buttons*config.icon_spacing + config.icon_spacing) / 2;
+    //center entries if less than full row
+    int col_entries = config.col_count;
+    if (current_menu->num_entries < config.col_count)
+        col_entries = current_menu->num_entries;
+    geo.x_margin = (geo.screen_width - config.icon_size*col_entries -
+                   col_entries*config.icon_spacing + config.icon_spacing) / 2;
+                   
+    //if row_count > 1 then we ignore the y_margin calculated from the the vcenter config, and instead just dynamically center it vertically as well
+    if (config.row_count > 1) {
+        int button_height = config.icon_size + config.icon_spacing + config.title_padding + geo.font_height;
+        int row_entries = config.row_count;
+        if (buttons > 0 && current_menu->num_entries < config.row_count * config.col_count) 
+            row_entries = ((buttons - 1) / config.col_count) + 1;
+        geo.y_margin = (geo.screen_height - button_height * row_entries) / 2;
+    }
     geo.x_advance = config.icon_size + config.icon_spacing;
+    geo.y_advance = config.icon_size + config.title_padding + geo.font_height + config.icon_spacing;
     geo.num_buttons = buttons;
 
     // Assign values to entries
     for (int i = 0; i < geo.num_buttons; i++) {
-            entry->icon_rect.x = geo.x_margin + i*geo.x_advance;
-            entry->icon_rect.y = geo.y_margin;
+            int r = i / config.col_count;
+            int c = i % config.col_count;
+            entry->icon_rect.x = geo.x_margin + c*geo.x_advance;
+            entry->icon_rect.y = geo.y_margin + r*geo.y_advance;
             entry->icon_rect.w = config.icon_size;
             entry->icon_rect.h = config.icon_size;
             entry->text_rect.x = entry->icon_rect.x +
@@ -659,13 +676,18 @@ static void render_buttons(Menu *menu)
     menu->rendered = true;
 }
 
+static void highlight_entry(Entry * entry) {
+    if (config.highlight) {
+        highlight->rect.x = entry->icon_rect.x - config.highlight_hpadding;
+        highlight->rect.y = entry->icon_rect.y - config.highlight_vpadding;
+    }
+}
+
 // A function to move the selection left when clicked by user
 static void move_left()
 {
     // If we are not in leftmost position, move highlight left
     if (current_menu->highlight_position > 0) {
-        if (config.highlight)
-            highlight->rect.x -= geo.x_advance;
         current_menu->highlight_position--;
         current_entry = current_entry->previous;
     }
@@ -677,7 +699,7 @@ static void move_left()
 
         // Load the previous page if there is a valid previous entry
         if (current_entry) {
-            buttons = config.max_buttons;
+            buttons = config.col_count * config.row_count;
             current_menu->root_entry = advance_entries(current_menu->root_entry, (int) buttons, DIRECTION_LEFT);
             current_menu->page--;
         }
@@ -685,20 +707,21 @@ static void move_left()
         // If the user has the wrap entries setting, select the last entry in the menu
         else {
             current_entry = advance_entries(current_menu->first_entry, (int) current_menu->num_entries - 1, DIRECTION_RIGHT);
-            unsigned int num_pages = DIV_ROUND_UP(current_menu->num_entries, config.max_buttons);
+            unsigned int num_pages = DIV_ROUND_UP(current_menu->num_entries, config.col_count * config.row_count);
+            printf("%zu / %zu =  %zu\n", current_menu->num_entries, config.col_count * config.row_count, num_pages);
             current_menu->root_entry = advance_entries(current_menu->root_entry,
-                (int) ((num_pages - 1 - current_menu->page) * config.max_buttons),
+                (int) ((num_pages - 1 - current_menu->page) * config.col_count * config.row_count),
                 DIRECTION_RIGHT
             );
             current_menu->page = num_pages - 1;
-            buttons = current_menu->num_entries - current_menu->page * config.max_buttons;
+            buttons = current_menu->num_entries - current_menu->page * config.col_count * config.row_count;
         }
 
         calculate_button_geometry(current_menu->root_entry, (int) buttons);
-        if (config.highlight)
-            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->highlight_position = buttons - 1;
     }
+    
+    highlight_entry(current_entry);
 }
 
 // A function to move the selection right when clicked by the user
@@ -706,23 +729,19 @@ static void move_right()
 {
     // If we are not in the rightmost position, move highlight right
     if ((int) current_menu->highlight_position < (geo.num_buttons - 1)) {
-        if (config.highlight)
-            highlight->rect.x += geo.x_advance;
         current_menu->highlight_position++;
         current_entry = current_entry->next;
     }
 
     // If we are in the rightmost postion, but there are more entries in the menu, load next page
-    else if (current_menu->highlight_position + current_menu->page*config.max_buttons <
+    else if (current_menu->highlight_position + current_menu->page*config.col_count*config.row_count <
     (current_menu->num_entries - 1)) {
-        unsigned int buttons = current_menu->num_entries - (current_menu->page + 1)*config.max_buttons;
-        if (buttons > config.max_buttons)
-            buttons = config.max_buttons;
+        unsigned int buttons = current_menu->num_entries - (current_menu->page + 1)*config.col_count*config.row_count;
+        if (buttons > config.col_count*config.row_count)
+            buttons = config.col_count*config.row_count;
         current_entry = current_entry->next;
         current_menu->root_entry = current_entry;
         calculate_button_geometry(current_menu->root_entry, (int) buttons);
-        if (config.highlight)
-            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
         current_menu->page++;
         current_menu->highlight_position = 0;
     }
@@ -733,12 +752,52 @@ static void move_right()
         current_menu->root_entry = current_entry;
         current_menu->highlight_position = 0;
         current_menu->page = 0;
-        if (config.highlight)
-            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-        calculate_button_geometry(current_menu->root_entry, (int) MIN(current_menu->num_entries, config.max_buttons));
+        calculate_button_geometry(current_menu->root_entry, (int) MIN(current_menu->num_entries, config.col_count*config.row_count));
+    }
+    highlight_entry(current_entry);
+}
+
+static void move_up() {
+    if (config.row_count > 1) {
+        int current_position = current_menu->highlight_position + current_menu->page * config.col_count * config.row_count;
+        if (!config.wrap_entries && current_position - (int) config.col_count < 0)
+            return;
+            
+        for (size_t i = 0; i < config.col_count; i++) 
+            move_left();
     }
 }
 
+static void move_down() {
+    if (config.row_count > 1) {
+        int current_position = current_menu->highlight_position + current_menu->page * config.col_count * config.row_count;
+        bool last_page = (current_menu->page + 1) * config.col_count * config.row_count >= current_menu->num_entries;
+        if (!config.wrap_entries && last_page && current_position + config.col_count >= current_menu->num_entries)
+            return;
+            
+        for (size_t i = 0; i < config.col_count; i++) 
+            move_right();
+    }
+}
+
+static void page_left() {
+    int current_position = current_menu->highlight_position + current_menu->page * config.col_count * config.row_count;
+    if (!config.wrap_entries && current_position - (int) (config.col_count * config.row_count) < 0)
+        return;
+        
+    for (size_t i = 0; i < config.col_count*config.row_count; i++) 
+        move_left();
+}
+
+static void page_right() {
+    int current_position = current_menu->highlight_position + current_menu->page * config.col_count * config.row_count;
+    bool last_page = (current_menu->page + 1) * config.col_count * config.row_count >= current_menu->num_entries;
+    if (!config.wrap_entries && last_page && current_position + config.col_count * config.row_count >= current_menu->num_entries)
+        return;
+            
+    for (size_t i = 0; i < config.col_count*config.row_count; i++) 
+        move_right();
+}
 // A function to load a submenu
 static void load_submenu(const char *submenu)
 {
@@ -770,7 +829,7 @@ static void draw_screen()
 
         // Draw scroll indicators
         if (config.scroll_indicators &&
-        (current_menu->page*config.max_buttons + (unsigned int) geo.num_buttons) <= (current_menu->num_entries - 1))
+        (current_menu->page*config.col_count*config.row_count + (unsigned int) geo.num_buttons) <= (current_menu->num_entries - 1))
             SDL_RenderCopy(renderer, scroll->texture, NULL, &scroll->rect_right);
 
         if (config.scroll_indicators && current_menu->page > 0)
@@ -842,6 +901,14 @@ static void execute_command(const char *command)
             move_left();
         else if (!strcmp(special_command, SCMD_RIGHT))
             move_right();
+        else if (!strcmp(special_command, SCMD_UP))
+            move_up();
+        else if (!strcmp(special_command, SCMD_DOWN))
+            move_down();
+        else if (!strcmp(special_command, SCMD_PAGE_LEFT))
+            page_left();
+        else if (!strcmp(special_command, SCMD_PAGE_RIGHT))
+            page_right();
         else if (!strcmp(special_command, SCMD_SELECT))
             execute_command(current_entry->cmd);
         else if (!strcmp(special_command, SCMD_HOME))
