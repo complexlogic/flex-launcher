@@ -1,3 +1,7 @@
+Unreleased
+- Add Rows and RowSpacing settings to display multiple rows of entries on a single page
+- Add :up and :down special commands, and Up/Down arrow key navigation when Rows is greater than 1
+
 v2.2 (2024-11-24)
 - Make application timeout configurable
 - Add WrapEntries feature

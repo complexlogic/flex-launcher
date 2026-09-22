@@ -179,14 +179,21 @@ Default: 50%
 The settings in this section define the geometric layout of the launcher.
 
 - [MaxButtons](#maxbuttons)
+- [Rows](#rows)
 - [IconSize](#iconsize)
 - [IconSpacing](#iconspacing)
+- [RowSpacing](#rowspacing)
 - [VCenter](#vcenter)
 
 ##### MaxButtons
-The maximum number of buttons that can be displayed on the screen. If a menu has more entries than this value, it will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
+The maximum number of buttons that can be displayed in a single row. If a menu has more entries than fit on a page (`MaxButtons` x `Rows`), it will be split into multiple pages. A value of 3-5 is sensible for a typical TV size and viewing distance.
 
 Default: 4
+
+##### Rows
+The number of rows of buttons that are displayed on a page, from 1 to 3. Entries fill the page row by row. A page holds up to `MaxButtons` x `Rows` entries. A menu with fewer entries than fit in one row is still displayed as a single row. The Up and Down keys (and the [:up and :down](#up) special commands) move between rows, but only when `Rows` is greater than 1, so they remain available as [hotkeys](#hotkeys) with the default value. If the rows do not fit on the screen, `RowSpacing` and the highlight vertical padding are reduced, and then the number of rows, until they do.
+
+Default: 1
 
 ##### IconSize
 The width and height of icons on the screen in pixels. If an icon is not the same resolution, it will be stretched accordingly.
@@ -198,8 +205,13 @@ Distance between the menu entry icons, in pixels or percent of the screen width.
 
 Default: 5%
 
+##### RowSpacing
+When `Rows` is greater than 1, this defines the distance between the rows (from the bottom of one row's title to the top of the next row's icons), in pixels or percent of the screen height.
+
+Default: 6%
+
 ##### VCenter
-Defines the vertical centering of the menu entries in percent of the screen height. A value of 50% will cause the buttons to be centered halfway in the screen. Increasing the value will lower the buttons, and lowering it will raise them.
+Defines the vertical centering of the menu entries in percent of the screen height. With multiple rows, the whole grid of rows is centered on this line. A value of 50% will cause the buttons to be centered halfway in the screen. Increasing the value will lower the buttons, and lowering it will raise them.
 
 Default: 50%
 
@@ -416,7 +428,13 @@ Quit Flex Launcher.
 Move the highlight cursor left.
 
 #### :right
-Move the highlight cursor right.
+Move the highlight cursor right. With multiple rows, moving right from the last entry of a row moves to the first entry of the next row, and moving right from the last entry of a page loads the next page.
+
+#### :up
+Move the highlight cursor up one row. From the top row, the previous page is loaded and the cursor moves to the bottom row of that page in the same column. Does nothing if `Rows` is 1.
+
+#### :down
+Move the highlight cursor down one row. From the bottom row, the next page is loaded and the cursor moves to the top row of that page in the same column. If the row below is a partial row that has no entry in the current column, the last entry of the page is selected. Does nothing if `Rows` is 1.
 
 #### :select
 Press enter on the current selection. This special command is only available as a gamepad or hotkey command, it is forbidden for menu entries.

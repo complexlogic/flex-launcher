@@ -168,6 +168,11 @@ int config_handler(void *user, const char *section, const char *name, const char
             if (max_buttons > 0)
                 config.max_buttons = (unsigned int) max_buttons;
         }
+        else if (MATCH(name, SETTING_ROWS)) {
+            int rows = atoi(value);
+            if (rows > 0 && rows <= MAX_ROWS)
+                config.rows = (unsigned int) rows;
+        }
         else if (MATCH(name, SETTING_ICON_SIZE)) {
             Uint16 icon_size = (Uint16) atoi(value);
             if (icon_size >= MIN_ICON_SIZE && icon_size <= MAX_ICON_SIZE)
@@ -180,6 +185,15 @@ int config_handler(void *user, const char *section, const char *name, const char
                 int icon_spacing = atoi(value);
                 if (icon_spacing > 0 || MATCH(value, "0"))
                     config.icon_spacing = icon_spacing;
+            }
+        }
+        else if (MATCH(name, SETTING_ROW_SPACING)) {
+            if (is_percent(value))
+                copy_string(config.row_spacing_str, value, sizeof(config.row_spacing_str));
+            else {
+                int row_spacing = atoi(value);
+                if (row_spacing > 0 || MATCH(value, "0"))
+                    config.row_spacing = row_spacing;
             }
         }
         else if (MATCH(name, SETTING_VCENTER)) {
@@ -767,6 +781,12 @@ unsigned int calculate_width(int buttons, int icon_spacing, int icon_size, int h
     return (unsigned int) ((buttons - 1)*icon_spacing + buttons*icon_size + 2*highlight_hpadding);
 }
 
+// A function to calculate the total height of a grid of buttons, including highlight padding
+int calculate_height(int rows, int button_height, int row_spacing, int highlight_vpadding)
+{
+    return rows*button_height + (rows - 1)*row_spacing + 2*highlight_vpadding;
+}
+
 // A function to add a hotkey to the linked list
 void add_hotkey(const char *keycode, const char *cmd)
 {
@@ -939,6 +959,16 @@ void validate_settings(Geometry *geo)
             config.clock_font_color.a = (Uint8) clock_opacity;
     }
 
+    // Set default RowSpacing if none is in the config file
+    if (config.row_spacing < 0) {
+        int row_spacing = INVALID_PERCENT_VALUE;
+        if (config.row_spacing_str[0] != '\0')
+            convert_percent_to_int(config.row_spacing_str, &row_spacing, geo->screen_height);
+        if (row_spacing == INVALID_PERCENT_VALUE)
+            convert_percent_to_int(DEFAULT_ROW_SPACING, &row_spacing, geo->screen_height);
+        config.row_spacing = row_spacing;
+    }
+
     // Set default IconSpacing if none is in the config file
     if (config.icon_spacing < 0) {
         int icon_spacing = INVALID_PERCENT_VALUE;
@@ -1024,7 +1054,50 @@ void validate_settings(Geometry *geo)
         vcenter = lower_limit;
     else if (vcenter > upper_limit)
         vcenter = upper_limit;
-    geo->y_margin = vcenter - button_height / 2;
+    geo->vcenter = vcenter;
+
+    // Make sure all of the rows fit on the screen. Drop rows that can't fit even
+    // without any gaps, then shrink the row spacing/highlight padding to fit the rest
+    if (config.rows > 1) {
+        unsigned int rows = config.rows;
+        while (rows > 1 && (int) rows * button_height > geo->screen_height)
+            rows--;
+        if (rows != config.rows) {
+            log_error("Not enough screen space for %i rows, reducing to %i", config.rows, rows);
+            config.rows = rows;
+        }
+    }
+    if (config.rows > 1) {
+        int row_spacing = config.row_spacing;
+        int vpadding = config.highlight_vpadding > 0 ? config.highlight_vpadding : 0;
+
+        // Reduce highlight vpadding to prevent overlaps between rows
+        if (vpadding > row_spacing / 2)
+            vpadding = row_spacing / 2;
+        int required_height = calculate_height((int) config.rows, button_height, row_spacing, vpadding);
+        for (int i = 0; i < 100 && required_height > geo->screen_height; i++) {
+            if (vpadding > 0)
+                vpadding = (vpadding * 9) / 10;
+            if (row_spacing > 0)
+                row_spacing = (row_spacing * 9) / 10;
+            required_height = calculate_height((int) config.rows, button_height, row_spacing, vpadding);
+        }
+        if (config.row_spacing != row_spacing) {
+            log_error("Row spacing value %i too large to fit screen, shrinking to %i",
+                config.row_spacing,
+                row_spacing
+            );
+            config.row_spacing = row_spacing;
+        }
+        if (config.highlight_vpadding > 0 && config.highlight_vpadding != vpadding) {
+            log_error("Highlight vertical padding value %i too large for %i rows, shrinking to %i",
+                config.highlight_vpadding,
+                (int) config.rows,
+                vpadding
+            );
+            config.highlight_vpadding = vpadding;
+        }
+    }
 
     // Max highlight outline
     int max_highlight_outline_size = (config.highlight_hpadding < config.highlight_vpadding) 

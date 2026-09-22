@@ -30,8 +30,13 @@ static void init_slideshow(void);
 static void init_screensaver(void);
 static void calculate_button_geometry(Entry *entry, int buttons);
 static void render_buttons(Menu *menu);
+static void update_highlight(void);
+static void load_page(unsigned int page, unsigned int position);
+static void load_last_page(unsigned int column);
 static void move_left(void);
 static void move_right(void);
+static void move_up(void);
+static void move_down(void);
 static void load_submenu(const char *submenu);
 static void load_back_menu(Menu *menu);
 static void draw_screen(void);
@@ -93,6 +98,7 @@ Config config = {
     .highlight_rx                     = DEFAULT_HIGHLIGHT_CORNER_RADIUS,
     .title_padding                    = -1,
     .max_buttons                      = DEFAULT_MAX_BUTTONS,
+    .rows                             = DEFAULT_ROWS,
     .icon_spacing                     = -1,
     .highlight_vpadding               = -1,
     .highlight_hpadding               = -1,
@@ -101,6 +107,8 @@ Config config = {
     .highlight_outline_opacity[0]     = '\0',
     .vcenter[0]             = '\0',
     .icon_spacing_str[0]              = '\0',
+    .row_spacing                      = -1,
+    .row_spacing_str[0]               = '\0',
     .scroll_indicators                = DEFAULT_SCROLL_INDICATORS,
     .scroll_indicator_fill_color.r    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_R,
     .scroll_indicator_fill_color.g    = DEFAULT_SCROLL_INDICATOR_FILL_COLOR_G,
@@ -188,6 +196,12 @@ Uint32 refresh_period;
 Uint32 delay_period;
 Uint32 repeat_period;
 
+
+// A function to get the number of entries that fit on one page of a menu
+static inline unsigned int page_size(void)
+{
+    return config.rows * config.max_buttons;
+}
 
 // A function to initialize SDL
 static void init_sdl()
@@ -418,6 +432,12 @@ static void handle_keypress(SDL_Keysym *key)
         move_left();
     else if (key->sym == SDLK_RIGHT)
         move_right();
+
+    // Up and down are only reserved when there are multiple rows, otherwise they remain available as hotkeys
+    else if (key->sym == SDLK_UP && config.rows > 1)
+        move_up();
+    else if (key->sym == SDLK_DOWN && config.rows > 1)
+        move_down();
     else if (key->sym == SDLK_RETURN) {
         log_debug("Selected Entry:\n"
             "Title: %s\n"
@@ -599,16 +619,13 @@ static int load_menu(Menu *menu, bool set_back_menu, bool reset_position)
     else
         current_entry = current_menu->last_selected_entry;
 
-    buttons = current_menu->num_entries - (current_menu->page)*config.max_buttons;
-    if (buttons > config.max_buttons)
-        buttons = config.max_buttons;
+    buttons = current_menu->num_entries - (current_menu->page)*page_size();
+    if (buttons > page_size())
+        buttons = page_size();
     
     // Recalculate the screen geometry
     calculate_button_geometry(current_menu->root_entry, (int) buttons);
-    if (config.highlight) {
-        highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-        highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
-    }
+    update_highlight();
     return 0;
 }
 
@@ -619,19 +636,41 @@ static int load_menu_by_name(const char *menu_name, bool set_back_menu, bool res
     return load_menu(menu, set_back_menu, reset_position);
 }
 
-// A function to calculate the layout of the buttons
+// A function to calculate the layout of the buttons on the current page.
+// Entries fill the page row by row, all rows share the same column positions.
 static void calculate_button_geometry(Entry *entry, int buttons)
 {
+    int columns = MIN(buttons, (int) config.max_buttons);
+
+    // A menu that only needs one row is laid out as a single row, even if
+    // more rows are configured. The number of rows is fixed for the whole
+    // menu so the buttons don't jump around when changing pages
+    int rows = MIN((int) config.rows, (int) DIV_ROUND_UP(current_menu->num_entries, config.max_buttons));
+    int button_height = config.icon_size + config.title_padding + geo.font_height;
+    int grid_height = rows*button_height + (rows - 1)*config.row_spacing;
+
     // Calculate proper spacing
-    geo.x_margin = (geo.screen_width - config.icon_size*buttons -
-                   buttons*config.icon_spacing + config.icon_spacing) / 2;
+    geo.x_margin = (geo.screen_width - config.icon_size*columns -
+                   columns*config.icon_spacing + config.icon_spacing) / 2;
     geo.x_advance = config.icon_size + config.icon_spacing;
+    geo.y_advance = button_height + config.row_spacing;
+    geo.y_margin = geo.vcenter - grid_height / 2;
+    if (rows > 1) {
+        // Keep the whole grid (including highlight) on the screen
+        int padding = config.highlight && config.highlight_vpadding > 0 ? config.highlight_vpadding : 0;
+        if (geo.y_margin + grid_height + padding > geo.screen_height)
+            geo.y_margin = geo.screen_height - grid_height - padding;
+        if (geo.y_margin < padding)
+            geo.y_margin = padding;
+    }
     geo.num_buttons = buttons;
+    geo.num_columns = columns;
+    geo.num_rows = rows;
 
     // Assign values to entries
     for (int i = 0; i < geo.num_buttons; i++) {
-            entry->icon_rect.x = geo.x_margin + i*geo.x_advance;
-            entry->icon_rect.y = geo.y_margin;
+            entry->icon_rect.x = geo.x_margin + (i % columns)*geo.x_advance;
+            entry->icon_rect.y = geo.y_margin + (i / columns)*geo.y_advance;
             entry->icon_rect.w = config.icon_size;
             entry->icon_rect.h = config.icon_size;
             entry->text_rect.x = entry->icon_rect.x +
@@ -640,6 +679,52 @@ static void calculate_button_geometry(Entry *entry, int buttons)
                                  config.title_padding;
             entry = entry->next;
     }
+}
+
+// A function to move the highlight to the current entry
+static void update_highlight()
+{
+    if (config.highlight) {
+        highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
+        highlight->rect.y = current_entry->icon_rect.y - config.highlight_vpadding;
+    }
+}
+
+// A function to show a page of the current menu and select the entry at
+// the given position on the page. The position is clamped to the last entry
+static void load_page(unsigned int page, unsigned int position)
+{
+    unsigned int per_page = page_size();
+    Entry *root = advance_entries(current_menu->first_entry, (int) (page*per_page), DIRECTION_RIGHT);
+    unsigned int buttons = current_menu->num_entries - page*per_page;
+    if (buttons > per_page)
+        buttons = per_page;
+    if (position > buttons - 1)
+        position = buttons - 1;
+
+    current_menu->page = page;
+    current_menu->root_entry = root;
+    current_menu->highlight_position = position;
+    current_entry = advance_entries(root, (int) position, DIRECTION_RIGHT);
+    calculate_button_geometry(root, (int) buttons);
+    update_highlight();
+}
+
+// A function to show the last page of the current menu and select the entry in the
+// bottom-most row that is in the given column (or the nearest entry if that column is empty)
+static void load_last_page(unsigned int column)
+{
+    unsigned int per_page = page_size();
+    unsigned int num_pages = DIV_ROUND_UP(current_menu->num_entries, per_page);
+    unsigned int buttons = current_menu->num_entries - (num_pages - 1)*per_page;
+    unsigned int columns = MIN(buttons, config.max_buttons);
+    unsigned int last_row = (buttons - 1) / columns;
+    unsigned int position = last_row*columns + column;
+
+    // Column is missing in the partial last row, use the row above
+    if (position > buttons - 1 && last_row > 0)
+        position -= columns;
+    load_page(num_pages - 1, position);
 }
 
 // A function to render all buttons (icon and text) for a menu
@@ -662,81 +747,94 @@ static void render_buttons(Menu *menu)
 // A function to move the selection left when clicked by user
 static void move_left()
 {
-    // If we are not in leftmost position, move highlight left
+    // If we are not in the first position of the page, move highlight left.
+    // With multiple rows, this wraps to the end of the previous row
     if (current_menu->highlight_position > 0) {
-        if (config.highlight)
-            highlight->rect.x -= geo.x_advance;
         current_menu->highlight_position--;
         current_entry = current_entry->previous;
+        update_highlight();
     }
 
-    // If we are in leftmost position...
-    else if (current_menu->highlight_position == 0 && (current_menu->page > 0 || config.wrap_entries)) {
-        unsigned int buttons;
-        current_entry = current_entry->previous;
+    // Load the previous page and select its last entry
+    else if (current_menu->page > 0)
+        load_page(current_menu->page - 1, page_size() - 1);
 
-        // Load the previous page if there is a valid previous entry
-        if (current_entry) {
-            buttons = config.max_buttons;
-            current_menu->root_entry = advance_entries(current_menu->root_entry, (int) buttons, DIRECTION_LEFT);
-            current_menu->page--;
-        }
-
-        // If the user has the wrap entries setting, select the last entry in the menu
-        else {
-            current_entry = advance_entries(current_menu->first_entry, (int) current_menu->num_entries - 1, DIRECTION_RIGHT);
-            unsigned int num_pages = DIV_ROUND_UP(current_menu->num_entries, config.max_buttons);
-            current_menu->root_entry = advance_entries(current_menu->root_entry,
-                (int) ((num_pages - 1 - current_menu->page) * config.max_buttons),
-                DIRECTION_RIGHT
-            );
-            current_menu->page = num_pages - 1;
-            buttons = current_menu->num_entries - current_menu->page * config.max_buttons;
-        }
-
-        calculate_button_geometry(current_menu->root_entry, (int) buttons);
-        if (config.highlight)
-            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-        current_menu->highlight_position = buttons - 1;
-    }
+    // If the user has the wrap entries setting, select the last entry in the menu
+    else if (config.wrap_entries)
+        load_page(DIV_ROUND_UP(current_menu->num_entries, page_size()) - 1, page_size() - 1);
 }
 
 // A function to move the selection right when clicked by the user
 static void move_right()
 {
-    // If we are not in the rightmost position, move highlight right
+    // If we are not in the last position of the page, move highlight right.
+    // With multiple rows, this wraps to the start of the next row
     if ((int) current_menu->highlight_position < (geo.num_buttons - 1)) {
-        if (config.highlight)
-            highlight->rect.x += geo.x_advance;
         current_menu->highlight_position++;
         current_entry = current_entry->next;
+        update_highlight();
     }
 
-    // If we are in the rightmost postion, but there are more entries in the menu, load next page
-    else if (current_menu->highlight_position + current_menu->page*config.max_buttons <
-    (current_menu->num_entries - 1)) {
-        unsigned int buttons = current_menu->num_entries - (current_menu->page + 1)*config.max_buttons;
-        if (buttons > config.max_buttons)
-            buttons = config.max_buttons;
-        current_entry = current_entry->next;
-        current_menu->root_entry = current_entry;
-        calculate_button_geometry(current_menu->root_entry, (int) buttons);
-        if (config.highlight)
-            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-        current_menu->page++;
-        current_menu->highlight_position = 0;
-    }
+    // If we are in the last postion, but there are more entries in the menu, load next page
+    else if (current_menu->highlight_position + current_menu->page*page_size() <
+    (current_menu->num_entries - 1))
+        load_page(current_menu->page + 1, 0);
 
     // If user has the wrap entries setting, reset menu to first entry
-    else if (config.wrap_entries) {
-        current_entry = current_menu->first_entry;
-        current_menu->root_entry = current_entry;
-        current_menu->highlight_position = 0;
-        current_menu->page = 0;
-        if (config.highlight)
-            highlight->rect.x = current_entry->icon_rect.x - config.highlight_hpadding;
-        calculate_button_geometry(current_menu->root_entry, (int) MIN(current_menu->num_entries, config.max_buttons));
+    else if (config.wrap_entries)
+        load_page(0, 0);
+}
+
+// A function to move the selection up one row
+static void move_up()
+{
+    unsigned int columns = (unsigned int) geo.num_columns;
+    unsigned int position = current_menu->highlight_position;
+
+    // Move up within the page
+    if (position >= columns) {
+        current_menu->highlight_position -= columns;
+        current_entry = advance_entries(current_entry, (int) columns, DIRECTION_LEFT);
+        update_highlight();
     }
+
+    // In the top row: go to the bottom row of the previous page, same column
+    else if (current_menu->page > 0)
+        load_page(current_menu->page - 1, page_size() - config.max_buttons + position);
+
+    // If user has the wrap entries setting, go to the bottom of the last page
+    else if (config.wrap_entries)
+        load_last_page(position);
+}
+
+// A function to move the selection down one row
+static void move_down()
+{
+    unsigned int columns = (unsigned int) geo.num_columns;
+    unsigned int position = current_menu->highlight_position;
+    unsigned int buttons = (unsigned int) geo.num_buttons;
+
+    // Move down within the page
+    if (position + columns < buttons) {
+        current_menu->highlight_position += columns;
+        current_entry = advance_entries(current_entry, (int) columns, DIRECTION_RIGHT);
+        update_highlight();
+    }
+
+    // There is a partial row below with no entry in this column: select its last entry
+    else if (position / columns < (buttons - 1) / columns) {
+        current_entry = advance_entries(current_entry, (int) (buttons - 1 - position), DIRECTION_RIGHT);
+        current_menu->highlight_position = buttons - 1;
+        update_highlight();
+    }
+
+    // In the bottom row: go to the top row of the next page, same column
+    else if ((current_menu->page + 1)*page_size() < current_menu->num_entries)
+        load_page(current_menu->page + 1, position % columns);
+
+    // If user has the wrap entries setting, go to the top of the first page
+    else if (config.wrap_entries)
+        load_page(0, position % columns);
 }
 
 // A function to load a submenu
@@ -770,7 +868,7 @@ static void draw_screen()
 
         // Draw scroll indicators
         if (config.scroll_indicators &&
-        (current_menu->page*config.max_buttons + (unsigned int) geo.num_buttons) <= (current_menu->num_entries - 1))
+        (current_menu->page*page_size() + (unsigned int) geo.num_buttons) <= (current_menu->num_entries - 1))
             SDL_RenderCopy(renderer, scroll->texture, NULL, &scroll->rect_right);
 
         if (config.scroll_indicators && current_menu->page > 0)
@@ -842,6 +940,14 @@ static void execute_command(const char *command)
             move_left();
         else if (!strcmp(special_command, SCMD_RIGHT))
             move_right();
+        else if (!strcmp(special_command, SCMD_UP)) {
+            if (config.rows > 1)
+                move_up();
+        }
+        else if (!strcmp(special_command, SCMD_DOWN)) {
+            if (config.rows > 1)
+                move_down();
+        }
         else if (!strcmp(special_command, SCMD_SELECT))
             execute_command(current_entry->cmd);
         else if (!strcmp(special_command, SCMD_HOME))

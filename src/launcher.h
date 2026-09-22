@@ -16,6 +16,7 @@
 #define MIN_FPS_LIMIT 10
 #define MIN_ICON_SIZE 32
 #define MAX_ICON_SIZE 1024
+#define MAX_ROWS 3
 #define MIN_RX_SIZE 0
 #define MAX_RX_SIZE 100
 #define PERCENT_MAX_CHARS 10
@@ -46,6 +47,8 @@
 #define SCMD_EXIT ":exit"
 #define SCMD_LEFT ":left"
 #define SCMD_RIGHT ":right"
+#define SCMD_UP ":up"
+#define SCMD_DOWN ":down"
 #define SCMD_HOME ":home"
 #define SCMD_BACK ":back"
 #define SCMD_QUIT ":quit"
@@ -197,9 +200,13 @@ typedef struct {
     int screen_margin;
     int font_height;
     int x_margin; // Distance between left edge of screen and x coordinate of root_entry icon
-    int y_margin; // Distance between top edge of screen and y coordinate of all entry icons
+    int y_margin; // Distance between top edge of screen and y coordinate of the first row of entry icons
     int x_advance; // Distance between icon x coordinate of adjacent entries
+    int y_advance; // Distance between icon y coordinate of adjacent rows
+    int vcenter; // Vertical centerline of the button grid, in pixels from the top of the screen
     int num_buttons; // Number of buttons shown on the screen
+    int num_columns; // Number of columns on the current page
+    int num_rows; // Number of rows in the current menu (constant across its pages)
 } Geometry;
 
 // Struct for highlight 
@@ -238,7 +245,8 @@ typedef struct {
 // Configuration settings
 typedef struct {
     char *default_menu;
-    unsigned int max_buttons;
+    unsigned int max_buttons; // Number of buttons per row
+    unsigned int rows; // Number of rows per page
     bool vsync;
     int fps_limit;
     Uint32 application_timeout;
@@ -253,6 +261,8 @@ typedef struct {
     Uint16 icon_size;
     int icon_spacing;
     char icon_spacing_str[PERCENT_MAX_CHARS];
+    int row_spacing;
+    char row_spacing_str[PERCENT_MAX_CHARS];
     bool titles_enabled;
     char *title_font_path; // Path to title TTF font file
     unsigned int title_font_size;
